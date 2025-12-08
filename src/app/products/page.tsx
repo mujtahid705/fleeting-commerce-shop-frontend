@@ -123,14 +123,14 @@ export default function ProductsPage() {
     }
   }, [filteredProducts, sortBy]);
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-stone-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {!isClient ? (
           <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">
-              Our Products
+            <h1 className="text-4xl font-light text-stone-800 mb-4">
+              Our <span className="font-semibold">Products</span>
             </h1>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="text-lg text-stone-500 max-w-2xl mx-auto font-light">
               Discover our curated collection of premium products designed for
               the modern lifestyle
             </p>
@@ -142,10 +142,10 @@ export default function ProductsPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">
-              Our Products
+            <h1 className="text-4xl font-light text-stone-800 mb-4">
+              Our <span className="font-semibold">Products</span>
             </h1>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="text-lg text-stone-500 max-w-2xl mx-auto font-light">
               Discover our curated collection of premium products designed for
               the modern lifestyle
             </p>
@@ -191,7 +191,7 @@ export default function ProductsPage() {
                     setSelectedCategoryId(v ? Number(v) : "");
                     setSelectedSubCategoryId("");
                   }}
-                  className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  className="border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-400"
                 >
                   <option value="">All Categories</option>
                   {categories.map((c) => (
@@ -211,7 +211,7 @@ export default function ProductsPage() {
                       const v = e.target.value;
                       setSelectedSubCategoryId(v ? Number(v) : "");
                     }}
-                    className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    className="border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-400"
                   >
                     <option value="">All Subcategories</option>
                     {filteredSubcategories.map((s) => (
@@ -232,11 +232,11 @@ export default function ProductsPage() {
                 </Button>
               </div>
               <div className="flex items-center space-x-2">
-                <Filter className="w-4 h-4 text-gray-400" />
+                <Filter className="w-4 h-4 text-stone-400" />
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  className="border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-400"
                 >
                   <option value="featured">Featured</option>
                   <option value="price-low">Price: Low to High</option>
@@ -320,7 +320,7 @@ export default function ProductsPage() {
                 setSelectedCategoryId("");
                 setSelectedSubCategoryId("");
               }}
-              className="bg-orange-500 hover:bg-orange-600 text-white"
+              className="bg-cyan-500 hover:bg-cyan-600 text-white"
             >
               Clear Filters
             </Button>

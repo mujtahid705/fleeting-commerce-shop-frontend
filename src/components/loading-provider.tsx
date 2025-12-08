@@ -39,7 +39,7 @@ export function LoadingProvider({ children }: { children: React.ReactNode }) {
       {loading && (
         <div className="fixed inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-[10000]">
           <div className="bg-white rounded-lg shadow-lg p-8 text-center">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mb-4"></div>
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500 mb-4"></div>
             <p className="text-gray-600 text-lg font-medium">Loading...</p>
           </div>
         </div>

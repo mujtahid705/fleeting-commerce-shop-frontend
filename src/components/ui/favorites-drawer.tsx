@@ -73,11 +73,11 @@ export function FavoritesDrawer({ isOpen, onClose }: FavoritesDrawerProps) {
           <Star
             key={star}
             className={`w-3 h-3 ${
-              star <= rating ? "text-yellow-400 fill-current" : "text-gray-300"
+              star <= rating ? "text-amber-400 fill-current" : "text-stone-300"
             }`}
           />
         ))}
-        <span className="text-xs text-gray-500 ml-1">({rating})</span>
+        <span className="text-xs text-stone-500 ml-1">({rating})</span>
       </div>
     );
   };
@@ -103,14 +103,14 @@ export function FavoritesDrawer({ isOpen, onClose }: FavoritesDrawerProps) {
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
           >
-            <div className="flex items-center justify-between p-4 border-b border-gray-200">
-              <h2 className="text-lg font-semibold text-gray-900 flex items-center">
+            <div className="flex items-center justify-between p-4 border-b border-stone-200">
+              <h2 className="text-lg font-semibold text-stone-800 flex items-center">
                 <Heart className="w-5 h-5 mr-2 text-red-500" />
                 Favorites ({totalItems})
               </h2>
               <motion.button
                 onClick={onClose}
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                className="p-2 hover:bg-stone-100 rounded-full transition-colors"
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
               >
@@ -120,16 +120,16 @@ export function FavoritesDrawer({ isOpen, onClose }: FavoritesDrawerProps) {
             <div className="flex-1 overflow-y-auto">
               {favoriteItems.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full p-8 text-center">
-                  <Heart className="w-16 h-16 text-gray-300 mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  <Heart className="w-16 h-16 text-stone-300 mb-4" />
+                  <h3 className="text-lg font-medium text-stone-800 mb-2">
                     No favorites yet
                   </h3>
-                  <p className="text-gray-500 mb-6">
+                  <p className="text-stone-500 mb-6">
                     Save products you love to see them here
                   </p>
                   <Button
                     onClick={onClose}
-                    className="bg-orange-500 hover:bg-orange-600 text-white"
+                    className="bg-stone-800 hover:bg-stone-900 text-white"
                   >
                     Start Shopping
                   </Button>
@@ -139,7 +139,7 @@ export function FavoritesDrawer({ isOpen, onClose }: FavoritesDrawerProps) {
                   <div className="mb-4">
                     <Button
                       onClick={handleAddAllToCart}
-                      className="w-full bg-orange-500 hover:bg-orange-600 text-white flex items-center justify-center"
+                      className="w-full bg-stone-800 hover:bg-stone-900 text-white flex items-center justify-center"
                       disabled={favoriteItems.every((item) => item.stock === 0)}
                     >
                       <ShoppingCart className="w-4 h-4 mr-2" />
@@ -150,13 +150,13 @@ export function FavoritesDrawer({ isOpen, onClose }: FavoritesDrawerProps) {
                     {favoriteItems.map((item, index) => (
                       <motion.div
                         key={item.id}
-                        className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                        className="border border-stone-200 rounded-xl p-4 hover:shadow-md transition-shadow"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: index * 0.1 }}
                       >
                         <div className="flex items-start space-x-3">
-                          <div className="w-20 h-20 bg-gray-100 rounded overflow-hidden">
+                          <div className="w-20 h-20 bg-stone-100 rounded-lg overflow-hidden">
                             <Image
                               src={item.image}
                               alt={item.title}
@@ -168,22 +168,22 @@ export function FavoritesDrawer({ isOpen, onClose }: FavoritesDrawerProps) {
                           <div className="flex-1 min-w-0">
                             <Link
                               href={`/products/${item.slug}`}
-                              className="text-sm font-medium text-gray-900 hover:text-orange-600 transition-colors block"
+                              className="text-sm font-medium text-stone-800 hover:text-stone-600 transition-colors block"
                               onClick={onClose}
                             >
                               {item.title}
                             </Link>
-                            <p className="text-xs text-gray-500 mb-2">
+                            <p className="text-xs text-stone-500 mb-2">
                               {item.brand}
                             </p>
                             {renderStars(item.rating)}
                             <div className="flex items-center justify-between mt-2">
                               <div className="flex items-center space-x-2">
-                                <span className="text-sm font-semibold text-orange-600">
+                                <span className="text-sm font-semibold text-stone-800">
                                   ৳{item.price.toFixed(2)}
                                 </span>
                                 {item.originalPrice && (
-                                  <span className="text-xs text-gray-400 line-through">
+                                  <span className="text-xs text-stone-400 line-through">
                                     ৳{item.originalPrice.toFixed(2)}
                                   </span>
                                 )}
@@ -191,7 +191,7 @@ export function FavoritesDrawer({ isOpen, onClose }: FavoritesDrawerProps) {
                               <div
                                 className={`flex items-center space-x-1 px-3 py-1 rounded-md text-xs font-medium transition-colors ${
                                   item.stock > 0
-                                    ? "bg-green-100 text-green-800"
+                                    ? "bg-emerald-100 text-emerald-700"
                                     : "bg-red-100 text-red-800"
                                 }`}
                               >
@@ -206,7 +206,7 @@ export function FavoritesDrawer({ isOpen, onClose }: FavoritesDrawerProps) {
                                 whileTap={{ scale: 0.95 }}
                                 onClick={() => handleAddToCart(item)}
                                 disabled={item.stock === 0}
-                                className="flex-1 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white text-xs py-2 px-3 rounded-md transition-colors flex items-center justify-center"
+                                className="flex-1 bg-stone-800 hover:bg-stone-900 disabled:bg-stone-300 disabled:cursor-not-allowed text-white text-xs py-2 px-3 rounded-md transition-colors flex items-center justify-center"
                               >
                                 <ShoppingCart className="w-3 h-3 mr-1" />
                                 Add to Cart

@@ -183,17 +183,23 @@ export default function CheckoutPage() {
     return null; // Will redirect via useEffect
   }
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-stone-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
           <div className="flex items-center space-x-4 mb-6">
             <Link href="/products">
-              <Button variant="outline" size="sm">
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-full border-stone-300 text-stone-600 hover:bg-stone-100"
+              >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to Shopping
               </Button>
             </Link>
-            <h1 className="text-3xl font-bold text-gray-900">Checkout</h1>
+            <h1 className="text-3xl font-light text-stone-800">
+              Check<span className="font-semibold">out</span>
+            </h1>
           </div>
           <div className="flex items-center space-x-4">
             {[
@@ -205,23 +211,23 @@ export default function CheckoutPage() {
                 <div
                   className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${
                     currentStep >= step
-                      ? "bg-orange-500 border-orange-500 text-white"
-                      : "border-gray-300 text-gray-400"
+                      ? "bg-stone-800 border-stone-800 text-white"
+                      : "border-stone-300 text-stone-400"
                   }`}
                 >
                   <Icon className="w-5 h-5" />
                 </div>
                 <span
                   className={`ml-2 text-sm font-medium ${
-                    currentStep >= step ? "text-orange-600" : "text-gray-400"
+                    currentStep >= step ? "text-stone-700" : "text-stone-400"
                   }`}
                 >
                   {label}
                 </span>
                 {step < 3 && (
                   <div
-                    className={`w-16 h-1 mx-4 ${
-                      currentStep > step ? "bg-orange-500" : "bg-gray-200"
+                    className={`w-16 h-1 mx-4 rounded-full ${
+                      currentStep > step ? "bg-stone-800" : "bg-stone-200"
                     }`}
                   />
                 )}
@@ -231,7 +237,7 @@ export default function CheckoutPage() {
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2">
-            <Card className="p-6">
+            <Card className="p-8 border-0 shadow-sm rounded-3xl bg-white">
               <form onSubmit={handleSubmit}>
                 {currentStep === 1 && (
                   <motion.div
@@ -239,8 +245,9 @@ export default function CheckoutPage() {
                     animate={{ opacity: 1, x: 0 }}
                     className="space-y-6"
                   >
-                    <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                      Customer Information
+                    <h2 className="text-xl font-light text-stone-800 mb-4">
+                      Customer{" "}
+                      <span className="font-semibold">Information</span>
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
@@ -307,8 +314,8 @@ export default function CheckoutPage() {
                     animate={{ opacity: 1, x: 0 }}
                     className="space-y-6"
                   >
-                    <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                      Shipping Address
+                    <h2 className="text-xl font-light text-stone-800 mb-4">
+                      Shipping <span className="font-semibold">Address</span>
                     </h2>
                     <div>
                       <Label htmlFor="address">Street Address *</Label>
@@ -394,8 +401,8 @@ export default function CheckoutPage() {
                     animate={{ opacity: 1, x: 0 }}
                     className="space-y-6"
                   >
-                    <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                      Payment Information
+                    <h2 className="text-xl font-light text-stone-800 mb-4">
+                      Payment <span className="font-semibold">Information</span>
                     </h2>
                     <div>
                       <Label htmlFor="cardholderName">Cardholder Name *</Label>
@@ -480,7 +487,7 @@ export default function CheckoutPage() {
                       </Button>
                       <Button
                         type="submit"
-                        className="bg-orange-500 hover:bg-orange-600"
+                        className="bg-stone-800 hover:bg-stone-900 rounded-full px-8"
                         disabled={isProcessing}
                       >
                         {isProcessing ? (
@@ -502,9 +509,9 @@ export default function CheckoutPage() {
             </Card>
           </div>
           <div className="lg:col-span-1">
-            <Card className="p-6 sticky top-8">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Order Summary
+            <Card className="p-6 sticky top-8 border-0 shadow-sm rounded-3xl bg-white">
+              <h3 className="text-lg font-light text-stone-800 mb-4">
+                Order <span className="font-semibold">Summary</span>
               </h3>
               <div className="space-y-4 mb-6">
                 {cartItems.map((item, index) => (
@@ -512,7 +519,7 @@ export default function CheckoutPage() {
                     key={`${item.id}-${item.size}-${item.color}`}
                     className="flex items-center space-x-3"
                   >
-                    <div className="w-16 h-16 bg-gray-100 rounded overflow-hidden">
+                    <div className="w-16 h-16 bg-stone-100 rounded-xl overflow-hidden">
                       <Image
                         src={item.image}
                         alt={item.title}
@@ -522,42 +529,42 @@ export default function CheckoutPage() {
                       />
                     </div>
                     <div className="flex-1">
-                      <h4 className="text-sm font-medium text-gray-900">
+                      <h4 className="text-sm font-medium text-stone-800">
                         {item.title}
                       </h4>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-stone-500">
                         {item.size && `Size: ${item.size}`}{" "}
                         {item.color && `• Color: ${item.color}`}
                       </p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-stone-500">
                         Qty: {item.quantity}
                       </p>
                     </div>
-                    <div className="text-sm font-medium text-gray-900">
+                    <div className="text-sm font-medium text-stone-800">
                       ৳{(item.price * item.quantity).toFixed(2)}
                     </div>
                   </div>
                 ))}
               </div>
-              <div className="space-y-2 border-t border-gray-200 pt-4">
-                <div className="flex justify-between text-sm">
+              <div className="space-y-2 border-t border-stone-100 pt-4">
+                <div className="flex justify-between text-sm text-stone-600">
                   <span>Subtotal ({totalItems} items)</span>
                   <span>৳{totalAmount.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between text-sm">
+                <div className="flex justify-between text-sm text-stone-600">
                   <span>Shipping</span>
                   <span>৳{shipping.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between text-sm">
+                <div className="flex justify-between text-sm text-stone-600">
                   <span>Tax</span>
                   <span>৳{tax.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between text-lg font-semibold text-gray-900 pt-2 border-t border-gray-300">
+                <div className="flex justify-between text-lg font-semibold text-stone-800 pt-3 border-t border-stone-200">
                   <span>Total</span>
                   <span>৳{total.toFixed(2)}</span>
                 </div>
               </div>
-              <div className="mt-6 text-xs text-gray-500">
+              <div className="mt-6 text-xs text-stone-500">
                 <div className="flex items-center space-x-2 mb-2">
                   <Lock className="w-3 h-3" />
                   <span>Your payment information is secure and encrypted</span>

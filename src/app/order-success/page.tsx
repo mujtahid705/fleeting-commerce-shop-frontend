@@ -20,7 +20,7 @@ export default function OrderSuccessPage() {
     Math.random().toString(36).substr(2, 9).toUpperCase()
   );
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-stone-50 py-8">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -34,32 +34,32 @@ export default function OrderSuccessPage() {
             transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
             className="flex justify-center mb-6"
           >
-            <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center">
-              <CheckCircle className="w-12 h-12 text-green-600" />
+            <div className="w-24 h-24 bg-emerald-100 rounded-full flex items-center justify-center">
+              <CheckCircle className="w-12 h-12 text-emerald-600" />
             </div>
           </motion.div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">
+          <h1 className="text-3xl font-bold text-stone-800 mb-4">
             Order Placed Successfully!
           </h1>
-          <p className="text-lg text-gray-600 mb-8">
+          <p className="text-lg text-stone-600 mb-8">
             Thank you for your purchase. Your order has been confirmed and will
             be processed shortly.
           </p>
-          <Card className="p-6 mb-8 text-left">
+          <Card className="p-6 mb-8 text-left rounded-2xl border border-stone-100">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold text-gray-900">
+              <h2 className="text-xl font-semibold text-stone-800">
                 Order Details
               </h2>
-              <span className="text-sm font-mono bg-gray-100 px-3 py-1 rounded">
+              <span className="text-sm font-mono bg-stone-100 px-3 py-1 rounded">
                 #{orderNumber}
               </span>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <h3 className="font-medium text-gray-900 mb-3">
+                <h3 className="font-medium text-stone-800 mb-3">
                   Order Information
                 </h3>
-                <div className="space-y-2 text-sm text-gray-600">
+                <div className="space-y-2 text-sm text-stone-600">
                   <div className="flex justify-between">
                     <span>Order Number:</span>
                     <span className="font-mono">#{orderNumber}</span>
@@ -75,10 +75,10 @@ export default function OrderSuccessPage() {
                 </div>
               </div>
               <div>
-                <h3 className="font-medium text-gray-900 mb-3">
+                <h3 className="font-medium text-stone-800 mb-3">
                   Delivery Information
                 </h3>
-                <div className="space-y-2 text-sm text-gray-600">
+                <div className="space-y-2 text-sm text-stone-600">
                   <div className="flex justify-between">
                     <span>Estimated Delivery:</span>
                     <span>
@@ -93,14 +93,14 @@ export default function OrderSuccessPage() {
                   </div>
                   <div className="flex justify-between">
                     <span>Tracking:</span>
-                    <span className="text-orange-600">Available Soon</span>
+                    <span className="text-emerald-600">Available Soon</span>
                   </div>
                 </div>
               </div>
             </div>
           </Card>
-          <Card className="p-6 mb-8">
-            <h3 className="text-lg font-semibold text-gray-900 mb-6">
+          <Card className="p-6 mb-8 rounded-2xl border border-stone-100">
+            <h3 className="text-lg font-semibold text-stone-800 mb-6">
               Order Status
             </h3>
             <div className="flex items-center justify-between">
@@ -134,10 +134,10 @@ export default function OrderSuccessPage() {
                   <div
                     className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 ${
                       status === "completed"
-                        ? "bg-green-500 text-white"
+                        ? "bg-emerald-500 text-white"
                         : status === "current"
-                        ? "bg-orange-500 text-white"
-                        : "bg-gray-200 text-gray-400"
+                        ? "bg-stone-800 text-white"
+                        : "bg-stone-200 text-stone-400"
                     }`}
                   >
                     <Icon className="w-6 h-6" />
@@ -145,17 +145,19 @@ export default function OrderSuccessPage() {
                   <span
                     className={`text-sm font-medium ${
                       status === "completed" || status === "current"
-                        ? "text-gray-900"
-                        : "text-gray-400"
+                        ? "text-stone-800"
+                        : "text-stone-400"
                     }`}
                   >
                     {label}
                   </span>
-                  <span className="text-xs text-gray-500 mt-1">{time}</span>
+                  <span className="text-xs text-stone-500 mt-1">{time}</span>
                   {index < 3 && (
                     <div
                       className={`absolute h-1 w-16 mt-6 ${
-                        status === "completed" ? "bg-green-500" : "bg-gray-200"
+                        status === "completed"
+                          ? "bg-emerald-500"
+                          : "bg-stone-200"
                       }`}
                       style={{ left: `${index * 25 + 12.5}%`, width: "25%" }}
                     />
@@ -168,9 +170,9 @@ export default function OrderSuccessPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4 }}
-            className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8"
+            className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-8"
           >
-            <div className="flex items-center justify-center space-x-2 text-blue-700">
+            <div className="flex items-center justify-center space-x-2 text-amber-700">
               <Mail className="w-5 h-5" />
               <span className="text-sm">
                 A confirmation email has been sent to your email address
@@ -185,7 +187,7 @@ export default function OrderSuccessPage() {
               </Button>
             </Link>
             <Button
-              className="w-full sm:w-auto bg-orange-500 hover:bg-orange-600"
+              className="w-full sm:w-auto bg-stone-800 hover:bg-stone-900"
               onClick={() => window.print()}
             >
               <Download className="w-4 h-4 mr-2" />
@@ -193,10 +195,10 @@ export default function OrderSuccessPage() {
             </Button>
           </div>
           <div className="mt-12 text-center">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">
+            <h3 className="text-lg font-medium text-stone-800 mb-4">
               Need Help?
             </h3>
-            <p className="text-gray-600 mb-4">
+            <p className="text-stone-600 mb-4">
               If you have any questions about your order, please don&apos;t
               hesitate to contact us.
             </p>

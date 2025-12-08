@@ -48,8 +48,11 @@ export default function ContactPage() {
       icon: Mail,
       title: "Email Us",
       description: "Send us an email anytime",
-      details: "support@monocart.com",
-      action: "mailto:support@monocart.com",
+      details: "support@fleetingcommerce.com",
+      action: "mailto:support@fleetingcommerce.com",
+      gradient: "from-rose-50 to-pink-50",
+      iconBg: "bg-rose-100",
+      iconColor: "text-rose-600",
     },
     {
       icon: Phone,
@@ -57,20 +60,29 @@ export default function ContactPage() {
       description: "Mon-Fri from 8am to 5pm",
       details: "+880 1700-000000",
       action: "tel:+8801700000000",
+      gradient: "from-emerald-50 to-teal-50",
+      iconBg: "bg-emerald-100",
+      iconColor: "text-emerald-600",
     },
     {
       icon: MapPin,
       title: "Visit Us",
       description: "Come say hello at our office",
-      details: "123 Commerce Street, Dhaka, Bangladesh",
+      details: "123 Commerce Street, Dhaka",
       action: "#",
+      gradient: "from-amber-50 to-orange-50",
+      iconBg: "bg-amber-100",
+      iconColor: "text-amber-600",
     },
     {
       icon: Clock,
       title: "Business Hours",
       description: "We're here to help",
-      details: "Mon-Fri: 8AM-5PM, Sat: 9AM-2PM",
+      details: "Mon-Fri: 8AM-5PM",
       action: "#",
+      gradient: "from-purple-50 to-violet-50",
+      iconBg: "bg-purple-100",
+      iconColor: "text-purple-600",
     },
   ];
   const supportOptions = [
@@ -128,19 +140,29 @@ export default function ContactPage() {
     },
   ];
   return (
-    <div className="min-h-screen bg-gray-50">
-      <section className="bg-gradient-to-r from-orange-50 to-orange-100 py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-stone-50">
+      <section className="relative py-24 bg-gradient-to-br from-stone-50 via-amber-50/30 to-stone-100 overflow-hidden">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-emerald-100/40 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-10 right-20 w-96 h-96 bg-purple-100/30 rounded-full blur-3xl"></div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             className="text-center"
           >
-            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
-              Contact <span className="text-orange-500">Us</span>
+            <motion.p
+              className="text-sm font-medium text-stone-500 uppercase tracking-wider mb-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2 }}
+            >
+              Get In Touch
+            </motion.p>
+            <h1 className="text-4xl md:text-6xl font-light text-stone-800 mb-6">
+              Contact <span className="font-semibold">Us</span>
             </h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-lg text-stone-500 max-w-3xl mx-auto leading-relaxed font-light">
               We&apos;re here to help! Reach out to us for any questions,
               support, or feedback. Our team is ready to assist you with your
               shopping experience.
@@ -148,49 +170,60 @@ export default function ContactPage() {
           </motion.div>
         </div>
       </section>
-      <section className="py-16 bg-white">
+      <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {contactInfo.map((info, index) => (
               <motion.div
                 key={info.title}
                 initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                viewport={{ once: true }}
               >
-                <Card className="p-6 text-center hover:shadow-lg transition-shadow h-full">
-                  <div className="inline-flex items-center justify-center w-12 h-12 bg-orange-100 rounded-lg mb-4">
-                    <info.icon className="w-6 h-6 text-orange-500" />
+                <Card
+                  className={`p-6 text-center border-0 shadow-sm hover:shadow-lg transition-all duration-300 h-full bg-gradient-to-br ${info.gradient} rounded-2xl`}
+                >
+                  <div
+                    className={`inline-flex items-center justify-center w-12 h-12 ${info.iconBg} rounded-xl mb-4`}
+                  >
+                    <info.icon className={`w-6 h-6 ${info.iconColor}`} />
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  <h3 className="text-lg font-semibold text-stone-800 mb-2">
                     {info.title}
                   </h3>
-                  <p className="text-gray-600 mb-3 text-sm">
+                  <p className="text-stone-500 mb-3 text-sm font-light">
                     {info.description}
                   </p>
-                  <p className="text-gray-900 font-medium">{info.details}</p>
+                  <p className="text-stone-700 font-medium">{info.details}</p>
                 </Card>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
-      <section className="py-16 bg-gray-50">
+      <section className="py-20 bg-stone-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             <motion.div
               initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
+              whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6 }}
+              viewport={{ once: true }}
             >
-              <Card className="p-8">
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">
-                  Send us a Message
+              <Card className="p-8 border-0 shadow-sm rounded-3xl bg-white">
+                <h2 className="text-2xl font-light text-stone-800 mb-2">
+                  Send us a <span className="font-semibold">Message</span>
                 </h2>
+                <p className="text-stone-500 font-light mb-8">
+                  Fill out the form and we&apos;ll get back to you shortly
+                </p>
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="name">Full Name</Label>
+                      <Label htmlFor="name" className="text-stone-600">
+                        Full Name
+                      </Label>
                       <Input
                         id="name"
                         name="name"
@@ -198,12 +231,14 @@ export default function ContactPage() {
                         required
                         value={formData.name}
                         onChange={handleChange}
-                        className="mt-1"
+                        className="mt-2 rounded-xl border-stone-200 focus:ring-stone-400"
                         placeholder="Your full name"
                       />
                     </div>
                     <div>
-                      <Label htmlFor="email">Email Address</Label>
+                      <Label htmlFor="email" className="text-stone-600">
+                        Email Address
+                      </Label>
                       <Input
                         id="email"
                         name="email"
@@ -211,13 +246,15 @@ export default function ContactPage() {
                         required
                         value={formData.email}
                         onChange={handleChange}
-                        className="mt-1"
+                        className="mt-2 rounded-xl border-stone-200 focus:ring-stone-400"
                         placeholder="your.email@example.com"
                       />
                     </div>
                   </div>
                   <div>
-                    <Label htmlFor="subject">Subject</Label>
+                    <Label htmlFor="subject" className="text-stone-600">
+                      Subject
+                    </Label>
                     <Input
                       id="subject"
                       name="subject"
@@ -225,12 +262,14 @@ export default function ContactPage() {
                       required
                       value={formData.subject}
                       onChange={handleChange}
-                      className="mt-1"
+                      className="mt-2 rounded-xl border-stone-200 focus:ring-stone-400"
                       placeholder="What is this about?"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="message">Message</Label>
+                    <Label htmlFor="message" className="text-stone-600">
+                      Message
+                    </Label>
                     <textarea
                       id="message"
                       name="message"
@@ -238,14 +277,14 @@ export default function ContactPage() {
                       value={formData.message}
                       onChange={handleChange}
                       rows={6}
-                      className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                      className="mt-2 w-full px-4 py-3 border border-stone-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-stone-400 focus:border-transparent text-stone-800"
                       placeholder="Tell us more about your inquiry..."
                     ></textarea>
                   </div>
                   <Button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full bg-orange-500 hover:bg-orange-600 text-white"
+                    className="w-full bg-stone-800 hover:bg-stone-900 text-white rounded-full py-6 font-medium transition-all duration-300"
                   >
                     {isSubmitting ? (
                       <>
@@ -264,34 +303,35 @@ export default function ContactPage() {
             </motion.div>
             <motion.div
               initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
+              whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="space-y-6"
+              viewport={{ once: true }}
+              className="space-y-8"
             >
               <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">
-                  Other Ways to Reach Us
+                <h2 className="text-xl font-light text-stone-800 mb-6">
+                  Other Ways to <span className="font-semibold">Reach Us</span>
                 </h2>
                 <div className="space-y-4">
-                  {supportOptions.map((option, index) => (
+                  {supportOptions.map((option) => (
                     <Card
                       key={option.title}
-                      className="p-4 hover:shadow-md transition-shadow"
+                      className="p-4 border-0 shadow-sm hover:shadow-md transition-all duration-300 rounded-2xl bg-white"
                     >
                       <div className="flex items-center space-x-4">
-                        <div className="inline-flex items-center justify-center w-10 h-10 bg-orange-100 rounded-lg">
-                          <option.icon className="w-5 h-5 text-orange-500" />
+                        <div className="inline-flex items-center justify-center w-10 h-10 bg-stone-100 rounded-xl">
+                          <option.icon className="w-5 h-5 text-stone-600" />
                         </div>
                         <div className="flex-1">
-                          <h3 className="font-semibold text-gray-900">
+                          <h3 className="font-medium text-stone-800">
                             {option.title}
                           </h3>
-                          <p className="text-gray-600 text-sm">
+                          <p className="text-stone-500 text-sm font-light">
                             {option.description}
                           </p>
                         </div>
                         <div className="flex items-center">
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700">
                             Available
                           </span>
                         </div>
@@ -301,18 +341,19 @@ export default function ContactPage() {
                 </div>
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                  Follow Us
+                <h3 className="text-lg font-light text-stone-800 mb-4">
+                  Follow <span className="font-semibold">Us</span>
                 </h3>
-                <div className="flex space-x-4">
+                <div className="flex space-x-3">
                   {socialLinks.map((social) => (
                     <motion.a
                       key={social.name}
                       href={social.url}
-                      whileHover={{ scale: 1.1 }}
-                      className="inline-flex items-center justify-center w-10 h-10 bg-orange-100 rounded-lg hover:bg-orange-200 transition-colors"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="inline-flex items-center justify-center w-12 h-12 bg-stone-100 rounded-xl hover:bg-stone-200 transition-colors"
                     >
-                      <social.icon className="w-5 h-5 text-orange-500" />
+                      <social.icon className="w-5 h-5 text-stone-600" />
                     </motion.a>
                   ))}
                 </div>
@@ -321,65 +362,75 @@ export default function ContactPage() {
           </div>
         </div>
       </section>
-      <section className="py-16 bg-white">
+      <section className="py-20 bg-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
             className="text-center mb-12"
           >
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Frequently Asked Questions
+            <p className="text-sm font-medium text-stone-500 uppercase tracking-wider mb-3">
+              Common Questions
+            </p>
+            <h2 className="text-3xl font-light text-stone-800 mb-4">
+              Frequently Asked <span className="font-semibold">Questions</span>
             </h2>
-            <p className="text-gray-600">
+            <p className="text-stone-500 font-light">
               Quick answers to common questions. Can&apos;t find what
               you&apos;re looking for? Contact us directly.
             </p>
           </motion.div>
-          <div className="space-y-6">
+          <div className="space-y-4">
             {faqs.map((faq, index) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                viewport={{ once: true }}
               >
-                <Card className="p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                <Card className="p-6 border-0 shadow-sm rounded-2xl bg-gradient-to-br from-stone-50 to-white">
+                  <h3 className="text-lg font-medium text-stone-800 mb-3">
                     {faq.question}
                   </h3>
-                  <p className="text-gray-600">{faq.answer}</p>
+                  <p className="text-stone-500 font-light">{faq.answer}</p>
                 </Card>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
-      <section className="py-16 bg-gray-50">
+      <section className="py-20 bg-stone-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
             className="text-center mb-8"
           >
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Find Us</h2>
-            <p className="text-gray-600">
+            <h2 className="text-3xl font-light text-stone-800 mb-4">
+              Find <span className="font-semibold">Us</span>
+            </h2>
+            <p className="text-stone-500 font-light">
               Visit our office or find us on the map
             </p>
           </motion.div>
-          <Card className="overflow-hidden">
-            <div className="bg-gray-200 h-96 flex items-center justify-center">
+          <Card className="overflow-hidden border-0 shadow-sm rounded-3xl">
+            <div className="bg-gradient-to-br from-stone-100 to-amber-50/50 h-96 flex items-center justify-center">
               <div className="text-center">
-                <MapPin className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-600 mb-2">
-                  Interactive Map
+                <div className="w-16 h-16 bg-white rounded-2xl shadow-sm flex items-center justify-center mx-auto mb-6">
+                  <MapPin className="w-8 h-8 text-stone-500" />
+                </div>
+                <h3 className="text-lg font-semibold text-stone-800 mb-2">
+                  Our Location
                 </h3>
-                <p className="text-gray-500">
+                <p className="text-stone-500 font-light mb-6">
                   123 Commerce Street, Dhaka, Bangladesh
                 </p>
-                <Button className="mt-4 bg-orange-500 hover:bg-orange-600">
+                <Button className="bg-stone-800 hover:bg-stone-900 text-white rounded-full px-8">
                   Get Directions
                 </Button>
               </div>

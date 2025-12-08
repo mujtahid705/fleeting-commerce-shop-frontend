@@ -48,7 +48,7 @@ export default function TestPage() {
                   <Badge variant="secondary">Secondary</Badge>
                   <Badge variant="destructive">Destructive</Badge>
                 </div>
-                <div className="bg-gradient-to-r from-orange-500 to-yellow-500 p-4 rounded-lg">
+                <div className="bg-gradient-to-r from-cyan-500 to-teal-500 p-4 rounded-lg">
                   <p className="text-white font-semibold">
                     Gradient background test
                   </p>

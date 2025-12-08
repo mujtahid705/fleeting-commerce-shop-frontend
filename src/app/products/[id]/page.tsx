@@ -167,14 +167,14 @@ export default function ProductDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center text-gray-600">
+      <div className="min-h-screen bg-stone-50 flex items-center justify-center text-stone-600">
         Loading product...
       </div>
     );
   }
   if (error || !product) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center text-red-600">
+      <div className="min-h-screen bg-stone-50 flex items-center justify-center text-red-600">
         {error || "Product not found"}
       </div>
     );
@@ -187,10 +187,10 @@ export default function ProductDetailPage() {
     : ["/vercel.svg"];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-stone-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <motion.div
-          className="flex items-center space-x-2 text-gray-600 hover:text-orange-500 mb-8"
+          className="flex items-center space-x-2 text-stone-600 hover:text-stone-800 mb-8"
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           whileHover={{ x: -5 }}
@@ -222,8 +222,8 @@ export default function ProductDetailPage() {
                   key={index}
                   className={`aspect-square bg-white rounded-lg overflow-hidden border-2 transition-all ${
                     selectedImage === index
-                      ? "border-orange-500"
-                      : "border-gray-200"
+                      ? "border-stone-800"
+                      : "border-stone-200"
                   }`}
                   onClick={() => setSelectedImage(index)}
                   whileHover={{ scale: 1.05 }}
@@ -246,7 +246,7 @@ export default function ProductDetailPage() {
             transition={{ duration: 0.8, delay: 0.2 }}
           >
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              <h1 className="text-3xl font-bold text-stone-800 mb-2">
                 {product.title}
               </h1>
               <div className="flex items-center space-x-4 mb-4">
@@ -254,18 +254,18 @@ export default function ProductDetailPage() {
                   {[...Array(5)].map((_, i) => (
                     <Star
                       key={i}
-                      className="w-4 h-4 text-yellow-400 fill-current"
+                      className="w-4 h-4 text-amber-400 fill-current"
                     />
                   ))}
                 </div>
-                <span className="text-sm text-gray-600">(127 reviews)</span>
+                <span className="text-sm text-stone-600">(127 reviews)</span>
               </div>
               <div className="flex items-center space-x-4">
-                <span className="text-3xl font-bold text-gray-900">
+                <span className="text-3xl font-bold text-stone-800">
                   ৳ {product.price.toLocaleString()}
                 </span>
                 {false && (
-                  <span className="text-xl text-gray-500 line-through">
+                  <span className="text-xl text-stone-500 line-through">
                     ৳ {product?.price.toLocaleString()}
                   </span>
                 )}
@@ -282,8 +282,8 @@ export default function ProductDetailPage() {
                       key={size}
                       className={`w-12 h-12 border-2 rounded-lg transition-all ${
                         selectedSize === size
-                          ? "border-orange-500 bg-orange-50 text-orange-600"
-                          : "border-gray-300 hover:border-gray-400"
+                          ? "border-stone-800 bg-stone-100 text-stone-800"
+                          : "border-stone-300 hover:border-stone-400"
                       }`}
                       onClick={() => setSelectedSize(size)}
                       whileHover={{ scale: 1.05 }}
@@ -303,8 +303,8 @@ export default function ProductDetailPage() {
                       key={color}
                       className={`px-4 py-2 border-2 rounded-lg transition-all ${
                         selectedColor === color
-                          ? "border-orange-500 bg-orange-50 text-orange-600"
-                          : "border-gray-300 hover:border-gray-400"
+                          ? "border-stone-800 bg-stone-100 text-stone-800"
+                          : "border-stone-300 hover:border-stone-400"
                       }`}
                       onClick={() => setSelectedColor(color)}
                       whileHover={{ scale: 1.05 }}
@@ -320,7 +320,7 @@ export default function ProductDetailPage() {
                 <h3 className="font-semibold mb-3">Quantity</h3>
                 <div className="flex items-center space-x-3">
                   <motion.button
-                    className="w-10 h-10 border border-gray-300 rounded-lg flex items-center justify-center hover:border-gray-400"
+                    className="w-10 h-10 border border-stone-300 rounded-lg flex items-center justify-center hover:border-stone-400"
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
@@ -331,7 +331,7 @@ export default function ProductDetailPage() {
                     {quantity}
                   </span>
                   <motion.button
-                    className="w-10 h-10 border border-gray-300 rounded-lg flex items-center justify-center hover:border-gray-400"
+                    className="w-10 h-10 border border-stone-300 rounded-lg flex items-center justify-center hover:border-stone-400"
                     onClick={() => setQuantity(quantity + 1)}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
@@ -349,7 +349,7 @@ export default function ProductDetailPage() {
                 whileTap={{ scale: 0.98 }}
               >
                 <Button
-                  className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3"
+                  className="w-full bg-stone-800 hover:bg-stone-900 text-white py-3"
                   onClick={handleAddToCart}
                   disabled={isAddingToCart || product.stock === 0}
                 >
@@ -384,21 +384,23 @@ export default function ProductDetailPage() {
               </motion.div>
             </div>
 
-            <div className="grid grid-cols-3 gap-4 py-6 border-t border-gray-200">
+            <div className="grid grid-cols-3 gap-4 py-6 border-t border-stone-200">
               {[
                 { icon: Truck, text: "Free Delivery" },
                 { icon: Shield, text: "Secure Payment" },
                 { icon: RotateCcw, text: "Easy Return" },
               ].map((item, index) => (
                 <div key={index} className="text-center">
-                  <item.icon className="w-6 h-6 mx-auto mb-2 text-orange-500" />
-                  <span className="text-sm text-gray-600">{item.text}</span>
+                  <item.icon className="w-6 h-6 mx-auto mb-2 text-stone-700" />
+                  <span className="text-sm text-stone-600">{item.text}</span>
                 </div>
               ))}
             </div>
 
-            <div className="bg-gray-50 rounded-lg p-6">
-              <h3 className="font-semibold mb-4">Product Details</h3>
+            <div className="bg-stone-100 rounded-xl p-6">
+              <h3 className="font-semibold text-stone-800 mb-4">
+                Product Details
+              </h3>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="font-medium">Brand</span>
@@ -429,9 +431,9 @@ export default function ProductDetailPage() {
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
         >
-          <div className="bg-white rounded-lg p-6">
-            <h3 className="font-semibold mb-4">Description</h3>
-            <p className="text-sm text-gray-700 whitespace-pre-line">
+          <div className="bg-white rounded-xl p-6 border border-stone-100">
+            <h3 className="font-semibold text-stone-800 mb-4">Description</h3>
+            <p className="text-sm text-stone-700 whitespace-pre-line">
               {product.description}
             </p>
           </div>
@@ -444,7 +446,7 @@ export default function ProductDetailPage() {
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
         >
-          <h2 className="text-2xl font-bold text-gray-900 mb-8">
+          <h2 className="text-2xl font-bold text-stone-800 mb-8">
             Related Products
           </h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6">
@@ -472,7 +474,7 @@ export default function ProductDetailPage() {
               </motion.div>
             ))}
             {relatedLoading && (
-              <div className="col-span-full text-center text-sm text-gray-500">
+              <div className="col-span-full text-center text-sm text-stone-500">
                 Loading related products...
               </div>
             )}

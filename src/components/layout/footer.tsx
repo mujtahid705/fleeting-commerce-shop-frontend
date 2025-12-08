@@ -9,7 +9,6 @@ import {
   Phone,
   MapPin,
 } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 export function Footer() {
@@ -19,31 +18,27 @@ export function Footer() {
   }, []);
   return (
     <motion.footer
-      className="bg-gray-900 text-white"
+      className="bg-stone-900 text-white"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.6 }}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
           <div className="col-span-1 md:col-span-1">
             <motion.div
-              className="flex items-center space-x-2 mb-4"
-              whileHover={{ scale: 1.05 }}
+              className="flex items-center space-x-2 mb-6"
+              whileHover={{ scale: 1.02 }}
             >
               <Link href="/">
-                <Image
-                  src="/monocart-logo2.png"
-                  alt="Monocart"
-                  width={150}
-                  height={0}
-                  style={{ height: "auto" }}
-                />
+                <div className="text-2xl font-light text-white">
+                  Fleeting <span className="font-semibold">Commerce</span>
+                </div>
               </Link>
             </motion.div>
-            <p className="text-gray-300 mb-4">
-              Discover the latest trends in fashion with our exclusive Monocart
-              collection designed for the modern lifestyle.
+            <p className="text-stone-400 mb-6 font-light leading-relaxed">
+              Discover timeless pieces and modern essentials curated for the
+              conscious lifestyle.
             </p>
             <div className="flex space-x-4">
               {[
@@ -55,18 +50,20 @@ export function Footer() {
                 <motion.a
                   key={index}
                   href={href}
-                  className="text-gray-400 hover:text-orange-500 transition-colors"
-                  whileHover={{ scale: 1.2 }}
-                  whileTap={{ scale: 0.9 }}
+                  className="w-10 h-10 bg-stone-800 rounded-full flex items-center justify-center text-stone-400 hover:bg-stone-700 hover:text-white transition-all duration-300"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
                 >
-                  <Icon className="w-5 h-5" />
+                  <Icon className="w-4 h-4" />
                 </motion.a>
               ))}
             </div>
           </div>
           <div>
-            <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
-            <ul className="space-y-2">
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-stone-300 mb-5">
+              Quick Links
+            </h3>
+            <ul className="space-y-3">
               {[
                 { name: "Home", href: "/" },
                 { name: "Shop", href: "/products" },
@@ -76,7 +73,7 @@ export function Footer() {
                 <li key={item.name}>
                   <Link
                     href={item.href}
-                    className="text-gray-300 hover:text-orange-500 transition-colors"
+                    className="text-stone-400 hover:text-white transition-colors font-light"
                   >
                     {item.name}
                   </Link>
@@ -85,8 +82,10 @@ export function Footer() {
             </ul>
           </div>
           <div>
-            <h3 className="text-lg font-semibold mb-4">Categories</h3>
-            <ul className="space-y-2">
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-stone-300 mb-5">
+              Categories
+            </h3>
+            <ul className="space-y-3">
               {[
                 "Women's Fashion",
                 "Men's Fashion",
@@ -101,7 +100,7 @@ export function Footer() {
                       .toLowerCase()
                       .replace("'s", "")
                       .replace(" ", "-")}`}
-                    className="text-gray-300 hover:text-orange-500 transition-colors"
+                    className="text-stone-400 hover:text-white transition-colors font-light"
                   >
                     {category}
                   </Link>
@@ -110,23 +109,47 @@ export function Footer() {
             </ul>
           </div>
           <div>
-            <h3 className="text-lg font-semibold mb-4">Contact Info</h3>
-            <div className="space-y-3">
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-stone-300 mb-5">
+              Get in Touch
+            </h3>
+            <div className="space-y-4">
               {[
-                { Icon: Mail, text: "info@monocart.com" },
+                { Icon: Mail, text: "hello@fleetingcommerce.com" },
                 { Icon: Phone, text: "+1 (555) 123-4567" },
-                { Icon: MapPin, text: "123 Fashion St, Style City, SC 12345" },
+                { Icon: MapPin, text: "123 Fashion St, Style City" },
               ].map(({ Icon, text }, index) => (
-                <div key={index} className="flex items-center space-x-2">
-                  <Icon className="w-4 h-4 text-orange-500" />
-                  <span className="text-gray-300 text-sm">{text}</span>
+                <div key={index} className="flex items-center space-x-3">
+                  <div className="w-8 h-8 bg-stone-800 rounded-lg flex items-center justify-center">
+                    <Icon className="w-4 h-4 text-stone-400" />
+                  </div>
+                  <span className="text-stone-400 text-sm font-light">
+                    {text}
+                  </span>
                 </div>
               ))}
             </div>
           </div>
         </div>
-        <div className="border-t border-gray-800 mt-8 pt-8 text-center">
-          <p className="text-gray-400">© 2025 Monocart. All rights reserved.</p>
+        <div className="border-t border-stone-800 mt-12 pt-8">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-stone-500 text-sm font-light">
+              © 2025 Fleeting Commerce. All rights reserved.
+            </p>
+            <div className="flex gap-6">
+              <Link
+                href="#"
+                className="text-stone-500 hover:text-stone-300 text-sm font-light transition-colors"
+              >
+                Privacy Policy
+              </Link>
+              <Link
+                href="#"
+                className="text-stone-500 hover:text-stone-300 text-sm font-light transition-colors"
+              >
+                Terms of Service
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
     </motion.footer>
