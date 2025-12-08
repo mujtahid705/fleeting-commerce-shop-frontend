@@ -137,18 +137,18 @@ export default function ProfilePage() {
   };
   if (!isLoggedIn) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-stone-50">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+          <h2 className="text-2xl font-bold text-stone-800 mb-2">
             Access Denied
           </h2>
-          <p className="text-gray-600">Please log in to view your profile.</p>
+          <p className="text-stone-600">Please log in to view your profile.</p>
         </div>
       </div>
     );
   }
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-stone-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -156,36 +156,36 @@ export default function ProfilePage() {
           transition={{ duration: 0.6 }}
           className="mb-8"
         >
-          <Card className="p-6">
+          <Card className="p-6 rounded-2xl border border-stone-100 shadow-sm">
             <div className="flex items-center space-x-6">
-              <div className="w-24 h-24 bg-orange-100 rounded-full flex items-center justify-center">
-                <User className="w-12 h-12 text-orange-500" />
+              <div className="w-24 h-24 bg-gradient-to-br from-stone-200 to-amber-100 rounded-full flex items-center justify-center">
+                <User className="w-12 h-12 text-stone-700" />
               </div>
               <div className="flex-1">
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                <h1 className="text-3xl font-bold text-stone-800 mb-2">
                   {userData.name}
                 </h1>
                 <div className="space-y-2">
-                  <div className="flex items-center text-gray-600">
+                  <div className="flex items-center text-stone-600">
                     <Mail className="w-4 h-4 mr-2" />
                     {userData.email}
                   </div>
-                  <div className="flex items-center text-gray-600">
+                  <div className="flex items-center text-stone-600">
                     <Phone className="w-4 h-4 mr-2" />
                     {userData.phone || "No phone number provided"}
                   </div>
-                  <div className="flex items-center text-gray-600">
+                  <div className="flex items-center text-stone-600">
                     <Calendar className="w-4 h-4 mr-2" />
                     Member since August 2025
                   </div>
                 </div>
               </div>
               <div className="text-right">
-                <Badge className="bg-orange-100 text-orange-800 mb-2">
+                <Badge className="bg-emerald-100 text-emerald-700 mb-2">
                   {userData.role.charAt(0).toUpperCase() +
                     userData.role.slice(1)}
                 </Badge>
-                <div className="text-sm text-gray-500">
+                <div className="text-sm text-stone-500">
                   Total Orders: {orders.length}
                 </div>
               </div>
@@ -198,45 +198,45 @@ export default function ProfilePage() {
           transition={{ duration: 0.6, delay: 0.2 }}
         >
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 flex items-center">
-              <Package className="w-6 h-6 mr-2 text-orange-500" />
+            <h2 className="text-2xl font-bold text-stone-800 flex items-center">
+              <Package className="w-6 h-6 mr-2 text-stone-700" />
               Order History
             </h2>
-            <div className="text-sm text-gray-500">
+            <div className="text-sm text-stone-500">
               {orders.length} {orders.length === 1 ? "order" : "orders"} found
             </div>
           </div>
           {loading.fetchOrders ? (
-            <Card className="p-12 text-center">
-              <div className="animate-spin w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-              <p className="text-gray-500">Loading your orders...</p>
+            <Card className="p-12 text-center rounded-2xl border border-stone-100">
+              <div className="animate-spin w-8 h-8 border-4 border-stone-800 border-t-transparent rounded-full mx-auto mb-4"></div>
+              <p className="text-stone-500">Loading your orders...</p>
             </Card>
           ) : error.fetchOrders ? (
-            <Card className="p-12 text-center">
+            <Card className="p-12 text-center rounded-2xl border border-stone-100">
               <Package className="w-16 h-16 text-red-300 mx-auto mb-4" />
-              <h3 className="text-xl font-medium text-gray-900 mb-2">
+              <h3 className="text-xl font-medium text-stone-800 mb-2">
                 Error loading orders
               </h3>
               <p className="text-red-500 mb-6">{error.fetchOrders}</p>
               <Button
                 onClick={() => dispatch(fetchUserOrders(userData.id))}
-                className="bg-orange-500 hover:bg-orange-600"
+                className="bg-stone-800 hover:bg-stone-900"
               >
                 Try Again
               </Button>
             </Card>
           ) : orders.length === 0 ? (
-            <Card className="p-12 text-center">
-              <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-xl font-medium text-gray-900 mb-2">
+            <Card className="p-12 text-center rounded-2xl border border-stone-100">
+              <Package className="w-16 h-16 text-stone-300 mx-auto mb-4" />
+              <h3 className="text-xl font-medium text-stone-800 mb-2">
                 No orders yet
               </h3>
-              <p className="text-gray-500 mb-6">
+              <p className="text-stone-500 mb-6">
                 Start shopping to see your orders here
               </p>
               <Button
                 onClick={() => router.push("/products")}
-                className="bg-orange-500 hover:bg-orange-600"
+                className="bg-stone-800 hover:bg-stone-900"
               >
                 Start Shopping
               </Button>
@@ -250,11 +250,11 @@ export default function ProfilePage() {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.4 }}
                 >
-                  <Card className="p-6 hover:shadow-lg transition-shadow">
+                  <Card className="p-6 hover:shadow-lg transition-shadow rounded-2xl border border-stone-100">
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
                         <div className="flex items-center space-x-4 mb-3">
-                          <h3 className="text-lg font-semibold text-gray-900">
+                          <h3 className="text-lg font-semibold text-stone-800">
                             Order #{order.id}
                           </h3>
                           <Badge
@@ -265,7 +265,7 @@ export default function ProfilePage() {
                             {formatStatus(order.status)}
                           </Badge>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-stone-600">
                           <div className="flex items-center">
                             <Calendar className="w-4 h-4 mr-2" />
                             {formatDate(order.createdAt)}
@@ -284,7 +284,7 @@ export default function ProfilePage() {
                         </div>
                         <div className="mt-4">
                           <div className="flex items-center space-x-2 mb-2">
-                            <span className="text-sm font-medium text-gray-700">
+                            <span className="text-sm font-medium text-stone-700">
                               Products:
                             </span>
                           </div>
@@ -294,16 +294,16 @@ export default function ProfilePage() {
                                 key={item.id}
                                 className="flex items-center space-x-2 min-w-0 flex-shrink-0"
                               >
-                                <div className="w-10 h-10 bg-gray-100 rounded overflow-hidden">
-                                  <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                                    <Package className="w-4 h-4 text-gray-400" />
+                                <div className="w-10 h-10 bg-stone-100 rounded overflow-hidden">
+                                  <div className="w-full h-full bg-stone-200 flex items-center justify-center">
+                                    <Package className="w-4 h-4 text-stone-400" />
                                   </div>
                                 </div>
                                 <div className="min-w-0">
-                                  <p className="text-sm font-medium text-gray-900 truncate">
+                                  <p className="text-sm font-medium text-stone-800 truncate">
                                     {item.product.title}
                                   </p>
-                                  <p className="text-xs text-gray-500">
+                                  <p className="text-xs text-stone-500">
                                     Qty: {item.quantity} × ৳{item.unitPrice}
                                   </p>
                                 </div>
@@ -313,7 +313,7 @@ export default function ProfilePage() {
                         </div>
                       </div>
                       <div className="text-right ml-6">
-                        <div className="text-2xl font-bold text-gray-900 mb-3">
+                        <div className="text-2xl font-bold text-stone-800 mb-3">
                           ৳{calculateOrderTotal(order.order_items).toFixed(2)}
                         </div>
                         <div className="space-y-2">
@@ -365,17 +365,17 @@ export default function ProfilePage() {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+            className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-stone-100 shadow-xl"
           >
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-bold text-gray-900">
+                <h3 className="text-xl font-bold text-stone-800">
                   Order Details - #{selectedOrder.id}
                 </h3>
                 <Button
                   variant="ghost"
                   onClick={handleCloseOrderModal}
-                  className="text-gray-500 hover:text-gray-700"
+                  className="text-stone-500 hover:text-stone-700"
                 >
                   <X className="w-5 h-5" />
                 </Button>
@@ -391,56 +391,56 @@ export default function ProfilePage() {
               </div>
               <div className="grid grid-cols-1 gap-6 mb-6">
                 <div>
-                  <h4 className="font-semibold text-gray-900 mb-2">
+                  <h4 className="font-semibold text-stone-800 mb-2">
                     Order Information
                   </h4>
                   <div className="space-y-2 text-sm">
                     <div>
-                      <span className="text-gray-500">Order ID:</span> #
+                      <span className="text-stone-500">Order ID:</span> #
                       {selectedOrder.id}
                     </div>
                     <div>
-                      <span className="text-gray-500">Date:</span>{" "}
+                      <span className="text-stone-500">Date:</span>{" "}
                       {formatDate(selectedOrder.createdAt)}
                     </div>
                     <div>
-                      <span className="text-gray-500">Payment Method:</span>{" "}
+                      <span className="text-stone-500">Payment Method:</span>{" "}
                       Credit Card
                     </div>
                     <div>
-                      <span className="text-gray-500">Customer:</span>{" "}
+                      <span className="text-stone-500">Customer:</span>{" "}
                       {selectedOrder.user.name} ({selectedOrder.user.email})
                     </div>
                   </div>
                 </div>
               </div>
               <div className="mb-6">
-                <h4 className="font-semibold text-gray-900 mb-4">Products</h4>
+                <h4 className="font-semibold text-stone-800 mb-4">Products</h4>
                 <div className="space-y-4">
                   {selectedOrder.order_items.map((item) => (
                     <div
                       key={item.id}
-                      className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg"
+                      className="flex items-center space-x-4 p-4 bg-stone-50 rounded-xl"
                     >
-                      <div className="w-16 h-16 bg-white rounded overflow-hidden flex items-center justify-center">
-                        <Package className="w-8 h-8 text-gray-400" />
+                      <div className="w-16 h-16 bg-white rounded-lg overflow-hidden flex items-center justify-center border border-stone-100">
+                        <Package className="w-8 h-8 text-stone-400" />
                       </div>
                       <div className="flex-1">
-                        <h5 className="font-medium text-gray-900">
+                        <h5 className="font-medium text-stone-800">
                           {item.product.title}
                         </h5>
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-stone-500">
                           Quantity: {item.quantity}
                         </p>
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-stone-500">
                           Brand: {item.product.brand}
                         </p>
                       </div>
                       <div className="text-right">
-                        <div className="font-semibold text-gray-900">
+                        <div className="font-semibold text-stone-800">
                           ৳{(item.unitPrice * item.quantity).toFixed(2)}
                         </div>
-                        <div className="text-sm text-gray-500">
+                        <div className="text-sm text-stone-500">
                           ৳{item.unitPrice.toFixed(2)} each
                         </div>
                       </div>
@@ -448,18 +448,18 @@ export default function ProfilePage() {
                   ))}
                 </div>
               </div>
-              <div className="border-t pt-4">
+              <div className="border-t border-stone-200 pt-4">
                 <div className="flex justify-between items-center">
-                  <span className="text-lg font-semibold text-gray-900">
+                  <span className="text-lg font-semibold text-stone-800">
                     Total
                   </span>
-                  <span className="text-2xl font-bold text-gray-900">
+                  <span className="text-2xl font-bold text-stone-800">
                     ৳{calculateOrderTotal(selectedOrder.order_items).toFixed(2)}
                   </span>
                 </div>
               </div>
               {selectedOrder.status === "pending" && (
-                <div className="border-t mt-4 pt-4">
+                <div className="border-t border-stone-200 mt-4 pt-4">
                   <Button
                     variant="outline"
                     onClick={() => handleCancelOrder(selectedOrder.id)}

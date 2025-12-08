@@ -238,7 +238,7 @@ export default function OrdersPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-stone-800"></div>
       </div>
     );
   }
@@ -246,7 +246,7 @@ export default function OrdersPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-stone-800">
             Orders Management
           </h1>
           <p className="text-gray-600">Manage and track all customer orders</p>
@@ -523,7 +523,7 @@ export default function OrdersPage() {
                       <div className="flex-1">
                         <Link
                           href={`/products/${item.product.id}`}
-                          className="font-medium text-gray-900 hover:text-orange-600 cursor-pointer transition-colors duration-200"
+                          className="font-medium text-gray-900 hover:text-cyan-700 cursor-pointer transition-colors duration-200"
                           onClick={() => setIsDetailModalOpen(false)}
                         >
                           {item.product.title}
@@ -631,7 +631,7 @@ export default function OrdersPage() {
                     Cancel
                   </Button>
                   <Button
-                    className="flex-1 bg-orange-500 hover:bg-orange-600"
+                    className="flex-1 bg-cyan-500 hover:bg-cyan-600"
                     onClick={() =>
                       updateOrderStatus(selectedOrder.id, newStatus)
                     }

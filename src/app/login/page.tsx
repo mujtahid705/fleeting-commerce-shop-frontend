@@ -45,10 +45,10 @@ export default function LoginPage() {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-stone-50 to-amber-50/30 py-8">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
-          className="flex items-center space-x-2 text-gray-600 hover:text-orange-500 mb-8"
+          className="flex items-center space-x-2 text-stone-500 hover:text-stone-700 mb-8"
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           whileHover={{ x: -5 }}
@@ -65,7 +65,7 @@ export default function LoginPage() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <Card className="p-8 shadow-xl max-w-md mx-auto lg:mx-0">
+            <Card className="p-8 shadow-xl max-w-md mx-auto lg:mx-0 border-0 rounded-3xl">
               <motion.div
                 className="text-center mb-8"
                 initial={{ opacity: 0, y: 20 }}
@@ -73,18 +73,14 @@ export default function LoginPage() {
                 transition={{ delay: 0.2 }}
               >
                 <div className="flex items-center justify-center mb-4">
-                  <Image
-                    src="/monocart-logo.png"
-                    alt="Monocart"
-                    width={150}
-                    height={70}
-                    className="h-12 w-auto"
-                  />
+                  <div className="text-3xl font-light text-stone-800">
+                    Fleeting <span className="font-semibold">Commerce</span>
+                  </div>
                 </div>
-                <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                <h1 className="text-2xl font-light text-stone-800 mb-2">
                   Welcome Back
                 </h1>
-                <p className="text-gray-600">Sign in to your account</p>
+                <p className="text-stone-500 font-light">Sign in to your account</p>
               </motion.div>
               <motion.form
                 onSubmit={handleSubmit}
@@ -101,7 +97,7 @@ export default function LoginPage() {
                     placeholder="Enter your email"
                     value={formData.email}
                     onChange={(e) => handleInputChange("email", e.target.value)}
-                    className="h-12"
+                    className="h-12 rounded-xl border-stone-200 focus:ring-stone-400"
                     required
                   />
                 </div>
@@ -143,25 +139,25 @@ export default function LoginPage() {
                         handleInputChange("rememberMe", checked as boolean)
                       }
                     />
-                    <Label htmlFor="remember" className="text-sm text-gray-600">
+                    <Label htmlFor="remember" className="text-sm text-stone-500 font-light">
                       Remember me
                     </Label>
                   </div>
                   <motion.a
                     href="#"
-                    className="text-sm text-orange-500 hover:text-orange-600"
-                    whileHover={{ scale: 1.05 }}
+                    className="text-sm text-stone-600 hover:text-stone-800 font-medium"
+                    whileHover={{ scale: 1.02 }}
                   >
                     Forgot password?
                   </motion.a>
                 </div>
                 <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                  whileHover={{ scale: 1.01 }}
+                  whileTap={{ scale: 0.99 }}
                 >
                   <Button
                     type="submit"
-                    className="w-full h-12 bg-orange-500 hover:bg-orange-600 text-white"
+                    className="w-full h-12 bg-stone-800 hover:bg-stone-900 text-white rounded-full font-medium transition-all duration-300"
                   >
                     Sign In
                   </Button>
@@ -172,12 +168,12 @@ export default function LoginPage() {
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.5 }}
                 >
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-stone-500 font-light">
                     Don&apos;t have an account?{" "}
                     <Link href="/register">
                       <motion.span
-                        className="text-orange-500 hover:text-orange-600 font-medium cursor-pointer"
-                        whileHover={{ scale: 1.05 }}
+                        className="text-stone-700 hover:text-stone-900 font-medium cursor-pointer"
+                        whileHover={{ scale: 1.02 }}
                       >
                         Sign up
                       </motion.span>
@@ -193,10 +189,12 @@ export default function LoginPage() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
           >
-            <div className="bg-gradient-to-br from-orange-400 to-yellow-400 rounded-3xl p-8 h-[500px] flex items-center justify-center">
-              <div className="text-center text-white space-y-6">
+            <div className="bg-gradient-to-br from-stone-100 via-amber-50/50 to-stone-200 rounded-[2.5rem] p-8 h-[500px] flex items-center justify-center relative overflow-hidden">
+              <div className="absolute top-10 left-10 w-32 h-32 bg-emerald-100/50 rounded-full blur-2xl"></div>
+              <div className="absolute bottom-20 right-10 w-40 h-40 bg-purple-100/40 rounded-full blur-2xl"></div>
+              <div className="text-center space-y-6 relative z-10">
                 <motion.div
-                  className="w-48 h-48 mx-auto bg-white/20 rounded-full flex items-center justify-center"
+                  className="w-48 h-48 mx-auto bg-white/60 rounded-[2rem] flex items-center justify-center shadow-lg"
                   animate={{ y: [0, -10, 0] }}
                   transition={{
                     duration: 4,
@@ -207,17 +205,18 @@ export default function LoginPage() {
                   <ImageWithFallback
                     src="https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=150&h=150&fit=crop"
                     alt="Welcome Back"
-                    className="w-32 h-32 object-cover rounded-full"
+                    className="w-40 h-40 object-cover rounded-[1.5rem]"
                   />
                 </motion.div>
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.8 }}
+                  className="space-y-3"
                 >
-                  <h2 className="text-3xl font-bold mb-4">Welcome Back!</h2>
-                  <p className="text-lg opacity-90">
-                    Continue your shopping journey with Monocart
+                  <h2 className="text-3xl font-light text-stone-800">Welcome <span className="font-semibold">Back!</span></h2>
+                  <p className="text-stone-500 font-light max-w-xs mx-auto">
+                    Continue your shopping journey with Fleeting Commerce
                   </p>
                 </motion.div>
               </div>

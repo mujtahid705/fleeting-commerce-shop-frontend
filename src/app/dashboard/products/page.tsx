@@ -131,7 +131,7 @@ export default function ProductsPage() {
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div className="text-lg font-semibold text-gray-900">Products</div>
+        <div className="text-lg font-semibold text-stone-800">Products</div>
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <Input
             placeholder="Search by title, brand or slug"
@@ -139,11 +139,11 @@ export default function ProductsPage() {
             onChange={(e) => setQuery(e.target.value)}
             className="max-w-sm"
           />
-          <Button onClick={() => setIsModalOpen(true)}>Add Product</Button>
+          <Button onClick={() => setIsModalOpen(true)} className="bg-stone-800 hover:bg-stone-900">Add Product</Button>
         </div>
       </div>
-      <Card className="p-0 overflow-hidden">
-        <div className="grid grid-cols-12 px-4 py-2 text-xs font-medium text-gray-500 bg-gray-50">
+      <Card className="p-0 overflow-hidden rounded-xl border border-stone-100">
+        <div className="grid grid-cols-12 px-4 py-2 text-xs font-medium text-stone-500 bg-stone-50">
           <div className="col-span-5 sm:col-span-6">Product</div>
           <div className="col-span-3 sm:col-span-2">Price</div>
           <div className="col-span-2 sm:col-span-2">Stock</div>
@@ -151,19 +151,19 @@ export default function ProductsPage() {
         </div>
         <div>
           {loading ? (
-            <div className="p-6 text-sm text-gray-500">Loading products...</div>
+            <div className="p-6 text-sm text-stone-500">Loading products...</div>
           ) : error ? (
             <div className="p-6 text-sm text-red-600">{error}</div>
           ) : filtered.length === 0 ? (
-            <div className="p-6 text-sm text-gray-500">No products found.</div>
+            <div className="p-6 text-sm text-stone-500">No products found.</div>
           ) : (
             filtered.map((p) => {
               const img = p.images?.[0]?.url || "/vercel.svg";
               return (
                 <Link href={`/products/${p.id}`} key={p.id} className="block">
-                  <div className="grid grid-cols-12 items-center gap-3 px-4 py-3 border-t hover:bg-gray-50">
+                  <div className="grid grid-cols-12 items-center gap-3 px-4 py-3 border-t border-stone-100 hover:bg-stone-50">
                     <div className="col-span-5 sm:col-span-6 flex items-center gap-3 min-w-0">
-                      <div className="relative w-12 h-12 flex-shrink-0 overflow-hidden rounded-md border bg-white">
+                      <div className="relative w-12 h-12 flex-shrink-0 overflow-hidden rounded-lg border border-stone-100 bg-white">
                         <ImageWithFallback
                           src={img}
                           alt={p.title}
@@ -172,15 +172,15 @@ export default function ProductsPage() {
                         />
                       </div>
                       <div className="min-w-0">
-                        <div className="truncate font-medium text-gray-900">
+                        <div className="truncate font-medium text-stone-800">
                           {p.title}
                         </div>
-                        <div className="text-xs text-gray-500 truncate">
+                        <div className="text-xs text-stone-500 truncate">
                           {p.brand} • {p.slug}
                         </div>
                       </div>
                     </div>
-                    <div className="col-span-3 sm:col-span-2 text-gray-900">
+                    <div className="col-span-3 sm:col-span-2 text-stone-800">
                       ৳ {p.price.toLocaleString()}
                     </div>
                     <div
@@ -356,7 +356,7 @@ export default function ProductsPage() {
                   onChange={(e) =>
                     setForm((s) => ({ ...s, description: e.target.value }))
                   }
-                  className="w-full min-h-28 rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  className="w-full min-h-28 rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
                 />
                 <div className="grid grid-cols-2 gap-3">
                   <Input
@@ -385,7 +385,7 @@ export default function ProductsPage() {
                     }
                   />
                   <select
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 disabled:opacity-60"
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 disabled:opacity-60"
                     value={form.categoryId}
                     onChange={(e) => {
                       const newCategoryId = e.target.value;
@@ -415,7 +415,7 @@ export default function ProductsPage() {
                   </select>
                 </div>
                 <select
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 disabled:opacity-60"
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 disabled:opacity-60"
                   value={form.subCategoryId}
                   onChange={(e) =>
                     setForm((s) => ({ ...s, subCategoryId: e.target.value }))
@@ -443,7 +443,7 @@ export default function ProductsPage() {
                       images: Array.from(e.target.files || []),
                     }))
                   }
-                  className="block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-600 hover:file:bg-orange-100"
+                  className="block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-cyan-50 file:text-cyan-700 hover:file:bg-cyan-100"
                 />
                 {categoriesLoading && (
                   <div className="text-xs text-gray-500">
@@ -512,7 +512,7 @@ export default function ProductsPage() {
                         description: e.target.value,
                       }))
                     }
-                    className="w-full min-h-28 rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    className="w-full min-h-28 rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
                   />
                   <div className="grid grid-cols-2 gap-3">
                     <Input
@@ -541,7 +541,7 @@ export default function ProductsPage() {
                       }
                     />
                     <select
-                      className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 disabled:opacity-60"
+                      className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 disabled:opacity-60"
                       value={editForm.categoryId}
                       onChange={(e) => {
                         const newCategoryId = e.target.value;
@@ -568,7 +568,7 @@ export default function ProductsPage() {
                     </select>
                   </div>
                   <select
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 disabled:opacity-60"
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 disabled:opacity-60"
                     value={editForm.subCategoryId}
                     onChange={(e) =>
                       setEditForm((s) => ({
@@ -644,7 +644,7 @@ export default function ProductsPage() {
                         }));
                         e.currentTarget.value = "";
                       }}
-                      className="block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-600 hover:file:bg-orange-100 disabled:opacity-60"
+                      className="block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-cyan-50 file:text-cyan-700 hover:file:bg-cyan-100 disabled:opacity-60"
                     />
                     <div className="mt-2 text-xs text-gray-500">
                       {totalEditImages} / 5 selected

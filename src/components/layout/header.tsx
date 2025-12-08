@@ -76,13 +76,9 @@ export function Header() {
               whileHover={{ scale: 1.05 }}
             >
               <Link href="/">
-                <Image
-                  src="/monocart-logo2.png"
-                  alt="Monocart"
-                  width={150}
-                  height={0}
-                  style={{ height: "auto" }}
-                />
+                <div className="text-2xl font-bold bg-gradient-to-r from-stone-700 to-stone-900 bg-clip-text text-transparent">
+                  Fleeting Commerce
+                </div>
               </Link>
             </motion.div>
             <nav className="hidden md:flex space-x-8">
@@ -95,8 +91,8 @@ export function Header() {
                 <motion.div key={item.name}>
                   <Link
                     href={item.href}
-                    className={`text-gray-700 hover:text-orange-500 transition-colors ${
-                      mounted && pathname === item.href ? "text-orange-500" : ""
+                    className={`text-stone-600 hover:text-stone-900 transition-colors ${
+                      mounted && pathname === item.href ? "text-stone-900 font-semibold" : ""
                     }`}
                   >
                     {item.name}
@@ -136,7 +132,7 @@ export function Header() {
                       <Link href={href}>
                         <Button variant="ghost" size="sm" className="relative">
                           <Icon className="w-5 h-5" />
-                          <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                          <span className="absolute -top-1 -right-1 bg-stone-800 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
                             {count}
                           </span>
                         </Button>
@@ -149,7 +145,7 @@ export function Header() {
                         onClick={onClick || undefined}
                       >
                         <Icon className="w-5 h-5" />
-                        <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                        <span className="absolute -top-1 -right-1 bg-stone-800 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
                           {count}
                         </span>
                       </Button>
@@ -164,8 +160,8 @@ export function Header() {
                     <DropdownMenu
                       trigger={
                         <Button variant="ghost" size="sm" className="relative">
-                          <UserCircle className="w-5 h-5 text-orange-500" />
-                          <span className="absolute -top-1 -right-1 bg-green-500 w-2 h-2 rounded-full"></span>
+                          <UserCircle className="w-5 h-5 text-stone-700" />
+                          <span className="absolute -top-1 -right-1 bg-emerald-500 w-2 h-2 rounded-full"></span>
                         </Button>
                       }
                     >

@@ -43,7 +43,7 @@ export default function NavigationLoader() {
   return (
     <div className="fixed inset-0 bg-white bg-opacity-90 flex items-center justify-center z-[10000]">
       <div className="text-center">
-        <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mb-4"></div>
+        <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500 mb-4"></div>
         <p className="text-gray-600 text-lg">Loading...</p>
       </div>
     </div>

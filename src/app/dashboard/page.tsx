@@ -16,19 +16,19 @@ export default function DashboardHome() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            <Card className="p-4">
-              <div className="text-sm text-gray-500">{s.label}</div>
-              <div className="text-2xl font-semibold text-gray-900">
+            <Card className="p-4 rounded-xl border border-stone-100">
+              <div className="text-sm text-stone-500">{s.label}</div>
+              <div className="text-2xl font-semibold text-stone-800">
                 {s.value}
               </div>
-              <div className="text-xs text-green-600">{s.change}</div>
+              <div className="text-xs text-emerald-600">{s.change}</div>
             </Card>
           </motion.div>
         ))}
       </div>
-      <Card className="p-4">
-        <div className="font-semibold mb-2">Recent Activity</div>
-        <div className="text-sm text-gray-500">No recent activity yet.</div>
+      <Card className="p-4 rounded-xl border border-stone-100">
+        <div className="font-semibold text-stone-800 mb-2">Recent Activity</div>
+        <div className="text-sm text-stone-500">No recent activity yet.</div>
       </Card>
     </div>
   );

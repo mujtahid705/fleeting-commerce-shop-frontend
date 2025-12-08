@@ -37,17 +37,17 @@ export default function DashboardLayout({
     { name: "Settings", href: "/dashboard/settings", icon: Settings },
   ];
   return (
-    <div className="min-h-[calc(100vh-64px-240px)] bg-white">
-      <div className="border-b bg-white/70 backdrop-blur supports-[backdrop-filter]:bg-white/60 sticky top-16 z-40">
+    <div className="min-h-[calc(100vh-64px-240px)] bg-stone-50">
+      <div className="border-b border-stone-200 bg-white/70 backdrop-blur supports-[backdrop-filter]:bg-white/60 sticky top-16 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between">
-          <div className="font-semibold text-gray-900">Admin Panel</div>
-          <div className="text-sm text-gray-500">
+          <div className="font-semibold text-stone-800">Admin Panel</div>
+          <div className="text-sm text-stone-500">
             {userData.name} ({userData.role})
           </div>
         </div>
       </div>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 grid grid-cols-1 md:grid-cols-[240px_1fr] gap-6">
-        <aside className="rounded-lg border bg-white shadow-sm p-3 h-fit md:sticky md:top-[calc(64px+56px+16px)]">
+        <aside className="rounded-xl border border-stone-100 bg-white shadow-sm p-3 h-fit md:sticky md:top-[calc(64px+56px+16px)]">
           <nav className="space-y-1">
             {navItems.map(({ name, href, icon: Icon }) => {
               const active = pathname === href;
@@ -55,10 +55,10 @@ export default function DashboardLayout({
                 <Link key={href} href={href} className="block">
                   <motion.div
                     whileHover={{ x: 2 }}
-                    className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors ${
+                    className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
                       active
-                        ? "bg-orange-50 text-orange-600 border border-orange-200"
-                        : "text-gray-700 hover:bg-gray-50"
+                        ? "bg-stone-100 text-stone-800 border border-stone-200"
+                        : "text-stone-600 hover:bg-stone-50"
                     }`}
                   >
                     <Icon className="w-4 h-4" />

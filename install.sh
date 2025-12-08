@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "🚀 Installing Monocart Frontend Dependencies..."
+echo "🚀 Installing Fleeting Commerce Frontend Dependencies..."
 
 # Install core dependencies
 echo "📦 Installing core dependencies..."

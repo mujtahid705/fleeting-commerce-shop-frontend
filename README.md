@@ -1,4 +1,4 @@
-# Monocart - Premium Shopping Destination
+# Fleeting Commerce - Your Modern Shopping Experience
 
 A modern, responsive e-commerce website built with Next.js 15, TypeScript, Tailwind CSS, and Framer Motion.
 
@@ -36,7 +36,7 @@ A modern, responsive e-commerce website built with Next.js 15, TypeScript, Tailw
 
    ```bash
    git clone <repository-url>
-   cd monocart_frontend
+   cd fleeting-commerce-frontend
    ```
 
 2. **Install dependencies**

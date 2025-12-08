@@ -9,9 +9,9 @@ import { TopLoader } from "@/components/top-loader";
 import { Suspense } from "react";
 const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
-  title: "Monocart - Premium Shopping Destination",
+  title: "Fleeting Commerce - Your Modern Shopping Experience",
   description:
-    "Discover the latest trends in fashion with our exclusive Monocart collection designed for the modern lifestyle.",
+    "Discover the latest trends in fashion with our exclusive Fleeting Commerce collection designed for the modern lifestyle.",
 };
 export default function RootLayout({
   children,
@@ -29,7 +29,7 @@ export default function RootLayout({
               fallback={
                 <div className="min-h-screen flex items-center justify-center bg-gray-50">
                   <div className="text-center">
-                    <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mb-4"></div>
+                    <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500 mb-4"></div>
                     <p className="text-gray-600 text-lg">Loading...</p>
                   </div>
                 </div>
@@ -57,7 +57,7 @@ export default function RootLayout({
                   "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
                 backdropFilter: "blur(8px)",
               },
-              className: "monocart-toast",
+              className: "fleeting-toast",
               duration: 4000,
             }}
             theme="light"
