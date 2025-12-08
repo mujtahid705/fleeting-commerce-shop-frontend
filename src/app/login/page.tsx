@@ -80,7 +80,9 @@ export default function LoginPage() {
                 <h1 className="text-2xl font-light text-stone-800 mb-2">
                   Welcome Back
                 </h1>
-                <p className="text-stone-500 font-light">Sign in to your account</p>
+                <p className="text-stone-500 font-light">
+                  Sign in to your account
+                </p>
               </motion.div>
               <motion.form
                 onSubmit={handleSubmit}
@@ -139,7 +141,10 @@ export default function LoginPage() {
                         handleInputChange("rememberMe", checked as boolean)
                       }
                     />
-                    <Label htmlFor="remember" className="text-sm text-stone-500 font-light">
+                    <Label
+                      htmlFor="remember"
+                      className="text-sm text-stone-500 font-light"
+                    >
                       Remember me
                     </Label>
                   </div>
@@ -214,7 +219,9 @@ export default function LoginPage() {
                   transition={{ delay: 0.8 }}
                   className="space-y-3"
                 >
-                  <h2 className="text-3xl font-light text-stone-800">Welcome <span className="font-semibold">Back!</span></h2>
+                  <h2 className="text-3xl font-light text-stone-800">
+                    Welcome <span className="font-semibold">Back!</span>
+                  </h2>
                   <p className="text-stone-500 font-light max-w-xs mx-auto">
                     Continue your shopping journey with Fleeting Commerce
                   </p>

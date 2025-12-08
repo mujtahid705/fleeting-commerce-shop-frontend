@@ -86,7 +86,9 @@ export default function RegisterPage() {
                 <h1 className="text-2xl font-light text-stone-800 mb-2">
                   Create Account
                 </h1>
-                <p className="text-stone-500 font-light">Join our community today</p>
+                <p className="text-stone-500 font-light">
+                  Join our community today
+                </p>
               </motion.div>
               <motion.form
                 onSubmit={handleSubmit}
@@ -97,7 +99,9 @@ export default function RegisterPage() {
               >
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="firstName" className="text-stone-600">First Name*</Label>
+                    <Label htmlFor="firstName" className="text-stone-600">
+                      First Name*
+                    </Label>
                     <Input
                       id="firstName"
                       placeholder="Enter your first name"
@@ -110,7 +114,9 @@ export default function RegisterPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="lastName" className="text-stone-600">Last Name*</Label>
+                    <Label htmlFor="lastName" className="text-stone-600">
+                      Last Name*
+                    </Label>
                     <Input
                       id="lastName"
                       placeholder="Enter your last name"
@@ -125,7 +131,9 @@ export default function RegisterPage() {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="email" className="text-stone-600">Email*</Label>
+                    <Label htmlFor="email" className="text-stone-600">
+                      Email*
+                    </Label>
                     <Input
                       id="email"
                       type="email"
@@ -139,7 +147,9 @@ export default function RegisterPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="phone" className="text-stone-600">Phone Number*</Label>
+                    <Label htmlFor="phone" className="text-stone-600">
+                      Phone Number*
+                    </Label>
                     <Input
                       id="phone"
                       type="tel"
@@ -155,7 +165,9 @@ export default function RegisterPage() {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="password" className="text-stone-600">Password*</Label>
+                    <Label htmlFor="password" className="text-stone-600">
+                      Password*
+                    </Label>
                     <div className="relative">
                       <Input
                         id="password"
@@ -184,7 +196,9 @@ export default function RegisterPage() {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="confirmPassword" className="text-stone-600">Confirm Password*</Label>
+                    <Label htmlFor="confirmPassword" className="text-stone-600">
+                      Confirm Password*
+                    </Label>
                     <div className="relative">
                       <Input
                         id="confirmPassword"
@@ -314,7 +328,9 @@ export default function RegisterPage() {
                 >
                   <div className="flex items-center justify-center gap-2 text-stone-500">
                     <Sparkles className="w-4 h-4" />
-                    <span className="text-sm font-medium uppercase tracking-wider">Welcome</span>
+                    <span className="text-sm font-medium uppercase tracking-wider">
+                      Welcome
+                    </span>
                   </div>
                   <h2 className="text-3xl font-light text-stone-800">
                     Join Our <span className="font-semibold">Community</span>
@@ -331,20 +347,36 @@ export default function RegisterPage() {
                   transition={{ delay: 1 }}
                 >
                   <div className="text-center bg-white/50 rounded-2xl p-4">
-                    <div className="text-2xl font-semibold text-stone-800">10k+</div>
-                    <div className="text-sm text-stone-500 font-light">Happy Customers</div>
+                    <div className="text-2xl font-semibold text-stone-800">
+                      10k+
+                    </div>
+                    <div className="text-sm text-stone-500 font-light">
+                      Happy Customers
+                    </div>
                   </div>
                   <div className="text-center bg-white/50 rounded-2xl p-4">
-                    <div className="text-2xl font-semibold text-stone-800">5k+</div>
-                    <div className="text-sm text-stone-500 font-light">Products</div>
+                    <div className="text-2xl font-semibold text-stone-800">
+                      5k+
+                    </div>
+                    <div className="text-sm text-stone-500 font-light">
+                      Products
+                    </div>
                   </div>
                   <div className="text-center bg-white/50 rounded-2xl p-4">
-                    <div className="text-2xl font-semibold text-stone-800">24/7</div>
-                    <div className="text-sm text-stone-500 font-light">Support</div>
+                    <div className="text-2xl font-semibold text-stone-800">
+                      24/7
+                    </div>
+                    <div className="text-sm text-stone-500 font-light">
+                      Support
+                    </div>
                   </div>
                   <div className="text-center bg-white/50 rounded-2xl p-4">
-                    <div className="text-2xl font-semibold text-stone-800">Fast</div>
-                    <div className="text-sm text-stone-500 font-light">Delivery</div>
+                    <div className="text-2xl font-semibold text-stone-800">
+                      Fast
+                    </div>
+                    <div className="text-sm text-stone-500 font-light">
+                      Delivery
+                    </div>
                   </div>
                 </motion.div>
               </div>

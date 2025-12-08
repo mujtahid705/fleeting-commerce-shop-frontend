@@ -155,7 +155,9 @@ export default function OrderSuccessPage() {
                   {index < 3 && (
                     <div
                       className={`absolute h-1 w-16 mt-6 ${
-                        status === "completed" ? "bg-emerald-500" : "bg-stone-200"
+                        status === "completed"
+                          ? "bg-emerald-500"
+                          : "bg-stone-200"
                       }`}
                       style={{ left: `${index * 25 + 12.5}%`, width: "25%" }}
                     />

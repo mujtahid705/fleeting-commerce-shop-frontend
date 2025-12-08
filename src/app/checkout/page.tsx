@@ -188,12 +188,18 @@ export default function CheckoutPage() {
         <div className="mb-8">
           <div className="flex items-center space-x-4 mb-6">
             <Link href="/products">
-              <Button variant="outline" size="sm" className="rounded-full border-stone-300 text-stone-600 hover:bg-stone-100">
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-full border-stone-300 text-stone-600 hover:bg-stone-100"
+              >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to Shopping
               </Button>
             </Link>
-            <h1 className="text-3xl font-light text-stone-800">Check<span className="font-semibold">out</span></h1>
+            <h1 className="text-3xl font-light text-stone-800">
+              Check<span className="font-semibold">out</span>
+            </h1>
           </div>
           <div className="flex items-center space-x-4">
             {[
@@ -240,7 +246,8 @@ export default function CheckoutPage() {
                     className="space-y-6"
                   >
                     <h2 className="text-xl font-light text-stone-800 mb-4">
-                      Customer <span className="font-semibold">Information</span>
+                      Customer{" "}
+                      <span className="font-semibold">Information</span>
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>

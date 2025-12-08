@@ -74,7 +74,8 @@ export function CategoriesSection() {
             Find What You <span className="font-semibold">Love</span>
           </h2>
           <p className="text-stone-500 max-w-lg mx-auto font-light">
-            Explore our carefully curated collections designed to elevate your everyday style
+            Explore our carefully curated collections designed to elevate your
+            everyday style
           </p>
         </motion.div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -90,7 +91,9 @@ export function CategoriesSection() {
               viewport={{ once: true }}
             >
               <Link href={category.href}>
-                <Card className={`group relative overflow-hidden border-0 shadow-sm hover:shadow-xl transition-all duration-500 cursor-pointer bg-gradient-to-br ${category.gradient} hover:${category.hoverGradient}`}>
+                <Card
+                  className={`group relative overflow-hidden border-0 shadow-sm hover:shadow-xl transition-all duration-500 cursor-pointer bg-gradient-to-br ${category.gradient} hover:${category.hoverGradient}`}
+                >
                   <div className="p-8">
                     <div className="flex justify-between items-start mb-8">
                       <motion.div
@@ -99,17 +102,19 @@ export function CategoriesSection() {
                       >
                         <span className="text-3xl">{category.icon}</span>
                       </motion.div>
-                      <motion.div
-                        className="w-10 h-10 bg-white/80 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0"
-                      >
-                        <ArrowUpRight className={`w-5 h-5 ${category.textColor}`} />
+                      <motion.div className="w-10 h-10 bg-white/80 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
+                        <ArrowUpRight
+                          className={`w-5 h-5 ${category.textColor}`}
+                        />
                       </motion.div>
                     </div>
                     <div className="space-y-2">
                       <h3 className="text-xl font-semibold text-stone-800 group-hover:text-stone-900 transition-colors">
                         {category.name}
                       </h3>
-                      <p className={`text-sm ${category.textColor} font-medium`}>
+                      <p
+                        className={`text-sm ${category.textColor} font-medium`}
+                      >
                         {category.description}
                       </p>
                       <p className="text-stone-500 text-sm pt-2">

@@ -40,7 +40,10 @@ export function ProductCard({ product, index }: ProductCardProps) {
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
             />
             <div className="absolute top-3 right-3 flex flex-col space-y-2 opacity-0 group-hover:opacity-100 transition-all duration-300 z-20">
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
                 <Button
                   size="sm"
                   variant="secondary"
@@ -49,7 +52,10 @@ export function ProductCard({ product, index }: ProductCardProps) {
                   <Heart className="w-4 h-4 text-stone-500" />
                 </Button>
               </motion.div>
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
                 <Button
                   size="sm"
                   variant="secondary"
@@ -61,10 +67,8 @@ export function ProductCard({ product, index }: ProductCardProps) {
             </div>
             {product.originalPrice > product.price && (
               <Badge className="absolute top-3 left-3 bg-rose-500 text-white border-0 shadow-sm z-20 rounded-full px-3">
-                {Math.round(
-                  (1 - product.price / product.originalPrice) * 100
-                )}
-                % OFF
+                {Math.round((1 - product.price / product.originalPrice) * 100)}%
+                OFF
               </Badge>
             )}
           </div>

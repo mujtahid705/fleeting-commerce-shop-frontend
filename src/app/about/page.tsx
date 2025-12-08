@@ -189,10 +189,10 @@ export default function AboutPage() {
                 Our <span className="font-semibold">Story</span>
               </h2>
               <p className="text-stone-500 mb-6 leading-relaxed font-light">
-                Fleeting Commerce was born from a simple idea: to make quality products
-                accessible to everyone. Founded in 2020, we started as a small
-                team with a big dream of revolutionizing the online shopping
-                experience in Bangladesh.
+                Fleeting Commerce was born from a simple idea: to make quality
+                products accessible to everyone. Founded in 2020, we started as
+                a small team with a big dream of revolutionizing the online
+                shopping experience in Bangladesh.
               </p>
               <p className="text-stone-500 mb-6 leading-relaxed font-light">
                 Today, we&apos;re proud to serve over 50,000 customers across
@@ -259,14 +259,20 @@ export default function AboutPage() {
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 viewport={{ once: true }}
               >
-                <Card className={`p-6 h-full border-0 shadow-sm hover:shadow-lg transition-all duration-300 bg-gradient-to-br ${value.gradient} rounded-2xl`}>
-                  <div className={`inline-flex items-center justify-center w-12 h-12 ${value.iconBg} rounded-xl mb-4`}>
+                <Card
+                  className={`p-6 h-full border-0 shadow-sm hover:shadow-lg transition-all duration-300 bg-gradient-to-br ${value.gradient} rounded-2xl`}
+                >
+                  <div
+                    className={`inline-flex items-center justify-center w-12 h-12 ${value.iconBg} rounded-xl mb-4`}
+                  >
                     <value.icon className={`w-6 h-6 ${value.iconColor}`} />
                   </div>
                   <h3 className="text-lg font-semibold text-stone-800 mb-3">
                     {value.title}
                   </h3>
-                  <p className="text-stone-500 font-light">{value.description}</p>
+                  <p className="text-stone-500 font-light">
+                    {value.description}
+                  </p>
                 </Card>
               </motion.div>
             ))}
@@ -318,7 +324,9 @@ export default function AboutPage() {
                     <h3 className="text-lg font-semibold text-stone-800 mb-2">
                       {milestone.title}
                     </h3>
-                    <p className="text-stone-500 font-light">{milestone.description}</p>
+                    <p className="text-stone-500 font-light">
+                      {milestone.description}
+                    </p>
                   </Card>
                 </div>
                 <div className="absolute left-1/2 transform -translate-x-1/2 w-4 h-4 bg-stone-400 rounded-full border-4 border-white"></div>
@@ -343,8 +351,8 @@ export default function AboutPage() {
               Meet Our <span className="font-semibold">Team</span>
             </h2>
             <p className="text-stone-500 max-w-2xl mx-auto font-light">
-              The passionate people behind Fleeting Commerce who work tirelessly to serve
-              you better.
+              The passionate people behind Fleeting Commerce who work tirelessly
+              to serve you better.
             </p>
           </motion.div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -366,7 +374,9 @@ export default function AboutPage() {
                   <p className="text-stone-600 font-medium mb-3 text-sm">
                     {member.role}
                   </p>
-                  <p className="text-stone-500 font-light">{member.description}</p>
+                  <p className="text-stone-500 font-light">
+                    {member.description}
+                  </p>
                 </Card>
               </motion.div>
             ))}

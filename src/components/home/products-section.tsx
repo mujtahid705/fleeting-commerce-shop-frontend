@@ -84,7 +84,9 @@ export function ProductsSection() {
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <Sparkles className="w-4 h-4 text-amber-500" />
-                <span className="text-sm font-medium text-stone-500 uppercase tracking-wider">New Arrivals</span>
+                <span className="text-sm font-medium text-stone-500 uppercase tracking-wider">
+                  New Arrivals
+                </span>
               </div>
               <h2 className="text-3xl font-light text-stone-800">
                 Latest <span className="font-semibold">Gadgets</span>
@@ -94,8 +96,8 @@ export function ProductsSection() {
               </p>
             </div>
             <Link href="/products">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="rounded-full px-6 border-stone-300 text-stone-600 hover:bg-stone-800 hover:text-white hover:border-stone-800 transition-all duration-300"
               >
                 View All <ArrowRight className="w-4 h-4 ml-2" />
@@ -161,7 +163,9 @@ export function ProductsSection() {
               viewport={{ once: true }}
             >
               <div>
-                <p className="text-sm font-medium text-stone-500 uppercase tracking-wider mb-4">Exclusive Collection</p>
+                <p className="text-sm font-medium text-stone-500 uppercase tracking-wider mb-4">
+                  Exclusive Collection
+                </p>
                 <h2 className="text-5xl font-light text-stone-800 leading-tight mb-6">
                   Women&apos;s
                   <br />
@@ -170,7 +174,8 @@ export function ProductsSection() {
                   <span className="text-stone-600">Collection</span>
                 </h2>
                 <p className="text-lg text-stone-500 font-light max-w-md">
-                  Discover your signature style with our thoughtfully curated women&apos;s collection
+                  Discover your signature style with our thoughtfully curated
+                  women&apos;s collection
                 </p>
               </div>
               <Link href="/products?category=womens">
@@ -197,7 +202,9 @@ export function ProductsSection() {
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <Sparkles className="w-4 h-4 text-rose-400" />
-                <span className="text-sm font-medium text-stone-500 uppercase tracking-wider">Trending</span>
+                <span className="text-sm font-medium text-stone-500 uppercase tracking-wider">
+                  Trending
+                </span>
               </div>
               <h2 className="text-3xl font-light text-stone-800">
                 Fashion <span className="font-semibold">Essentials</span>
@@ -207,8 +214,8 @@ export function ProductsSection() {
               </p>
             </div>
             <Link href="/products">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="rounded-full px-6 border-stone-300 text-stone-600 hover:bg-stone-800 hover:text-white hover:border-stone-800 transition-all duration-300"
               >
                 View All <ArrowRight className="w-4 h-4 ml-2" />

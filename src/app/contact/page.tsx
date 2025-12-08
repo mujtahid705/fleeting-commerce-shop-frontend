@@ -181,8 +181,12 @@ export default function ContactPage() {
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 viewport={{ once: true }}
               >
-                <Card className={`p-6 text-center border-0 shadow-sm hover:shadow-lg transition-all duration-300 h-full bg-gradient-to-br ${info.gradient} rounded-2xl`}>
-                  <div className={`inline-flex items-center justify-center w-12 h-12 ${info.iconBg} rounded-xl mb-4`}>
+                <Card
+                  className={`p-6 text-center border-0 shadow-sm hover:shadow-lg transition-all duration-300 h-full bg-gradient-to-br ${info.gradient} rounded-2xl`}
+                >
+                  <div
+                    className={`inline-flex items-center justify-center w-12 h-12 ${info.iconBg} rounded-xl mb-4`}
+                  >
                     <info.icon className={`w-6 h-6 ${info.iconColor}`} />
                   </div>
                   <h3 className="text-lg font-semibold text-stone-800 mb-2">
@@ -217,7 +221,9 @@ export default function ContactPage() {
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="name" className="text-stone-600">Full Name</Label>
+                      <Label htmlFor="name" className="text-stone-600">
+                        Full Name
+                      </Label>
                       <Input
                         id="name"
                         name="name"
@@ -230,7 +236,9 @@ export default function ContactPage() {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="email" className="text-stone-600">Email Address</Label>
+                      <Label htmlFor="email" className="text-stone-600">
+                        Email Address
+                      </Label>
                       <Input
                         id="email"
                         name="email"
@@ -244,7 +252,9 @@ export default function ContactPage() {
                     </div>
                   </div>
                   <div>
-                    <Label htmlFor="subject" className="text-stone-600">Subject</Label>
+                    <Label htmlFor="subject" className="text-stone-600">
+                      Subject
+                    </Label>
                     <Input
                       id="subject"
                       name="subject"
@@ -257,7 +267,9 @@ export default function ContactPage() {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="message" className="text-stone-600">Message</Label>
+                    <Label htmlFor="message" className="text-stone-600">
+                      Message
+                    </Label>
                     <textarea
                       id="message"
                       name="message"

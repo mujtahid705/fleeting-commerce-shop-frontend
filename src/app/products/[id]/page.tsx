@@ -398,7 +398,9 @@ export default function ProductDetailPage() {
             </div>
 
             <div className="bg-stone-100 rounded-xl p-6">
-              <h3 className="font-semibold text-stone-800 mb-4">Product Details</h3>
+              <h3 className="font-semibold text-stone-800 mb-4">
+                Product Details
+              </h3>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="font-medium">Brand</span>

@@ -37,7 +37,8 @@ export function Footer() {
               </Link>
             </motion.div>
             <p className="text-stone-400 mb-6 font-light leading-relaxed">
-              Discover timeless pieces and modern essentials curated for the conscious lifestyle.
+              Discover timeless pieces and modern essentials curated for the
+              conscious lifestyle.
             </p>
             <div className="flex space-x-4">
               {[
@@ -59,7 +60,9 @@ export function Footer() {
             </div>
           </div>
           <div>
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-stone-300 mb-5">Quick Links</h3>
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-stone-300 mb-5">
+              Quick Links
+            </h3>
             <ul className="space-y-3">
               {[
                 { name: "Home", href: "/" },
@@ -79,7 +82,9 @@ export function Footer() {
             </ul>
           </div>
           <div>
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-stone-300 mb-5">Categories</h3>
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-stone-300 mb-5">
+              Categories
+            </h3>
             <ul className="space-y-3">
               {[
                 "Women's Fashion",
@@ -104,7 +109,9 @@ export function Footer() {
             </ul>
           </div>
           <div>
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-stone-300 mb-5">Get in Touch</h3>
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-stone-300 mb-5">
+              Get in Touch
+            </h3>
             <div className="space-y-4">
               {[
                 { Icon: Mail, text: "hello@fleetingcommerce.com" },
@@ -115,7 +122,9 @@ export function Footer() {
                   <div className="w-8 h-8 bg-stone-800 rounded-lg flex items-center justify-center">
                     <Icon className="w-4 h-4 text-stone-400" />
                   </div>
-                  <span className="text-stone-400 text-sm font-light">{text}</span>
+                  <span className="text-stone-400 text-sm font-light">
+                    {text}
+                  </span>
                 </div>
               ))}
             </div>
@@ -123,10 +132,22 @@ export function Footer() {
         </div>
         <div className="border-t border-stone-800 mt-12 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-stone-500 text-sm font-light">© 2025 Fleeting Commerce. All rights reserved.</p>
+            <p className="text-stone-500 text-sm font-light">
+              © 2025 Fleeting Commerce. All rights reserved.
+            </p>
             <div className="flex gap-6">
-              <Link href="#" className="text-stone-500 hover:text-stone-300 text-sm font-light transition-colors">Privacy Policy</Link>
-              <Link href="#" className="text-stone-500 hover:text-stone-300 text-sm font-light transition-colors">Terms of Service</Link>
+              <Link
+                href="#"
+                className="text-stone-500 hover:text-stone-300 text-sm font-light transition-colors"
+              >
+                Privacy Policy
+              </Link>
+              <Link
+                href="#"
+                className="text-stone-500 hover:text-stone-300 text-sm font-light transition-colors"
+              >
+                Terms of Service
+              </Link>
             </div>
           </div>
         </div>

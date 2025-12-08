@@ -92,7 +92,9 @@ export function Header() {
                   <Link
                     href={item.href}
                     className={`text-stone-600 hover:text-stone-900 transition-colors ${
-                      mounted && pathname === item.href ? "text-stone-900 font-semibold" : ""
+                      mounted && pathname === item.href
+                        ? "text-stone-900 font-semibold"
+                        : ""
                     }`}
                   >
                     {item.name}

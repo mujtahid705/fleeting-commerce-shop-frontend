@@ -139,7 +139,12 @@ export default function ProductsPage() {
             onChange={(e) => setQuery(e.target.value)}
             className="max-w-sm"
           />
-          <Button onClick={() => setIsModalOpen(true)} className="bg-stone-800 hover:bg-stone-900">Add Product</Button>
+          <Button
+            onClick={() => setIsModalOpen(true)}
+            className="bg-stone-800 hover:bg-stone-900"
+          >
+            Add Product
+          </Button>
         </div>
       </div>
       <Card className="p-0 overflow-hidden rounded-xl border border-stone-100">
@@ -151,7 +156,9 @@ export default function ProductsPage() {
         </div>
         <div>
           {loading ? (
-            <div className="p-6 text-sm text-stone-500">Loading products...</div>
+            <div className="p-6 text-sm text-stone-500">
+              Loading products...
+            </div>
           ) : error ? (
             <div className="p-6 text-sm text-red-600">{error}</div>
           ) : filtered.length === 0 ? (

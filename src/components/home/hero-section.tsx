@@ -47,8 +47,8 @@ export function HeroSection() {
                 Elegance
               </h1>
               <p className="text-lg text-stone-500 max-w-md leading-relaxed font-light">
-                Curated collections that blend comfort with style. 
-                Experience fashion that feels as good as it looks.
+                Curated collections that blend comfort with style. Experience
+                fashion that feels as good as it looks.
               </p>
             </motion.div>
             <motion.div
@@ -126,8 +126,12 @@ export function HeroSection() {
                     <span className="text-xl">✨</span>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-stone-800">Premium Quality</p>
-                    <p className="text-xs text-stone-500">Handcrafted with care</p>
+                    <p className="text-sm font-medium text-stone-800">
+                      Premium Quality
+                    </p>
+                    <p className="text-xs text-stone-500">
+                      Handcrafted with care
+                    </p>
                   </div>
                 </div>
               </motion.div>
