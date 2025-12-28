@@ -5,6 +5,8 @@ import productsReducer from "./slices/productsSlice";
 import ordersReducer from "./slices/ordersSlice";
 import cartReducer from "./slices/cartSlice";
 import favoritesReducer from "./slices/favoritesSlice";
+import tenantReducer from "./slices/tenantSlice";
+
 export const store = configureStore({
   reducer: {
     counter: counterReducer,
@@ -13,6 +15,7 @@ export const store = configureStore({
     orders: ordersReducer,
     cart: cartReducer,
     favorites: favoritesReducer,
+    tenant: tenantReducer,
   },
 });
 export type RootState = ReturnType<typeof store.getState>;

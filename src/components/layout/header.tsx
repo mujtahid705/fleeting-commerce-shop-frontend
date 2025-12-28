@@ -22,8 +22,8 @@ import { FavoritesDrawer } from "@/components/ui/favorites-drawer";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { RootState } from "@/redux/store";
+import { useDispatch } from "react-redux";
+import { useAppSelector } from "@/hooks/hooks";
 import { logout, initializeAuth } from "@/redux/slices/userSlice";
 import { initializeCart, toggleCart } from "@/redux/slices/cartSlice";
 import {
@@ -31,20 +31,21 @@ import {
   toggleFavorites,
 } from "@/redux/slices/favoritesSlice";
 import Image from "next/image";
+
 export function Header() {
   const pathname = usePathname();
   const router = useRouter();
   const dispatch = useDispatch();
   const [mounted, setMounted] = useState(false);
-  const { isLoggedIn, userData } = useSelector(
-    (state: RootState) => state.user
+  const { isLoggedIn, userData } = useAppSelector((state) => state.user);
+  const { totalItems: cartItems, isOpen: isCartOpen } = useAppSelector(
+    (state) => state.cart
   );
-  const { totalItems: cartItems, isOpen: isCartOpen } = useSelector(
-    (state: RootState) => state.cart
+  const { totalItems: favoriteItems, isOpen: isFavoritesOpen } = useAppSelector(
+    (state) => state.favorites
   );
-  const { totalItems: favoriteItems, isOpen: isFavoritesOpen } = useSelector(
-    (state: RootState) => state.favorites
-  );
+  const { tenant } = useAppSelector((state) => state.tenant);
+
   useEffect(() => {
     setMounted(true);
     dispatch(initializeAuth());
@@ -61,10 +62,14 @@ export function Header() {
   const handleFavoritesClick = () => {
     dispatch(toggleFavorites());
   };
+
+  const storeName = tenant?.name || "Store";
+  const logoUrl = tenant?.brand?.logoUrl;
+
   return (
     <>
       <motion.header
-        className="bg-white shadow-sm sticky top-0 z-50"
+        className="bg-card shadow-sm sticky top-0 z-50"
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.6 }}
@@ -76,9 +81,19 @@ export function Header() {
               whileHover={{ scale: 1.05 }}
             >
               <Link href="/">
-                <div className="text-2xl font-bold bg-gradient-to-r from-stone-700 to-stone-900 bg-clip-text text-transparent">
-                  Fleeting Commerce
-                </div>
+                {logoUrl ? (
+                  <Image
+                    src={logoUrl}
+                    alt={storeName}
+                    width={150}
+                    height={40}
+                    className="h-10 w-auto object-contain"
+                  />
+                ) : (
+                  <div className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                    {storeName}
+                  </div>
+                )}
               </Link>
             </motion.div>
             <nav className="hidden md:flex space-x-8">
@@ -91,9 +106,9 @@ export function Header() {
                 <motion.div key={item.name}>
                   <Link
                     href={item.href}
-                    className={`text-stone-600 hover:text-stone-900 transition-colors ${
+                    className={`text-muted-foreground hover:text-foreground transition-colors ${
                       mounted && pathname === item.href
-                        ? "text-stone-900 font-semibold"
+                        ? "text-foreground font-semibold"
                         : ""
                     }`}
                   >
@@ -103,8 +118,8 @@ export function Header() {
               ))}
             </nav>
             <div className="flex items-center space-x-4">
-              <div className="hidden md:flex items-center space-x-2 bg-gray-100 rounded-full px-4 py-2 max-w-md">
-                <Search className="w-4 h-4 text-gray-400" />
+              <div className="hidden md:flex items-center space-x-2 bg-secondary rounded-full px-4 py-2 max-w-md">
+                <Search className="w-4 h-4 text-muted-foreground" />
                 <Input
                   placeholder="Search products..."
                   className="border-0 bg-transparent focus:ring-0 text-sm"
@@ -134,7 +149,7 @@ export function Header() {
                       <Link href={href}>
                         <Button variant="ghost" size="sm" className="relative">
                           <Icon className="w-5 h-5" />
-                          <span className="absolute -top-1 -right-1 bg-stone-800 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                          <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full w-4 h-4 flex items-center justify-center">
                             {count}
                           </span>
                         </Button>
@@ -147,7 +162,7 @@ export function Header() {
                         onClick={onClick || undefined}
                       >
                         <Icon className="w-5 h-5" />
-                        <span className="absolute -top-1 -right-1 bg-stone-800 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                        <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full w-4 h-4 flex items-center justify-center">
                           {count}
                         </span>
                       </Button>
@@ -162,8 +177,8 @@ export function Header() {
                     <DropdownMenu
                       trigger={
                         <Button variant="ghost" size="sm" className="relative">
-                          <UserCircle className="w-5 h-5 text-stone-700" />
-                          <span className="absolute -top-1 -right-1 bg-emerald-500 w-2 h-2 rounded-full"></span>
+                          <UserCircle className="w-5 h-5 text-foreground" />
+                          <span className="absolute -top-1 -right-1 bg-primary w-2 h-2 rounded-full"></span>
                         </Button>
                       }
                     >
