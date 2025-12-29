@@ -97,12 +97,15 @@ const cartSlice = createSlice({
       if (existingItem) {
         existingItem.quantity += quantity;
       } else {
+        const imageUrl = productData.images[0]?.url;
         const newItem: CartItem = {
           id: productData.id,
           title: productData.title,
           price: productData.price,
           quantity,
-          image: productData.images[0]?.url || "/vercel.svg",
+          image: imageUrl
+            ? `${process.env.NEXT_PUBLIC_IMAGE_URL}${imageUrl}`
+            : "/vercel.svg",
           brand: productData.brand,
           slug: productData.slug,
           stock: productData.stock,

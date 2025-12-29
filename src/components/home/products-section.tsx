@@ -44,7 +44,9 @@ export function ProductsSection() {
         originalPrice: Number(p.price) || 0,
         rating: 0,
         reviews: 0,
-        image: p.images?.[0]?.url || "/vercel.svg",
+        image: p.images?.[0]?.url
+          ? `${process.env.NEXT_PUBLIC_IMAGE_URL}${p.images[0].url}`
+          : "/vercel.svg",
       }));
     (async () => {
       try {

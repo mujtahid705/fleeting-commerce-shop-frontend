@@ -83,11 +83,11 @@ export function Header() {
               <Link href="/">
                 {logoUrl ? (
                   <Image
-                    src={logoUrl}
+                    src={`${process.env.NEXT_PUBLIC_IMAGE_URL}${logoUrl}`}
                     alt={storeName}
-                    width={150}
-                    height={40}
-                    className="h-10 w-auto object-contain"
+                    width={350}
+                    height={120}
+                    className="h-24 w-auto object-contain"
                   />
                 ) : (
                   <div className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
