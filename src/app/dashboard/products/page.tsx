@@ -165,7 +165,9 @@ export default function ProductsPage() {
             <div className="p-6 text-sm text-stone-500">No products found.</div>
           ) : (
             filtered.map((p) => {
-              const img = p.images?.[0]?.url || "/vercel.svg";
+              const img = p.images?.[0]?.url
+                ? `${process.env.NEXT_PUBLIC_IMAGE_URL}${p.images[0].url}`
+                : "/vercel.svg";
               return (
                 <Link href={`/products/${p.id}`} key={p.id} className="block">
                   <div className="grid grid-cols-12 items-center gap-3 px-4 py-3 border-t border-stone-100 hover:bg-stone-50">
@@ -607,7 +609,11 @@ export default function ProductsPage() {
                           className="relative w-20 h-20 rounded-md overflow-hidden border bg-white"
                         >
                           <ImageWithFallback
-                            src={url || "/vercel.svg"}
+                            src={
+                              url
+                                ? `${process.env.NEXT_PUBLIC_IMAGE_URL}${url}`
+                                : "/vercel.svg"
+                            }
                             alt={`Image ${idx + 1}`}
                             fill
                             className="object-cover"

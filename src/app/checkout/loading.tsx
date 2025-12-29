@@ -1,19 +1,19 @@
 export default function CheckoutLoading() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="h-20 bg-white shadow-sm"></div>
+    <div className="min-h-screen bg-background">
+      <div className="h-20 bg-card shadow-sm"></div>
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8 text-center">
-          <div className="h-8 bg-gray-200 rounded w-48 mx-auto animate-pulse mb-2"></div>
-          <div className="h-4 bg-gray-200 rounded w-64 mx-auto animate-pulse"></div>
+          <div className="h-8 bg-muted rounded w-48 mx-auto animate-pulse mb-2"></div>
+          <div className="h-4 bg-muted rounded w-64 mx-auto animate-pulse"></div>
         </div>
         <div className="flex justify-center mb-8">
           <div className="flex items-center space-x-4">
             {[...Array(3)].map((_, i) => (
               <div key={i} className="flex items-center">
-                <div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse"></div>
+                <div className="w-8 h-8 bg-muted rounded-full animate-pulse"></div>
                 {i < 2 && (
-                  <div className="w-16 h-0.5 bg-gray-200 mx-4 animate-pulse"></div>
+                  <div className="w-16 h-0.5 bg-muted mx-4 animate-pulse"></div>
                 )}
               </div>
             ))}

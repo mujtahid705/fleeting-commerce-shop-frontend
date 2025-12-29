@@ -1,19 +1,19 @@
 export default function ProfileLoading() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="h-20 bg-white shadow-sm"></div>
+    <div className="min-h-screen bg-background">
+      <div className="h-20 bg-card shadow-sm"></div>
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <div className="h-8 bg-gray-200 rounded w-1/4 animate-pulse mb-2"></div>
-          <div className="h-4 bg-gray-200 rounded w-1/3 animate-pulse"></div>
+          <div className="h-8 bg-muted rounded w-1/4 animate-pulse mb-2"></div>
+          <div className="h-4 bg-muted rounded w-1/3 animate-pulse"></div>
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-sm p-6">
+            <div className="bg-card rounded-lg shadow-sm p-6">
               <div className="text-center mb-6">
-                <div className="w-24 h-24 bg-gray-200 rounded-full mx-auto animate-pulse mb-4"></div>
-                <div className="h-6 bg-gray-200 rounded w-3/4 mx-auto animate-pulse mb-2"></div>
-                <div className="h-4 bg-gray-200 rounded w-1/2 mx-auto animate-pulse"></div>
+                <div className="w-24 h-24 bg-muted rounded-full mx-auto animate-pulse mb-4"></div>
+                <div className="h-6 bg-muted rounded w-3/4 mx-auto animate-pulse mb-2"></div>
+                <div className="h-4 bg-muted rounded w-1/2 mx-auto animate-pulse"></div>
               </div>
               <div className="space-y-3">
                 {[...Array(4)].map((_, i) => (

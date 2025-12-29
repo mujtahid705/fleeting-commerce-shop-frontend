@@ -181,9 +181,12 @@ export default function ProductDetailPage() {
   }
 
   const productImages: string[] = product.images.length
-    ? product.images.map((im: { url?: string } | string) =>
-        typeof im === "string" ? im : im?.url || "/vercel.svg"
-      )
+    ? product.images.map((im: { url?: string } | string) => {
+        const url = typeof im === "string" ? im : im?.url;
+        return url
+          ? `${process.env.NEXT_PUBLIC_IMAGE_URL}${url}`
+          : "/vercel.svg";
+      })
     : ["/vercel.svg"];
 
   return (
@@ -468,7 +471,9 @@ export default function ProductDetailPage() {
                     originalPrice: Number(r.price) || 0,
                     rating: 4.5,
                     reviews: 0,
-                    image: r.images?.[0]?.url || "/vercel.svg",
+                    image: r.images?.[0]?.url
+                      ? `${process.env.NEXT_PUBLIC_IMAGE_URL}${r.images[0].url}`
+                      : "/vercel.svg",
                   }}
                 />
               </motion.div>
