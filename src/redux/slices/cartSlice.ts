@@ -17,7 +17,7 @@ export interface CartItem {
     price: number;
     stock: number;
     brand: string;
-    images: { url: string }[];
+    images: { url?: string; imageUrl?: string; [key: string]: any }[];
     description?: string;
     categoryId?: string | number;
     subCategoryId?: string | number;
@@ -97,12 +97,14 @@ const cartSlice = createSlice({
       if (existingItem) {
         existingItem.quantity += quantity;
       } else {
+        const imageUrl =
+          productData.images[0]?.imageUrl || productData.images[0]?.url;
         const newItem: CartItem = {
           id: productData.id,
           title: productData.title,
           price: productData.price,
           quantity,
-          image: productData.images[0]?.url || "/vercel.svg",
+          image: imageUrl || "/vercel.svg",
           brand: productData.brand,
           slug: productData.slug,
           stock: productData.stock,

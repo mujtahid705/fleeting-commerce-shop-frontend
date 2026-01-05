@@ -3,6 +3,11 @@
 @tailwind utilities;
 
 @layer base {
+  /* 
+   * Theme 1: Natural/Earthy (Default)
+   * These are the default values, but they will be overridden 
+   * dynamically by the ThemeProvider based on tenant settings.
+   */
   :root {
     --background: 40 33% 98%;
     --foreground: 20 14% 20%;
@@ -24,6 +29,10 @@
     --input: 40 20% 88%;
     --ring: 150 25% 45%;
     --radius: 1rem;
+
+    /* Theme transition for smooth switching */
+    --theme-transition: background-color 0.3s ease, color 0.3s ease,
+      border-color 0.3s ease;
   }
 
   .dark {
@@ -46,6 +55,39 @@
     --border: 20 14% 22%;
     --input: 20 14% 22%;
     --ring: 150 25% 50%;
+  }
+
+  /* 
+   * Theme 2: Modern Blue - Applied via data attribute or class
+   * These are fallback styles; actual application is via JS
+   */
+  [data-theme="modern-blue"] {
+    --background: 210 40% 98%;
+    --foreground: 222 47% 11%;
+    --primary: 221 83% 53%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222 47% 11%;
+    --accent: 262 83% 58%;
+    --accent-foreground: 0 0% 100%;
+    --ring: 221 83% 53%;
+    --radius: 0.75rem;
+  }
+
+  /* 
+   * Theme 3: Luxury Gold - Applied via data attribute or class
+   */
+  [data-theme="luxury-gold"] {
+    --background: 0 0% 98%;
+    --foreground: 0 0% 9%;
+    --primary: 45 93% 47%;
+    --primary-foreground: 0 0% 9%;
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 9%;
+    --accent: 0 0% 15%;
+    --accent-foreground: 0 0% 98%;
+    --ring: 45 93% 47%;
+    --radius: 0.5rem;
   }
 }
 

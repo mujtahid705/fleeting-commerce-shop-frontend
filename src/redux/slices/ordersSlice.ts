@@ -1,4 +1,12 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+
+const getTenantDomain = () => {
+  if (typeof window === "undefined") return "";
+  const hostname = window.location.hostname;
+  const parts = hostname.split(".");
+  return parts[0];
+};
+
 export interface OrderProduct {
   id: string;
   orderId: number;
@@ -51,11 +59,12 @@ export const fetchUserOrders = createAsyncThunk(
         return rejectWithValue("No authentication token found");
       }
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/orders/${userId}`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}/storefront/orders/${userId}`,
         {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
+            "x-tenant-domain": getTenantDomain(),
             Authorization: `Bearer ${JSON.parse(token)}`,
           },
           cache: "no-cache",
@@ -77,11 +86,9 @@ export const createOrder = createAsyncThunk(
   "orders/createOrder",
   async (
     orderData: {
-      totalAmount: number;
       order_items: Array<{
         productId: string;
         quantity: number;
-        unitPrice: number;
       }>;
     },
     { rejectWithValue }
@@ -92,11 +99,12 @@ export const createOrder = createAsyncThunk(
         return rejectWithValue("No authentication token found");
       }
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/orders/create`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}/storefront/orders/create`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            "x-tenant-domain": getTenantDomain(),
             Authorization: `Bearer ${JSON.parse(token)}`,
           },
           body: JSON.stringify(orderData),
@@ -123,11 +131,12 @@ export const cancelOrder = createAsyncThunk(
         return rejectWithValue("No authentication token found");
       }
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/orders/update/status/${orderId}`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}/storefront/orders/update/status/${orderId}`,
         {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
+            "x-tenant-domain": getTenantDomain(),
             Authorization: `Bearer ${JSON.parse(token)}`,
           },
           body: JSON.stringify({
@@ -156,11 +165,12 @@ export const fetchOrderDetails = createAsyncThunk(
         return rejectWithValue("No authentication token found");
       }
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/orders/${orderId}`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}/storefront/orders/details/${orderId}`,
         {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
+            "x-tenant-domain": getTenantDomain(),
             Authorization: `Bearer ${JSON.parse(token)}`,
           },
         }
@@ -171,7 +181,8 @@ export const fetchOrderDetails = createAsyncThunk(
           errorData?.message || "Failed to fetch order details"
         );
       }
-      return await response.json();
+      const result = await response.json();
+      return result?.data || result;
     } catch (error) {
       console.error("Error fetching order details:", error);
       return rejectWithValue("Network error occurred");

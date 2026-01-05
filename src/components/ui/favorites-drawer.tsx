@@ -2,7 +2,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Heart, ShoppingCart, Trash2, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import Image from "next/image";
+import { ImageWithFallback } from "@/components/ui/image-with-fallback";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/redux/store";
 import {
@@ -157,7 +157,7 @@ export function FavoritesDrawer({ isOpen, onClose }: FavoritesDrawerProps) {
                       >
                         <div className="flex items-start space-x-3">
                           <div className="w-20 h-20 bg-stone-100 rounded-lg overflow-hidden">
-                            <Image
+                            <ImageWithFallback
                               src={item.image}
                               alt={item.title}
                               width={80}

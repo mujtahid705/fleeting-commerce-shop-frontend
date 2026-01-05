@@ -181,13 +181,16 @@ export default function OrderSuccessPage() {
           </motion.div>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/products">
-              <Button variant="outline" className="w-full sm:w-auto">
+              <Button
+                variant="outline"
+                className="w-full sm:w-auto border-stone-300 text-stone-600 hover:bg-stone-800 hover:text-white hover:border-stone-800"
+              >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Continue Shopping
               </Button>
             </Link>
             <Button
-              className="w-full sm:w-auto bg-stone-800 hover:bg-stone-900"
+              className="w-full sm:w-auto bg-stone-800 hover:bg-stone-900 text-white"
               onClick={() => window.print()}
             >
               <Download className="w-4 h-4 mr-2" />
@@ -204,12 +207,20 @@ export default function OrderSuccessPage() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/contact">
-                <Button variant="outline" size="sm">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-stone-300 text-stone-600 hover:bg-stone-800 hover:text-white hover:border-stone-800"
+                >
                   Contact Support
                 </Button>
               </Link>
               <Link href="/track-order">
-                <Button variant="outline" size="sm">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-stone-300 text-stone-600 hover:bg-stone-800 hover:text-white hover:border-stone-800"
+                >
                   Track Your Order
                 </Button>
               </Link>

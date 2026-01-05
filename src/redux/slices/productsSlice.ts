@@ -1,15 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-const handleUnauthorized = (status: number, message?: string) => {
-  if (status === 401 || message?.toLowerCase().includes("unauthorized")) {
-    console.log("401 Unauthorized in productsSlice:", { status, message });
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("token");
-      localStorage.removeItem("role");
-      localStorage.removeItem("userData");
-      window.location.href = "/";
-    }
-  }
-};
+
+// Types
 export type Product = {
   id: string;
   title: string;
@@ -17,16 +8,21 @@ export type Product = {
   price: number;
   stock: number;
   brand: string;
-  images: { url: string }[];
+  images: { url?: string; imageUrl?: string; [key: string]: any }[];
   description?: string;
   categoryId?: string | number;
   subCategoryId?: string | number;
+  inventory?: { quantity: number };
+  category?: { id: number; name: string; slug: string };
+  subCategory?: { id: number; name: string; slug: string };
 };
+
 export type Category = {
   id: number;
   name: string;
   slug: string;
 };
+
 export type SubCategory = {
   id: number;
   name: string;
@@ -38,6 +34,8 @@ export type SubCategory = {
     slug: string;
   };
 };
+
+// State interface
 interface ProductsState {
   items: Product[];
   loading: boolean;
@@ -51,14 +49,13 @@ interface ProductsState {
   subcategories: SubCategory[];
   subcategoriesLoading: boolean;
   subcategoriesError: string | null;
-  updating: boolean;
-  updateError: string | null;
   lastFetched: {
     products: number | null;
     categories: number | null;
     subcategories: number | null;
   };
 }
+
 const initialState: ProductsState = {
   items: [],
   loading: false,
@@ -72,14 +69,21 @@ const initialState: ProductsState = {
   subcategories: [],
   subcategoriesLoading: false,
   subcategoriesError: null,
-  updating: false,
-  updateError: null,
   lastFetched: {
     products: null,
     categories: null,
     subcategories: null,
   },
 };
+
+// API Calls
+const getTenantDomain = () => {
+  if (typeof window === "undefined") return "";
+  const hostname = window.location.hostname;
+  const parts = hostname.split(".");
+  return parts[0];
+};
+
 export const fetchAllProducts = createAsyncThunk(
   "products/fetchAll",
   async (filters?: {
@@ -90,16 +94,19 @@ export const fetchAllProducts = createAsyncThunk(
     const imageBase = process.env.NEXT_PUBLIC_IMAGE_URL ?? "";
     const params = new URLSearchParams();
     if (filters?.category !== undefined && filters?.category !== "") {
-      params.set("category", String(filters.category));
+      params.set("categoryId", String(filters.category));
     }
     if (filters?.subCategory !== undefined && filters?.subCategory !== "") {
-      params.set("subCategory", String(filters.subCategory));
+      params.set("subCategoryId", String(filters.subCategory));
     }
     const qs = params.toString();
-    const url = `${base}/products/all${qs ? `?${qs}` : ""}`;
+    const url = `${base}/storefront/products${qs ? `?${qs}` : ""}`;
     console.log("🔍 Fetching products from:", url);
     const res = await fetch(url, {
       cache: "no-cache",
+      headers: {
+        "x-tenant-domain": getTenantDomain(),
+      },
     });
     if (!res.ok) {
       console.error("❌ Products API failed:", res.status, res.statusText);
@@ -115,9 +122,10 @@ export const fetchAllProducts = createAsyncThunk(
       stock: number;
       brand: string;
       categoryId?: string | number;
-      category?: { id: string | number };
+      category?: { id: string | number; name: string; slug: string };
       subCategoryId?: string | number;
-      subCategory?: { id: string | number };
+      subCategory?: { id: string | number; name: string; slug: string };
+      inventory?: { quantity: number };
       images?: Array<
         | {
             url?: string;
@@ -144,11 +152,14 @@ export const fetchAllProducts = createAsyncThunk(
       title: p.title,
       slug: p.slug,
       price: p.price,
-      stock: p.stock,
+      stock: p?.inventory?.quantity ?? p.stock ?? 0,
       brand: p.brand,
       categoryId: p?.categoryId ?? p?.category?.id ?? p?.category ?? undefined,
       subCategoryId:
         p?.subCategoryId ?? p?.subCategory?.id ?? p?.subCategory ?? undefined,
+      inventory: p?.inventory,
+      category: p?.category,
+      subCategory: p?.subCategory,
       images: Array.isArray(p.images)
         ? p.images.map((im: unknown) => {
             const raw =
@@ -201,10 +212,13 @@ export const fetchProductById = createAsyncThunk(
   async (id: string | number) => {
     const base = process.env.NEXT_PUBLIC_BASE_URL ?? "";
     const imageBase = process.env.NEXT_PUBLIC_IMAGE_URL ?? "";
-    const res = await fetch(`${base}/products/${id}`, {
+    const res = await fetch(`${base}/storefront/products/${id}`, {
       cache: "force-cache",
       next: { revalidate: 30 },
-    });
+      headers: {
+        "x-tenant-domain": getTenantDomain(),
+      },
+    } as any);
     if (!res.ok) {
       const msg = await res.text();
       throw new Error(msg || `Failed to fetch product ${id}`);
@@ -234,13 +248,16 @@ export const fetchProductById = createAsyncThunk(
       title: d?.title ?? "Untitled",
       slug: d?.slug ?? String(d?.id ?? id),
       price: Number(d?.price) || 0,
-      stock: Number(d?.stock) || 0,
+      stock: Number(d?.inventory?.quantity ?? d?.stock) || 0,
       brand: d?.brand ?? "",
       description: d?.description ?? "",
       categoryId: d?.categoryId ?? d?.category?.id ?? d?.category ?? undefined,
       subCategoryId:
         d?.subCategoryId ?? d?.subCategory?.id ?? d?.subCategory ?? undefined,
       images,
+      inventory: d?.inventory,
+      category: d?.category,
+      subCategory: d?.subCategory,
     };
     return product;
   }
@@ -249,12 +266,15 @@ export const fetchCategories = createAsyncThunk(
   "products/fetchCategories",
   async () => {
     const base = process.env.NEXT_PUBLIC_BASE_URL ?? "";
-    const res = await fetch(`${base}/categories/all`, {
+    const res = await fetch(`${base}/storefront/categories`, {
       cache: "no-cache",
+      headers: {
+        "x-tenant-domain": getTenantDomain(),
+      },
     });
     if (!res.ok) throw new Error("Failed to load categories");
     const json = await res.json();
-    const data: any[] = json ?? [];
+    const data: any[] = json?.data ?? json ?? [];
     return data.map((c) => ({
       id: c.id,
       name: c.name,
@@ -267,16 +287,19 @@ export const fetchSubcategories = createAsyncThunk(
   async (categoryId: string | number) => {
     const base = process.env.NEXT_PUBLIC_BASE_URL ?? "";
     const res = await fetch(
-      `${base}/subcategories/all?categoryId=${encodeURIComponent(
+      `${base}/storefront/subcategories?categoryId=${encodeURIComponent(
         String(categoryId)
       )}`,
       {
         cache: "no-cache",
+        headers: {
+          "x-tenant-domain": getTenantDomain(),
+        },
       }
     );
     if (!res.ok) throw new Error("Failed to load subcategories");
     const json = await res.json();
-    const data: any[] = json ?? [];
+    const data: any[] = json?.data ?? json ?? [];
     return data.map((s) => ({
       id: s.id,
       name: s.name,
@@ -289,12 +312,15 @@ export const fetchAllSubcategories = createAsyncThunk(
   "products/fetchAllSubcategories",
   async () => {
     const base = process.env.NEXT_PUBLIC_BASE_URL ?? "";
-    const res = await fetch(`${base}/subcategories/all`, {
+    const res = await fetch(`${base}/storefront/subcategories`, {
       cache: "no-cache",
+      headers: {
+        "x-tenant-domain": getTenantDomain(),
+      },
     });
     if (!res.ok) throw new Error("Failed to load subcategories");
     const json = await res.json();
-    const data: any[] = json ?? [];
+    const data: any[] = json?.data ?? json ?? [];
     return data.map((s) => ({
       id: s.id,
       name: s.name,
@@ -310,194 +336,8 @@ export const fetchAllSubcategories = createAsyncThunk(
     })) as SubCategory[];
   }
 );
-export const updateProduct = createAsyncThunk(
-  "products/updateProduct",
-  async (
-    payload: {
-      id: string | number;
-      data: {
-        title?: string;
-        description?: string;
-        price?: number;
-        stock?: number;
-        brand?: string;
-        categoryId?: number | string;
-        subCategoryId?: number | string;
-        existingImages?: string[];
-        newImages?: File[];
-      };
-      token?: string;
-    },
-    { rejectWithValue }
-  ) => {
-    const { id, data, token } = payload;
-    const base = process.env.NEXT_PUBLIC_BASE_URL ?? "";
-    const fd = new FormData();
-    if (data.title !== undefined) fd.append("title", data.title);
-    if (data.description !== undefined)
-      fd.append("description", data.description);
-    if (data.price !== undefined) fd.append("price", String(data.price));
-    if (data.stock !== undefined) fd.append("stock", String(data.stock));
-    if (data.brand !== undefined) fd.append("brand", data.brand);
-    if (data.categoryId !== undefined)
-      fd.append("categoryId", String(data.categoryId));
-    if (data.subCategoryId !== undefined && data.subCategoryId !== "")
-      fd.append("subCategoryId", String(data.subCategoryId));
-    if (data.existingImages) {
-      fd.append("existingImages", JSON.stringify(data.existingImages));
-    }
-    (data.newImages || []).forEach((file) => fd.append("images", file));
-    const res = await fetch(`${base}/products/${id}`, {
-      method: "PATCH",
-      headers: {
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-      body: fd,
-    });
-    if (!res.ok) {
-      let msg = "Failed to update product";
-      try {
-        const j = await res.json();
-        msg = j?.message || msg;
-        handleUnauthorized(res.status, msg);
-      } catch {}
-      return rejectWithValue(msg);
-    }
-    const json = await res.json();
-    return json?.data;
-  }
-);
-export const createCategory = createAsyncThunk(
-  "products/createCategory",
-  async (payload: { name: string; token: string }, { rejectWithValue }) => {
-    const { name, token } = payload;
-    const base = process.env.NEXT_PUBLIC_BASE_URL ?? "";
-    const res = await fetch(`${base}/categories/create`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ name }),
-    });
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      handleUnauthorized(res.status, data?.message);
-      return rejectWithValue(data?.message || "Failed to create category");
-    }
-    return res.json();
-  }
-);
-export const updateCategory = createAsyncThunk(
-  "products/updateCategory",
-  async (
-    payload: { id: number; name: string; token: string },
-    { rejectWithValue }
-  ) => {
-    const { id, name, token } = payload;
-    const base = process.env.NEXT_PUBLIC_BASE_URL ?? "";
-    const res = await fetch(`${base}/categories/update/${id}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ name }),
-    });
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      handleUnauthorized(res.status, data?.message);
-      return rejectWithValue(data?.message || "Failed to update category");
-    }
-    return res.json();
-  }
-);
-export const deleteCategory = createAsyncThunk(
-  "products/deleteCategory",
-  async (payload: { id: number; token: string }, { rejectWithValue }) => {
-    const { id, token } = payload;
-    const base = process.env.NEXT_PUBLIC_BASE_URL ?? "";
-    const res = await fetch(`${base}/categories/delete/${id}`, {
-      method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      handleUnauthorized(res.status, data?.message);
-      return rejectWithValue(data?.message || "Failed to delete category");
-    }
-    return res.json();
-  }
-);
-export const createSubcategory = createAsyncThunk(
-  "products/createSubcategory",
-  async (
-    payload: { name: string; categoryId: number; token: string },
-    { rejectWithValue }
-  ) => {
-    const { name, categoryId, token } = payload;
-    const base = process.env.NEXT_PUBLIC_BASE_URL ?? "";
-    const res = await fetch(`${base}/subcategories/create`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ name, categoryId }),
-    });
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      handleUnauthorized(res.status, data?.message);
-      return rejectWithValue(data?.message || "Failed to create subcategory");
-    }
-    return res.json();
-  }
-);
-export const updateSubcategory = createAsyncThunk(
-  "products/updateSubcategory",
-  async (
-    payload: { id: number; name: string; categoryId: number; token: string },
-    { rejectWithValue }
-  ) => {
-    const { id, name, categoryId, token } = payload;
-    const base = process.env.NEXT_PUBLIC_BASE_URL ?? "";
-    const res = await fetch(`${base}/subcategories/update/${id}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ name, categoryId }),
-    });
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      handleUnauthorized(res.status, data?.message);
-      return rejectWithValue(data?.message || "Failed to update subcategory");
-    }
-    return res.json();
-  }
-);
-export const deleteSubcategory = createAsyncThunk(
-  "products/deleteSubcategory",
-  async (payload: { id: number; token: string }, { rejectWithValue }) => {
-    const { id, token } = payload;
-    const base = process.env.NEXT_PUBLIC_BASE_URL ?? "";
-    const res = await fetch(`${base}/subcategories/delete/${id}`, {
-      method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      handleUnauthorized(res.status, data?.message);
-      return rejectWithValue(data?.message || "Failed to delete subcategory");
-    }
-    return res.json();
-  }
-);
+
+// Slice
 const productsSlice = createSlice({
   name: "products",
   initialState,
@@ -571,153 +411,8 @@ const productsSlice = createSlice({
         state.subcategoriesLoading = false;
         state.subcategoriesError =
           action.error.message || "Failed to load subcategories";
-      })
-      .addCase(updateProduct.pending, (state) => {
-        state.updating = true;
-        state.updateError = null;
-      })
-      .addCase(updateProduct.fulfilled, (state, action) => {
-        state.updating = false;
-        const updated = action.payload;
-        if (updated) {
-          const idx = state.items.findIndex(
-            (p) => String(p.id) === String(updated.id)
-          );
-          if (idx !== -1) {
-            state.items[idx] = {
-              ...state.items[idx],
-              ...updated,
-              images: Array.isArray(updated.images)
-                ? updated.images.map((im: any) => ({ url: im.url || im }))
-                : state.items[idx].images,
-            };
-          }
-          if (
-            state.currentItem &&
-            String(state.currentItem.id) === String(updated.id)
-          ) {
-            state.currentItem = {
-              ...state.currentItem,
-              ...updated,
-            } as Product;
-          }
-        }
-      })
-      .addCase(updateProduct.rejected, (state, action: any) => {
-        state.updating = false;
-        state.updateError =
-          action.payload || action.error.message || "Failed to update product";
-      })
-      .addCase(createCategory.pending, (state) => {
-        state.updating = true;
-        state.updateError = null;
-      })
-      .addCase(createCategory.fulfilled, (state, action) => {
-        state.updating = false;
-        if (action.payload?.data) {
-          state.categories.push(action.payload.data);
-        }
-      })
-      .addCase(createCategory.rejected, (state, action: any) => {
-        state.updating = false;
-        state.updateError =
-          action.payload || action.error.message || "Failed to create category";
-      })
-      .addCase(updateCategory.pending, (state) => {
-        state.updating = true;
-        state.updateError = null;
-      })
-      .addCase(updateCategory.fulfilled, (state, action) => {
-        state.updating = false;
-        if (action.payload?.data) {
-          const idx = state.categories.findIndex(
-            (c) => c.id === action.payload.data.id
-          );
-          if (idx !== -1) {
-            state.categories[idx] = action.payload.data;
-          }
-        }
-      })
-      .addCase(updateCategory.rejected, (state, action: any) => {
-        state.updating = false;
-        state.updateError =
-          action.payload || action.error.message || "Failed to update category";
-      })
-      .addCase(deleteCategory.pending, (state) => {
-        state.updating = true;
-        state.updateError = null;
-      })
-      .addCase(deleteCategory.fulfilled, (state, action) => {
-        state.updating = false;
-        if (action.payload?.data) {
-          state.categories = state.categories.filter(
-            (c) => c.id !== action.payload.data.id
-          );
-        }
-      })
-      .addCase(deleteCategory.rejected, (state, action: any) => {
-        state.updating = false;
-        state.updateError =
-          action.payload || action.error.message || "Failed to delete category";
-      })
-      .addCase(createSubcategory.pending, (state) => {
-        state.updating = true;
-        state.updateError = null;
-      })
-      .addCase(createSubcategory.fulfilled, (state, action) => {
-        state.updating = false;
-        if (action.payload?.data) {
-          state.subcategories.push(action.payload.data);
-        }
-      })
-      .addCase(createSubcategory.rejected, (state, action: any) => {
-        state.updating = false;
-        state.updateError =
-          action.payload ||
-          action.error.message ||
-          "Failed to create subcategory";
-      })
-      .addCase(updateSubcategory.pending, (state) => {
-        state.updating = true;
-        state.updateError = null;
-      })
-      .addCase(updateSubcategory.fulfilled, (state, action) => {
-        state.updating = false;
-        if (action.payload?.data) {
-          const idx = state.subcategories.findIndex(
-            (s) => s.id === action.payload.data.id
-          );
-          if (idx !== -1) {
-            state.subcategories[idx] = action.payload.data;
-          }
-        }
-      })
-      .addCase(updateSubcategory.rejected, (state, action: any) => {
-        state.updating = false;
-        state.updateError =
-          action.payload ||
-          action.error.message ||
-          "Failed to update subcategory";
-      })
-      .addCase(deleteSubcategory.pending, (state) => {
-        state.updating = true;
-        state.updateError = null;
-      })
-      .addCase(deleteSubcategory.fulfilled, (state, action) => {
-        state.updating = false;
-        if (action.payload?.data) {
-          state.subcategories = state.subcategories.filter(
-            (s) => s.id !== action.payload.data.id
-          );
-        }
-      })
-      .addCase(deleteSubcategory.rejected, (state, action: any) => {
-        state.updating = false;
-        state.updateError =
-          action.payload ||
-          action.error.message ||
-          "Failed to delete subcategory";
       });
   },
 });
+
 export default productsSlice.reducer;

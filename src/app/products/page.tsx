@@ -66,13 +66,7 @@ export default function ProductsPage() {
     if (shouldFetchSubcategories) {
       dispatch(fetchAllSubcategories());
     }
-  }, [
-    dispatch,
-    categories.length,
-    subcategories.length,
-    categoriesLoading,
-    subcategoriesLoading,
-  ]);
+  }, [dispatch]);
   useEffect(() => {
     if (!items.length) dispatch(fetchAllProducts());
   }, [dispatch]);
@@ -90,16 +84,20 @@ export default function ProductsPage() {
   }, [dispatch, selectedCategoryId, selectedSubCategoryId]);
   const allProducts: CardProduct[] = useMemo(
     () =>
-      items.map((p) => ({
-        id: String(p.id),
-        name: p.title ?? "Untitled",
-        price: Number(p.price) || 0,
-        originalPrice: Number(p.price) || 0,
-        rating: 0,
-        reviews: 0,
-        image: p.images?.[0]?.url || "/vercel.svg",
-        category: p.brand || "all",
-      })),
+      items.map((p) => {
+        const imageUrl =
+          p.images?.[0]?.imageUrl || p.images?.[0]?.url || "/vercel.svg";
+        return {
+          id: String(p.id),
+          name: p.title ?? "Untitled",
+          price: Number(p.price) || 0,
+          originalPrice: Number(p.price) || 0,
+          rating: 0,
+          reviews: 0,
+          image: imageUrl,
+          category: p.brand || "all",
+        };
+      }),
     [items]
   );
   const filteredProducts = useMemo(() => {
