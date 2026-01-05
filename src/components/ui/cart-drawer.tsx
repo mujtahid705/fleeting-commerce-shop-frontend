@@ -2,7 +2,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Plus, Minus, ShoppingBag, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import Image from "next/image";
+import { ImageWithFallback } from "@/components/ui/image-with-fallback";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/redux/store";
 import {
@@ -131,7 +131,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                       transition={{ delay: index * 0.1 }}
                     >
                       <div className="w-16 h-16 bg-white rounded-lg overflow-hidden">
-                        <Image
+                        <ImageWithFallback
                           src={item.image}
                           alt={item.title}
                           width={64}

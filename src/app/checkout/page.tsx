@@ -302,7 +302,11 @@ export default function CheckoutPage() {
                       />
                     </div>
                     <div className="flex justify-end">
-                      <Button type="button" onClick={nextStep}>
+                      <Button
+                        type="button"
+                        onClick={nextStep}
+                        className="bg-stone-800 hover:bg-stone-900 text-white"
+                      >
                         Continue to Shipping
                       </Button>
                     </div>
@@ -386,10 +390,15 @@ export default function CheckoutPage() {
                         type="button"
                         variant="outline"
                         onClick={prevStep}
+                        className="border-stone-300 text-stone-600 hover:bg-stone-800 hover:text-white hover:border-stone-800"
                       >
                         Back
                       </Button>
-                      <Button type="button" onClick={nextStep}>
+                      <Button
+                        type="button"
+                        onClick={nextStep}
+                        className="bg-stone-800 hover:bg-stone-900 text-white"
+                      >
                         Continue to Payment
                       </Button>
                     </div>

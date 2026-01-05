@@ -45,14 +45,11 @@ export default function ProfilePage() {
       router.push("/login");
       return;
     }
-    if (userData.role === "admin" || userData.role === "superAdmin") {
-      router.push("/dashboard");
-      return;
-    }
+
     if (userData.id) {
       dispatch(fetchUserOrders(userData.id));
     }
-  }, [isLoggedIn, userData.role, userData.id, router, dispatch]);
+  }, [isLoggedIn, userData.id, router, dispatch]);
   const handleViewOrder = (order: Order) => {
     dispatch(setSelectedOrder(order));
   };

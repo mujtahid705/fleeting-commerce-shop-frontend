@@ -37,8 +37,6 @@ export default function ProductDetailPage() {
   const id = params?.id;
   const router = useRouter();
   const [selectedImage, setSelectedImage] = useState(0);
-  const [selectedSize, setSelectedSize] = useState("M");
-  const [selectedColor, setSelectedColor] = useState("Black");
   const [quantity, setQuantity] = useState(1);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
 
@@ -78,8 +76,7 @@ export default function ProductDetailPage() {
     }
   }, [dispatch, product]);
 
-  const sizes = ["XS", "S", "M", "L", "XL"];
-  const colors = ["Black", "White", "Gray", "Navy"];
+  const stockQuantity = product?.inventory?.quantity ?? product?.stock ?? 0;
 
   // Handler for adding to cart
   const handleAddToCart = async () => {
@@ -95,7 +92,7 @@ export default function ProductDetailPage() {
             title: product.title,
             slug: product.slug,
             price: product.price,
-            stock: product.stock,
+            stock: stockQuantity,
             brand: product.brand,
             images: product.images,
             description: product.description,
@@ -103,8 +100,6 @@ export default function ProductDetailPage() {
             subCategoryId: product.subCategoryId,
           },
           quantity,
-          size: selectedSize,
-          color: selectedColor,
         })
       );
 
@@ -135,7 +130,7 @@ export default function ProductDetailPage() {
           title: product.title,
           slug: product.slug,
           price: product.price,
-          stock: product.stock,
+          stock: stockQuantity,
           brand: product.brand,
           images: product.images,
           description: product.description,
@@ -181,11 +176,11 @@ export default function ProductDetailPage() {
   }
 
   const productImages: string[] = product.images.length
-    ? product.images.map((im: { url?: string } | string) => {
-        const url = typeof im === "string" ? im : im?.url;
-        return url
-          ? `${process.env.NEXT_PUBLIC_IMAGE_URL}${url}`
-          : "/vercel.svg";
+    ? product.images.map((im: { url?: string; imageUrl?: string } | string) => {
+        if (typeof im === "string") return im;
+        // Handle both 'url' and 'imageUrl' properties
+        const imageUrl = im?.imageUrl || im?.url;
+        return imageUrl || "/vercel.svg";
       })
     : ["/vercel.svg"];
 
@@ -252,79 +247,35 @@ export default function ProductDetailPage() {
               <h1 className="text-3xl font-bold text-stone-800 mb-2">
                 {product.title}
               </h1>
+              <p className="text-sm text-stone-600 mb-4">
+                {product.category?.name} / {product.subCategory?.name}
+              </p>
               <div className="flex items-center space-x-4 mb-4">
-                <div className="flex items-center">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className="w-4 h-4 text-amber-400 fill-current"
-                    />
-                  ))}
-                </div>
-                <span className="text-sm text-stone-600">(127 reviews)</span>
-              </div>
-              <div className="flex items-center space-x-4">
                 <span className="text-3xl font-bold text-stone-800">
                   ৳ {product.price.toLocaleString()}
                 </span>
-                {false && (
-                  <span className="text-xl text-stone-500 line-through">
-                    ৳ {product?.price.toLocaleString()}
-                  </span>
-                )}
-                {false && <Badge className="bg-red-500">40% OFF</Badge>}
+                <Badge
+                  className={
+                    stockQuantity > 0
+                      ? "bg-green-100 text-green-700"
+                      : "bg-red-100 text-red-700"
+                  }
+                >
+                  {stockQuantity > 0
+                    ? `${stockQuantity} in stock`
+                    : "Out of Stock"}
+                </Badge>
               </div>
             </div>
 
             <div className="space-y-6">
               <div>
-                <h3 className="font-semibold mb-3">Size</h3>
-                <div className="flex space-x-2">
-                  {sizes.map((size) => (
-                    <motion.button
-                      key={size}
-                      className={`w-12 h-12 border-2 rounded-lg transition-all ${
-                        selectedSize === size
-                          ? "border-stone-800 bg-stone-100 text-stone-800"
-                          : "border-stone-300 hover:border-stone-400"
-                      }`}
-                      onClick={() => setSelectedSize(size)}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      {size}
-                    </motion.button>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <h3 className="font-semibold mb-3">Color</h3>
-                <div className="flex space-x-2">
-                  {colors.map((color) => (
-                    <motion.button
-                      key={color}
-                      className={`px-4 py-2 border-2 rounded-lg transition-all ${
-                        selectedColor === color
-                          ? "border-stone-800 bg-stone-100 text-stone-800"
-                          : "border-stone-300 hover:border-stone-400"
-                      }`}
-                      onClick={() => setSelectedColor(color)}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      {color}
-                    </motion.button>
-                  ))}
-                </div>
-              </div>
-
-              <div>
                 <h3 className="font-semibold mb-3">Quantity</h3>
                 <div className="flex items-center space-x-3">
                   <motion.button
-                    className="w-10 h-10 border border-stone-300 rounded-lg flex items-center justify-center hover:border-stone-400"
+                    className="w-10 h-10 border border-stone-300 rounded-lg flex items-center justify-center hover:border-stone-400 disabled:opacity-50 disabled:cursor-not-allowed"
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                    disabled={quantity <= 1}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
@@ -334,8 +285,9 @@ export default function ProductDetailPage() {
                     {quantity}
                   </span>
                   <motion.button
-                    className="w-10 h-10 border border-stone-300 rounded-lg flex items-center justify-center hover:border-stone-400"
+                    className="w-10 h-10 border border-stone-300 rounded-lg flex items-center justify-center hover:border-stone-400 disabled:opacity-50 disabled:cursor-not-allowed"
                     onClick={() => setQuantity(quantity + 1)}
+                    disabled={quantity >= stockQuantity}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
@@ -354,14 +306,14 @@ export default function ProductDetailPage() {
                 <Button
                   className="w-full bg-stone-800 hover:bg-stone-900 text-white py-3"
                   onClick={handleAddToCart}
-                  disabled={isAddingToCart || product.stock === 0}
+                  disabled={isAddingToCart || stockQuantity === 0}
                 >
                   {isAddingToCart ? (
                     <>
                       <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2"></div>
                       Adding...
                     </>
-                  ) : product.stock === 0 ? (
+                  ) : stockQuantity === 0 ? (
                     "Out of Stock"
                   ) : (
                     "Add to Cart"
@@ -410,16 +362,24 @@ export default function ProductDetailPage() {
                   <span>{product.brand || "-"}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="font-medium">Material</span>
-                  <span>100% Cotton</span>
+                  <span className="font-medium">Category</span>
+                  <span>{product.category?.name || "-"}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="font-medium">Care</span>
-                  <span>Machine Wash</span>
+                  <span className="font-medium">Subcategory</span>
+                  <span>{product.subCategory?.name || "-"}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="font-medium">Origin</span>
-                  <span>Made in India</span>
+                  <span className="font-medium">Availability</span>
+                  <span
+                    className={
+                      stockQuantity > 0 ? "text-green-600" : "text-red-600"
+                    }
+                  >
+                    {stockQuantity > 0
+                      ? `${stockQuantity} units`
+                      : "Out of Stock"}
+                  </span>
                 </div>
               </div>
             </div>
@@ -471,9 +431,10 @@ export default function ProductDetailPage() {
                     originalPrice: Number(r.price) || 0,
                     rating: 4.5,
                     reviews: 0,
-                    image: r.images?.[0]?.url
-                      ? `${process.env.NEXT_PUBLIC_IMAGE_URL}${r.images[0].url}`
-                      : "/vercel.svg",
+                    image:
+                      r.images?.[0]?.imageUrl ||
+                      r.images?.[0]?.url ||
+                      "/vercel.svg",
                   }}
                 />
               </motion.div>

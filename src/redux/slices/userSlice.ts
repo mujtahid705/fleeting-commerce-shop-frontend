@@ -1,5 +1,8 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+
+// Storage utilities
 const isClient = () => typeof window !== "undefined";
+
 const setStorageItem = (key: string, value: any) => {
   if (isClient()) {
     try {
@@ -9,6 +12,7 @@ const setStorageItem = (key: string, value: any) => {
     }
   }
 };
+
 const getStorageItem = (key: string) => {
   if (isClient()) {
     try {
@@ -21,6 +25,7 @@ const getStorageItem = (key: string) => {
   }
   return null;
 };
+
 const removeStorageItem = (key: string) => {
   if (isClient()) {
     try {
@@ -30,11 +35,13 @@ const removeStorageItem = (key: string) => {
     }
   }
 };
+
 const clearAuthStorage = () => {
   removeStorageItem("token");
   removeStorageItem("role");
   removeStorageItem("userData");
 };
+
 const handleUnauthorized = (status: number, message?: string) => {
   if (status === 401 || message?.toLowerCase().includes("unauthorized")) {
     console.log("401 Unauthorized in userSlice:", { status, message });
@@ -44,15 +51,25 @@ const handleUnauthorized = (status: number, message?: string) => {
     }
   }
 };
+
+// Auth API calls
+const getTenantDomain = () => {
+  if (typeof window === "undefined") return "";
+  const hostname = window.location.hostname;
+  const parts = hostname.split(".");
+  return parts[0];
+};
+
 export const loginUser = createAsyncThunk(
   "loginUser",
   async (userData: { email: string; password: string }) => {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL}/auth/login`,
+      `${process.env.NEXT_PUBLIC_BASE_URL}/storefront/auth/login`,
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "x-tenant-domain": getTenantDomain(),
         },
         body: JSON.stringify(userData),
       }
@@ -60,6 +77,7 @@ export const loginUser = createAsyncThunk(
     return response.json();
   }
 );
+
 export const registerUser = createAsyncThunk(
   "registerUser",
   async (userData: {
@@ -69,11 +87,12 @@ export const registerUser = createAsyncThunk(
     phone: string;
   }) => {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL}/auth/register`,
+      `${process.env.NEXT_PUBLIC_BASE_URL}/storefront/auth/register`,
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "x-tenant-domain": getTenantDomain(),
         },
         body: JSON.stringify(userData),
       }
@@ -81,37 +100,16 @@ export const registerUser = createAsyncThunk(
     return response.json();
   }
 );
-export const fetchAllUsers = createAsyncThunk(
-  "users/fetchAll",
-  async (token: string, { rejectWithValue }) => {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL}/users/all`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      handleUnauthorized(response.status, errorData?.message);
-      return rejectWithValue(errorData?.message || "Failed to fetch users");
-    }
-    return response.json();
-  }
-);
+
+// State interface
 interface UserState {
   loading: {
     login: boolean;
     register: boolean;
-    fetchAll: boolean;
   };
   error: {
     login: string | null;
     register: string | null;
-    fetchAll: string | null;
   };
   userData: {
     id: string;
@@ -119,33 +117,19 @@ interface UserState {
     email: string;
     phone: string;
     token: string;
-    role: "user" | "admin" | "superAdmin";
+    role: "CUSTOMER";
   };
-  users: Array<{
-    id: string;
-    email: string;
-    name: string;
-    role: string;
-    phone: string;
-    isActive: boolean;
-    createdAt: string;
-    updatedAt: string;
-  }>;
   isLoggedIn: boolean;
-  lastFetched: {
-    users: number | null;
-  };
 }
+
 const initialState: UserState = {
   loading: {
     login: false,
     register: false,
-    fetchAll: false,
   },
   error: {
     login: null,
     register: null,
-    fetchAll: null,
   },
   userData: {
     id: "",
@@ -153,14 +137,12 @@ const initialState: UserState = {
     email: "",
     phone: "",
     token: "",
-    role: "user",
+    role: "CUSTOMER",
   },
-  users: [],
   isLoggedIn: false,
-  lastFetched: {
-    users: null,
-  },
 };
+
+// Slice
 const userSlice = createSlice({
   name: "user",
   initialState,
@@ -206,14 +188,10 @@ const userSlice = createSlice({
             email: userData.email || "",
             phone: userData.phone || "",
             token: token,
-            role: (userData.role || role || "user") as
-              | "user"
-              | "admin"
-              | "superAdmin",
+            role: (userData.role || role || "CUSTOMER") as "CUSTOMER",
           };
           state.error.login = null;
           state.error.register = null;
-          state.error.fetchAll = null;
           console.log("User session restored from localStorage:", {
             id: state.userData.id,
             name: state.userData.name,
@@ -239,14 +217,13 @@ const userSlice = createSlice({
         email: "",
         phone: "",
         token: "",
-        role: "user",
+        role: "CUSTOMER",
       };
       state.isLoggedIn = false;
       clearAuthStorage();
       console.log("User logged out, localStorage cleared");
       state.error.login = null;
       state.error.register = null;
-      state.error.fetchAll = null;
     },
   },
   extraReducers: (builder) => {
@@ -272,7 +249,7 @@ const userSlice = createSlice({
           name: user.name || "",
           email: user.email || "",
           phone: user.phone || "",
-          role: user.role || "user",
+          role: user.role || "CUSTOMER",
         };
         setStorageItem("token", token);
         setStorageItem("userData", userData);
@@ -287,7 +264,7 @@ const userSlice = createSlice({
           email: userData.email,
           phone: userData.phone,
           token: token,
-          role: userData.role as "user" | "admin" | "superAdmin",
+          role: userData.role as "CUSTOMER",
         };
         state.isLoggedIn = true;
         state.error.login = null;
@@ -316,21 +293,8 @@ const userSlice = createSlice({
         state.error.register = action.error.message || "Registration failed";
         console.error("Registration failed:", action.payload);
       });
-    builder
-      .addCase(fetchAllUsers.pending, (state) => {
-        state.loading.fetchAll = true;
-        state.error.fetchAll = null;
-      })
-      .addCase(fetchAllUsers.fulfilled, (state, action) => {
-        state.loading.fetchAll = false;
-        state.users = action.payload;
-        state.lastFetched.users = Date.now();
-      })
-      .addCase(fetchAllUsers.rejected, (state, action) => {
-        state.loading.fetchAll = false;
-        state.error.fetchAll = action.error.message || "Failed to fetch users";
-      });
   },
 });
+
 export const { setUser, initializeAuth, logout } = userSlice.actions;
 export default userSlice.reducer;

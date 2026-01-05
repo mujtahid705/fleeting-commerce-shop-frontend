@@ -1,24 +1,108 @@
 import { createSlice, PayloadAction, createAsyncThunk } from "@reduxjs/toolkit";
 import { Theme, getThemeByIndex, getDefaultTheme } from "@/lib/themes";
 
-// Category and SubCategory types
+// SubCategory type
 export interface SubCategory {
   id: number;
   name: string;
+  slug: string;
 }
 
+// Category type
 export interface Category {
   id: number;
   name: string;
-  subCategories: SubCategory[];
+  slug: string;
+  subCategories?: SubCategory[];
 }
 
-// Brand information
+// Customization types - matching API response structure
+export interface HeroCustomization {
+  title: string;
+  subtitle?: string;
+  ctaText?: string;
+  ctaLink?: string;
+  backgroundImage?: string;
+}
+
+// Browse categories item from API
+export interface BrowseCategoryItem {
+  categoryId: number;
+  displayOrder: number;
+  category: Category;
+}
+
+// Browse categories section from API
+export interface BrowseCategoriesSection {
+  title: string;
+  categories: BrowseCategoryItem[];
+}
+
+// Exclusive product item from API
+export interface ExclusiveProductItem {
+  productId: string;
+  customImage?: string;
+  customTitle?: string;
+  displayOrder: number;
+}
+
+// Exclusive section from API
+export interface ExclusiveSectionCustomization {
+  title: string;
+  products: ExclusiveProductItem[];
+}
+
+// Featured categories item from API
+export interface FeaturedCategoryItem {
+  categoryId: number;
+  displayOrder: number;
+  category: Category;
+}
+
+// Featured categories section from API
+export interface FeaturedCategoriesSection {
+  title: string;
+  categories: FeaturedCategoryItem[];
+}
+
+// Quick link for footer
+export interface QuickLink {
+  label: string;
+  url: string;
+}
+
+// Social links for footer
+export interface SocialLinks {
+  facebook?: string;
+  instagram?: string;
+  twitter?: string;
+  linkedin?: string;
+  youtube?: string;
+}
+
+// Footer customization from API
+export interface FooterCustomization {
+  companyName?: string;
+  address?: string;
+  phone?: string;
+  email?: string;
+  socialLinks?: SocialLinks;
+  copyrightText?: string;
+  quickLinks?: QuickLink[];
+}
+
+// Brand information - sections are directly under brand, not nested in customization
 export interface BrandInfo {
   logoUrl: string | null;
   tagline: string | null;
   description: string | null;
   theme: number;
+  // Sections directly under brand (matching API structure)
+  hero?: HeroCustomization;
+  browseCategories?: BrowseCategoriesSection;
+  exclusiveSection?: ExclusiveSectionCustomization;
+  featuredCategories?: FeaturedCategoriesSection;
+  footer?: FooterCustomization;
 }
 
 // Tenant information from backend

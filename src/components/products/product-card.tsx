@@ -73,10 +73,10 @@ export function ProductCard({ product, index }: ProductCardProps) {
             )}
           </div>
         </Link>
-        <div className="p-5">
-          <div className="space-y-3">
+        <div className="p-5 h-48 flex flex-col">
+          <div className="space-y-3 flex-1 flex flex-col">
             <Link href={`/products/${product.id}`}>
-              <h3 className="font-medium text-stone-800 leading-tight line-clamp-2 group-hover:text-stone-600 transition-colors duration-300">
+              <h3 className="font-medium text-stone-800 leading-tight line-clamp-2 h-12 group-hover:text-stone-600 transition-colors duration-300">
                 {product.name}
               </h3>
             </Link>
@@ -97,8 +97,8 @@ export function ProductCard({ product, index }: ProductCardProps) {
                 ({product.reviews})
               </span>
             </div>
-            <div className="flex items-center justify-between pt-1">
-              <div>
+            <div className="flex items-center justify-between pt-1 mt-auto">
+              <div className="flex-1">
                 <div className="flex items-center space-x-2">
                   <span className="text-lg font-semibold text-stone-800">
                     ৳ {product.price.toLocaleString()}
@@ -109,12 +109,14 @@ export function ProductCard({ product, index }: ProductCardProps) {
                     </span>
                   )}
                 </div>
-                {product.originalPrice > product.price && (
-                  <p className="text-xs text-emerald-600 font-medium mt-0.5">
-                    Save ৳{" "}
-                    {(product.originalPrice - product.price).toLocaleString()}
-                  </p>
-                )}
+                <div className="h-5 mt-0.5">
+                  {product.originalPrice > product.price && (
+                    <p className="text-xs text-emerald-600 font-medium">
+                      Save ৳{" "}
+                      {(product.originalPrice - product.price).toLocaleString()}
+                    </p>
+                  )}
+                </div>
               </div>
               <motion.div
                 whileHover={{ scale: 1.05 }}

@@ -16,7 +16,7 @@ export interface FavoriteItem {
     price: number;
     stock: number;
     brand: string;
-    images: { url: string }[];
+    images: { url?: string; imageUrl?: string; [key: string]: any }[];
     description?: string;
     categoryId?: string | number;
     subCategoryId?: string | number;
@@ -75,15 +75,14 @@ const favoritesSlice = createSlice({
         (item) => item.id === productData.id
       );
       if (!existingItem) {
-        const imageUrl = productData.images[0]?.url;
+        const imageUrl =
+          productData.images[0]?.imageUrl || productData.images[0]?.url;
         const newItem: FavoriteItem = {
           id: productData.id,
           title: productData.title,
           price: productData.price,
           originalPrice,
-          image: imageUrl
-            ? `${process.env.NEXT_PUBLIC_IMAGE_URL}${imageUrl}`
-            : "/vercel.svg",
+          image: imageUrl || "/vercel.svg",
           brand: productData.brand,
           slug: productData.slug,
           stock: productData.stock,
@@ -117,15 +116,14 @@ const favoritesSlice = createSlice({
         state.items.splice(existingItemIndex, 1);
       } else {
         const { originalPrice, rating = 4.5 } = action.payload;
-        const imageUrl = productData.images[0]?.url;
+        const imageUrl =
+          productData.images[0]?.imageUrl || productData.images[0]?.url;
         const newItem: FavoriteItem = {
           id: productData.id,
           title: productData.title,
           price: productData.price,
           originalPrice,
-          image: imageUrl
-            ? `${process.env.NEXT_PUBLIC_IMAGE_URL}${imageUrl}`
-            : "/vercel.svg",
+          image: imageUrl || "/vercel.svg",
           brand: productData.brand,
           slug: productData.slug,
           stock: productData.stock,

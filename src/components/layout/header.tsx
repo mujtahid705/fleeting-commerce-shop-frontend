@@ -8,7 +8,6 @@ import {
   Menu,
   LogOut,
   UserCircle,
-  LayoutDashboard,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -64,7 +63,12 @@ export function Header() {
   };
 
   const storeName = tenant?.name || "Store";
-  const logoUrl = tenant?.brand?.logoUrl;
+  const rawLogoUrl = tenant?.brand?.logoUrl;
+  const logoUrl = rawLogoUrl
+    ? rawLogoUrl.startsWith("http://") || rawLogoUrl.startsWith("https://")
+      ? rawLogoUrl
+      : `${process.env.NEXT_PUBLIC_IMAGE_URL}${rawLogoUrl}`
+    : null;
 
   return (
     <>
@@ -83,11 +87,12 @@ export function Header() {
               <Link href="/">
                 {logoUrl ? (
                   <Image
-                    src={`${process.env.NEXT_PUBLIC_IMAGE_URL}${logoUrl}`}
+                    src={logoUrl}
                     alt={storeName}
-                    width={350}
-                    height={120}
-                    className="h-24 w-auto object-contain"
+                    width={120}
+                    height={48}
+                    className="h-12 w-auto object-contain"
+                    unoptimized
                   />
                 ) : (
                   <div className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
@@ -190,29 +195,13 @@ export function Header() {
                           {userData?.email || ""}
                         </p>
                       </div>
-                      {userData?.role === "user" && (
-                        <>
-                          <Link href="/profile">
-                            <DropdownMenuItem>
-                              <UserCircle className="w-4 h-4 mr-2" />
-                              Profile
-                            </DropdownMenuItem>
-                          </Link>
-                          <DropdownMenuSeparator />
-                        </>
-                      )}
-                      {(userData?.role === "admin" ||
-                        userData?.role === "superAdmin") && (
-                        <>
-                          <Link href="/dashboard">
-                            <DropdownMenuItem>
-                              <LayoutDashboard className="w-4 h-4 mr-2" />
-                              Dashboard
-                            </DropdownMenuItem>
-                          </Link>
-                          <DropdownMenuSeparator />
-                        </>
-                      )}
+                      <Link href="/profile">
+                        <DropdownMenuItem>
+                          <UserCircle className="w-4 h-4 mr-2" />
+                          Profile
+                        </DropdownMenuItem>
+                      </Link>
+                      <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={handleLogout}>
                         <LogOut className="w-4 h-4 mr-2" />
                         Logout

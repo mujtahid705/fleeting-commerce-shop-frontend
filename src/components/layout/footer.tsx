@@ -6,6 +6,7 @@ import {
   Twitter,
   Instagram,
   Youtube,
+  Linkedin,
   Mail,
   Phone,
   MapPin,
@@ -19,10 +20,44 @@ export function Footer() {
   const { tenant } = useAppSelector((state) => state.tenant);
 
   const storeName = tenant?.name || "Store";
-  const logoUrl = tenant?.brand?.logoUrl;
+  const rawLogoUrl = tenant?.brand?.logoUrl;
+  const logoUrl = rawLogoUrl
+    ? rawLogoUrl.startsWith("http://") || rawLogoUrl.startsWith("https://")
+      ? rawLogoUrl
+      : `${process.env.NEXT_PUBLIC_IMAGE_URL}${rawLogoUrl}`
+    : null;
   const description = tenant?.brand?.description;
-  const address = tenant?.address;
   const categories = tenant?.categories || [];
+
+  // API returns footer directly under brand, not under customization
+  const footerData = tenant?.brand?.footer;
+  const companyName = footerData?.companyName || storeName;
+  const contactEmail =
+    footerData?.email || `support@${tenant?.domain || "store"}`;
+  const contactPhone = footerData?.phone || "";
+  const address = footerData?.address || tenant?.address;
+  const copyrightText =
+    footerData?.copyrightText ||
+    `© ${new Date().getFullYear()} ${storeName}. All rights reserved.`;
+  const socialLinks = footerData?.socialLinks;
+  const quickLinks =
+    footerData?.quickLinks && footerData.quickLinks.length > 0
+      ? footerData.quickLinks
+      : [
+          { label: "Home", url: "/" },
+          { label: "Shop", url: "/products" },
+          { label: "About", url: "/about" },
+          { label: "Contact", url: "/contact" },
+        ];
+
+  // Build social media links array from API data
+  const socialMediaItems = [
+    { Icon: Facebook, href: socialLinks?.facebook, name: "Facebook" },
+    { Icon: Twitter, href: socialLinks?.twitter, name: "Twitter" },
+    { Icon: Instagram, href: socialLinks?.instagram, name: "Instagram" },
+    { Icon: Youtube, href: socialLinks?.youtube, name: "YouTube" },
+    { Icon: Linkedin, href: socialLinks?.linkedin, name: "LinkedIn" },
+  ].filter((item) => item.href); // Only show icons with URLs
 
   return (
     <motion.footer
@@ -42,11 +77,12 @@ export function Footer() {
               <Link href="/">
                 {logoUrl ? (
                   <Image
-                    src={`${process.env.NEXT_PUBLIC_IMAGE_URL}${logoUrl}`}
+                    src={logoUrl}
                     alt={storeName}
                     width={350}
                     height={120}
                     className="h-24 w-auto object-contain brightness-0 invert"
+                    unoptimized
                   />
                 ) : (
                   <div className="text-2xl font-bold text-background">
@@ -58,24 +94,24 @@ export function Footer() {
             <p className="text-background/60 mb-6 font-light leading-relaxed">
               {description || "Your trusted shopping destination."}
             </p>
-            <div className="flex space-x-4">
-              {[
-                { Icon: Facebook, href: "#" },
-                { Icon: Twitter, href: "#" },
-                { Icon: Instagram, href: "#" },
-                { Icon: Youtube, href: "#" },
-              ].map(({ Icon, href }, index) => (
-                <motion.a
-                  key={index}
-                  href={href}
-                  className="w-10 h-10 bg-background/10 rounded-full flex items-center justify-center text-background/60 hover:bg-background/20 hover:text-background transition-all duration-300"
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Icon className="w-4 h-4" />
-                </motion.a>
-              ))}
-            </div>
+            {socialMediaItems.length > 0 && (
+              <div className="flex space-x-4">
+                {socialMediaItems.map(({ Icon, href, name }, index) => (
+                  <motion.a
+                    key={index}
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={name}
+                    className="w-10 h-10 bg-background/10 rounded-full flex items-center justify-center text-background/60 hover:bg-background/20 hover:text-background transition-all duration-300"
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Icon className="w-4 h-4" />
+                  </motion.a>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Quick Links */}
@@ -84,18 +120,13 @@ export function Footer() {
               Quick Links
             </h3>
             <ul className="space-y-3">
-              {[
-                { name: "Home", href: "/" },
-                { name: "Shop", href: "/products" },
-                { name: "About", href: "/about" },
-                { name: "Contact", href: "/contact" },
-              ].map((item) => (
-                <li key={item.name}>
+              {quickLinks.map((item, index) => (
+                <li key={index}>
                   <Link
-                    href={item.href}
+                    href={item.url}
                     className="text-background/60 hover:text-background transition-colors font-light"
                   >
-                    {item.name}
+                    {item.label}
                   </Link>
                 </li>
               ))}
@@ -137,18 +168,26 @@ export function Footer() {
                 <div className="w-8 h-8 bg-background/10 rounded-lg flex items-center justify-center">
                   <Mail className="w-4 h-4 text-background/60" />
                 </div>
-                <span className="text-background/60 text-sm font-light">
-                  support@store.com
-                </span>
+                <a
+                  href={`mailto:${contactEmail}`}
+                  className="text-background/60 text-sm font-light hover:text-background transition-colors"
+                >
+                  {contactEmail}
+                </a>
               </div>
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-background/10 rounded-lg flex items-center justify-center">
-                  <Phone className="w-4 h-4 text-background/60" />
+              {contactPhone && (
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 bg-background/10 rounded-lg flex items-center justify-center">
+                    <Phone className="w-4 h-4 text-background/60" />
+                  </div>
+                  <a
+                    href={`tel:${contactPhone}`}
+                    className="text-background/60 text-sm font-light hover:text-background transition-colors"
+                  >
+                    {contactPhone}
+                  </a>
                 </div>
-                <span className="text-background/60 text-sm font-light">
-                  Contact Support
-                </span>
-              </div>
+              )}
               {address && (
                 <div className="flex items-center space-x-3">
                   <div className="w-8 h-8 bg-background/10 rounded-lg flex items-center justify-center">
@@ -167,7 +206,7 @@ export function Footer() {
         <div className="border-t border-background/10 mt-12 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-background/40 text-sm font-light">
-              © {new Date().getFullYear()} {storeName}. All rights reserved.
+              {copyrightText}
             </p>
             <div className="flex gap-6">
               <Link
