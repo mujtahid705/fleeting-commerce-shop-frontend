@@ -58,7 +58,8 @@ export function CategoriesSection() {
       (a: BrowseCategoryItem, b: BrowseCategoryItem) =>
         a.displayOrder - b.displayOrder
     )
-    .map((item: BrowseCategoryItem) => item.category);
+    .map((item: BrowseCategoryItem) => item.category)
+    .filter((category): category is Category => category != null);
 
   // Use API categories if available, otherwise fallback to tenant.categories
   const categories: Category[] =
