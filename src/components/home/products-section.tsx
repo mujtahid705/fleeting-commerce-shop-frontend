@@ -18,6 +18,10 @@ import type {
   FeaturedCategoryItem,
   ExclusiveProductItem,
 } from "@/redux/slices/tenantSlice";
+import {
+  getThemePreviewExclusiveProducts,
+  getThemePreviewProductsByCategory,
+} from "@/lib/theme-preview";
 
 type CardProduct = {
   id: string;
@@ -32,8 +36,7 @@ type CardProduct = {
 // Default exclusive section for when API returns empty products array
 const DEFAULT_EXCLUSIVE = {
   title: "Exclusive Collection",
-  description:
-    "Discover your signature style with our thoughtfully curated collection",
+  description: "Products highlighted by this store",
 };
 
 function resolveImageUrl(src: string | undefined | null): string {
@@ -49,7 +52,9 @@ function resolveImageUrl(src: string | undefined | null): string {
 
 export function ProductsSection() {
   const dispatch = useDispatch<AppDispatch>();
-  const { tenant } = useAppSelector((state) => state.tenant);
+  const { tenant, theme, isThemePreview } = useAppSelector(
+    (state) => state.tenant
+  );
 
   // API returns sections directly under brand, not under customization
   const featuredCategoriesSection = tenant?.brand?.featuredCategories;
@@ -91,6 +96,20 @@ export function ProductsSection() {
   >([]);
   const [exclusiveLoading, setExclusiveLoading] = React.useState(false);
 
+  const previewCategoryProducts = React.useMemo(
+    () => getThemePreviewProductsByCategory(),
+    []
+  );
+  const previewExclusiveProducts = React.useMemo(
+    () =>
+      getThemePreviewExclusiveProducts().map((product) => ({
+        product,
+        customTitle: product.name,
+        customImage: product.image,
+      })),
+    []
+  );
+
   const mapToCard = React.useCallback(
     (
       items: Array<{
@@ -114,6 +133,7 @@ export function ProductsSection() {
 
   // Fetch products for featured categories
   React.useEffect(() => {
+    if (isThemePreview) return;
     if (featuredCategories.length === 0) return;
 
     let active = true;
@@ -153,10 +173,11 @@ export function ProductsSection() {
     return () => {
       active = false;
     };
-  }, [dispatch, featuredCategories, mapToCard]);
+  }, [dispatch, featuredCategories, isThemePreview, mapToCard]);
 
   // Fetch exclusive products by productId
   React.useEffect(() => {
+    if (isThemePreview) return;
     if (exclusiveProducts.length === 0) return;
 
     let active = true;
@@ -201,11 +222,334 @@ export function ProductsSection() {
     return () => {
       active = false;
     };
-  }, [dispatch, exclusiveProducts, mapToCard]);
+  }, [dispatch, exclusiveProducts, isThemePreview, mapToCard]);
 
   // Show exclusive section even without featured categories
   const hasFeaturedCategories = featuredCategories.length > 0;
-  const hasExclusiveProducts = exclusiveProducts.length > 0;
+  const hasExclusiveProducts =
+    exclusiveProducts.length > 0 ||
+    (isThemePreview && previewExclusiveProducts.length > 0);
+  const displayCategoryProducts = isThemePreview
+    ? previewCategoryProducts
+    : categoryProducts;
+  const displayExclusiveProductsData = isThemePreview
+    ? previewExclusiveProducts
+    : exclusiveProductsData;
+  const displayExclusiveLoading = isThemePreview ? false : exclusiveLoading;
+  const homeVariant = theme.layout.homeVariant;
+  const isEditorial = homeVariant === "editorial";
+  const isModern = homeVariant === "modern";
+  const isLuxury = homeVariant === "luxury";
+  const storeName = tenant?.name || "Store";
+
+  if (isLuxury) {
+    return (
+      <>
+        {hasFeaturedCategories &&
+          featuredCategories.map((category, categoryIndex) => (
+            <section
+              key={category.id}
+              className={`py-[var(--theme-section-spacing)] ${
+                categoryIndex % 2 === 0
+                  ? "bg-background text-foreground"
+                  : "bg-foreground text-background"
+              }`}
+            >
+              <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <motion.div
+                  className="mx-auto mb-14 max-w-3xl text-center"
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6 }}
+                  viewport={{ once: true }}
+                >
+                  <p
+                    className={`text-xs font-semibold uppercase tracking-[0.32em] ${
+                      categoryIndex % 2 === 0 ? "text-primary" : "text-primary"
+                    }`}
+                  >
+                    {featuredSectionTitle}
+                  </p>
+                  <h2 className="mt-4 text-4xl font-semibold uppercase tracking-[0.08em] sm:text-5xl">
+                    {category.name}
+                  </h2>
+                  <p
+                    className={`mx-auto mt-5 max-w-lg text-sm leading-7 ${
+                      categoryIndex % 2 === 0
+                        ? "text-muted-foreground"
+                        : "text-background/65"
+                    }`}
+                  >
+                    {category.subCategories?.length || 0} subcategories
+                    available.
+                  </p>
+                </motion.div>
+
+                {loading[category.id] && (
+                  <div className="flex justify-center py-12">
+                    <div className="h-8 w-8 animate-spin rounded-full border-2 border-muted border-t-primary" />
+                  </div>
+                )}
+                {error[category.id] && !loading[category.id] && (
+                  <div className="border border-border bg-card py-8 text-center text-muted-foreground">
+                    {error[category.id]}
+                  </div>
+                )}
+                {!loading[category.id] && !error[category.id] && (
+                  <div className="grid grid-cols-1 gap-px overflow-hidden border border-border bg-border sm:grid-cols-2 lg:grid-cols-4">
+                    {displayCategoryProducts[category.id]
+                      ?.slice(0, 4)
+                      .map((product, index) => (
+                        <ProductCard
+                          key={product.id}
+                          product={product}
+                          index={index}
+                        />
+                      ))}
+                  </div>
+                )}
+              </div>
+            </section>
+          ))}
+
+        {hasExclusiveProducts && (
+          <section className="border-y border-border bg-card py-[var(--theme-section-spacing)]">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+              <motion.div
+                className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                viewport={{ once: true }}
+              >
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.32em] text-primary">
+                    {storeName}
+                  </p>
+                  <h2 className="mt-4 text-4xl font-semibold uppercase tracking-[0.08em] text-card-foreground sm:text-5xl">
+                    {exclusiveTitle}
+                  </h2>
+                </div>
+                <p className="max-w-sm text-sm leading-7 text-muted-foreground">
+                  {exclusiveProducts.length} products from {storeName}.
+                </p>
+              </motion.div>
+
+              {displayExclusiveLoading ? (
+                <div className="flex justify-center py-12">
+                  <div className="h-8 w-8 animate-spin rounded-full border-2 border-muted border-t-primary" />
+                </div>
+              ) : (
+                <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+                  {displayExclusiveProductsData.map((item, index) => {
+                    const displayImage = item.customImage
+                      ? resolveImageUrl(item.customImage)
+                      : item.product.image;
+                    const displayTitle = item.customTitle || item.product.name;
+
+                    return (
+                      <motion.div
+                        key={item.product.id}
+                        initial={{ opacity: 0, y: 30 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, delay: index * 0.08 }}
+                        viewport={{ once: true }}
+                      >
+                        <Link href={`/products/${item.product.id}`}>
+                          <div className="group">
+                            <div className="relative aspect-[3/4] overflow-hidden border border-border bg-background">
+                              <Image
+                                src={displayImage}
+                                alt={displayTitle}
+                                fill
+                                className="object-cover transition-transform duration-500 group-hover:scale-105"
+                                unoptimized
+                              />
+                            </div>
+                            <div className="mt-4 border-t border-border pt-4">
+                              <h3 className="line-clamp-2 text-base font-semibold uppercase tracking-[0.08em] text-card-foreground">
+                                {displayTitle}
+                              </h3>
+                              <p className="mt-2 text-sm font-semibold text-primary">
+                                ${item.product.price.toFixed(2)}
+                              </p>
+                            </div>
+                          </div>
+                        </Link>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </section>
+        )}
+      </>
+    );
+  }
+
+  if (isEditorial) {
+    return (
+      <>
+        {hasFeaturedCategories &&
+          featuredCategories.map((category, categoryIndex) => (
+            <section
+              key={category.id}
+              className="border-b border-border bg-background py-[var(--theme-section-spacing)]"
+            >
+              <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <motion.div
+                  className="mb-12 grid gap-8 lg:grid-cols-[0.72fr_1.28fr] lg:items-end"
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6 }}
+                  viewport={{ once: true }}
+                >
+                  <div>
+                    <div className="mb-4 flex items-center gap-3">
+                      <span className="h-px w-10 bg-accent" />
+                      <span className="text-xs font-semibold uppercase tracking-[0.28em] text-accent">
+                        Featured {String(categoryIndex + 1).padStart(2, "0")}
+                      </span>
+                    </div>
+                    <h2 className="text-4xl font-semibold uppercase leading-tight text-foreground sm:text-5xl">
+                      {category.name}
+                    </h2>
+                  </div>
+                  <div className="flex flex-col gap-5 lg:items-end">
+                    <p className="max-w-lg text-sm leading-7 text-muted-foreground lg:text-right">
+                      {category.subCategories?.length || 0} subcategories
+                      available.
+                    </p>
+                    <Link href={`/products?category=${category.id}`}>
+                      <Button
+                        variant="outline"
+                        className="rounded-[var(--theme-button-radius)] border-foreground px-6 text-xs font-semibold uppercase tracking-[0.2em]"
+                      >
+                        View all <ArrowRight className="ml-2 h-4 w-4" />
+                      </Button>
+                    </Link>
+                  </div>
+                </motion.div>
+
+                {loading[category.id] && (
+                  <div className="flex justify-center py-12">
+                    <div className="h-8 w-8 animate-spin rounded-full border-2 border-muted border-t-foreground" />
+                  </div>
+                )}
+                {error[category.id] && !loading[category.id] && (
+                  <div className="border border-border bg-card py-8 text-center text-muted-foreground">
+                    {error[category.id]}
+                  </div>
+                )}
+                {!loading[category.id] && !error[category.id] && (
+                  <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                    {displayCategoryProducts[category.id]
+                      ?.slice(0, 4)
+                      .map((product, index) => (
+                        <ProductCard
+                          key={product.id}
+                          product={product}
+                          index={index}
+                        />
+                      ))}
+                  </div>
+                )}
+              </div>
+            </section>
+          ))}
+
+        {hasExclusiveProducts && (
+          <section className="bg-foreground py-[var(--theme-section-spacing)] text-background">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+              <motion.div
+                className="mb-12 grid gap-8 lg:grid-cols-[1fr_0.8fr] lg:items-end"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                viewport={{ once: true }}
+              >
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.32em] text-background/60">
+                    {storeName}
+                  </p>
+                  <h2 className="mt-4 max-w-3xl text-4xl font-semibold uppercase leading-tight sm:text-6xl">
+                    {exclusiveTitle}
+                  </h2>
+                </div>
+                <p className="max-w-md text-sm leading-7 text-background/65 lg:justify-self-end">
+                  {exclusiveProducts.length} products from {storeName}.
+                </p>
+              </motion.div>
+
+              {displayExclusiveLoading ? (
+                <div className="flex justify-center py-12">
+                  <div className="h-8 w-8 animate-spin rounded-full border-2 border-background/30 border-t-background" />
+                </div>
+              ) : (
+                <div className="grid gap-px overflow-hidden bg-background/20 lg:grid-cols-4">
+                  {displayExclusiveProductsData.map((item, index) => {
+                    const displayImage = item.customImage
+                      ? resolveImageUrl(item.customImage)
+                      : item.product.image;
+                    const displayTitle = item.customTitle || item.product.name;
+
+                    return (
+                      <motion.div
+                        key={item.product.id}
+                        initial={{ opacity: 0, y: 24 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, delay: index * 0.08 }}
+                        viewport={{ once: true }}
+                      >
+                        <Link
+                          href={`/products/${item.product.id}`}
+                          className="group block bg-foreground"
+                        >
+                          <div className="relative aspect-[4/5] overflow-hidden bg-background/10">
+                            <Image
+                              src={displayImage}
+                              alt={displayTitle}
+                              fill
+                              className="object-cover opacity-90 transition duration-500 group-hover:scale-105 group-hover:opacity-100"
+                              unoptimized
+                            />
+                          </div>
+                          <div className="p-5">
+                            <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-background/45">
+                              Product
+                            </p>
+                            <h3 className="mt-3 min-h-12 text-base font-semibold uppercase leading-6">
+                              {displayTitle}
+                            </h3>
+                            <p className="mt-4 text-sm font-semibold">
+                              ${item.product.price.toFixed(2)}
+                            </p>
+                          </div>
+                        </Link>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              )}
+
+              <div className="mt-12 text-right">
+                <Link href="/products">
+                  <Button
+                    size="lg"
+                    variant="secondary"
+                    className="rounded-[var(--theme-button-radius)] px-8 py-6 text-xs font-semibold uppercase tracking-[0.22em]"
+                  >
+                    Explore collection <ArrowRight className="ml-2 h-5 w-5" />
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </section>
+        )}
+      </>
+    );
+  }
 
   return (
     <>
@@ -214,15 +558,23 @@ export function ProductsSection() {
         featuredCategories.map((category, categoryIndex) => (
           <section
             key={category.id}
-            className={`py-12 ${
-              categoryIndex % 2 === 0
-                ? "bg-gradient-to-b from-white to-stone-50"
-                : "bg-white"
-            }`}
+            className={
+              isModern
+                ? "border-b border-border bg-background py-16"
+                : `py-12 ${
+                    categoryIndex % 2 === 0
+                      ? "bg-gradient-to-b from-card to-background"
+                      : "bg-card"
+                  }`
+            }
           >
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <motion.div
-                className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-14 gap-4"
+                className={
+                  isModern
+                    ? "mb-10 grid gap-5 border-b border-border pb-8 md:grid-cols-[1fr_auto] md:items-end"
+                    : "flex flex-col sm:flex-row justify-between items-start sm:items-center mb-14 gap-4"
+                }
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
@@ -230,15 +582,15 @@ export function ProductsSection() {
               >
                 <div>
                   <div className="flex items-center gap-2 mb-2">
-                    <Sparkles className="w-4 h-4 text-amber-500" />
-                    <span className="text-sm font-medium text-stone-500 uppercase tracking-wider">
+                    <Sparkles className="w-4 h-4 text-accent" />
+                    <span className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
                       Featured
                     </span>
                   </div>
-                  <h2 className="text-3xl font-light text-stone-800">
+                  <h2 className="text-3xl font-light text-foreground">
                     {category.name}
                   </h2>
-                  <p className="text-stone-500 mt-2 font-light">
+                  <p className="text-muted-foreground mt-2 font-light">
                     {category.subCategories?.length || 0} subcategories
                     available
                   </p>
@@ -246,27 +598,33 @@ export function ProductsSection() {
                 <Link href={`/products?category=${category.id}`}>
                   <Button
                     variant="outline"
-                    className="rounded-full px-6 border-stone-300 text-stone-600 hover:bg-stone-800 hover:text-white hover:border-stone-800 transition-all duration-300"
+                    className="rounded-[var(--theme-button-radius)] px-6 border-border text-foreground hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all duration-300"
                   >
                     View All <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
                 </Link>
               </motion.div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+              <div
+                className={
+                  isModern
+                    ? "grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4"
+                    : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6"
+                }
+              >
                 {loading[category.id] && (
                   <div className="col-span-full flex justify-center py-12">
-                    <div className="w-8 h-8 border-2 border-stone-300 border-t-stone-600 rounded-full animate-spin"></div>
+                    <div className="w-8 h-8 border-2 border-muted border-t-primary rounded-full animate-spin"></div>
                   </div>
                 )}
                 {error[category.id] && !loading[category.id] && (
-                  <div className="col-span-full text-center py-8 text-stone-500">
+                  <div className="col-span-full text-center py-8 text-muted-foreground">
                     {error[category.id]}
                   </div>
                 )}
                 {!loading[category.id] &&
                   !error[category.id] &&
-                  categoryProducts[category.id]
+                  displayCategoryProducts[category.id]
                     ?.slice(0, 5)
                     .map((product, index) => (
                       <ProductCard
@@ -282,9 +640,15 @@ export function ProductsSection() {
 
       {/* Exclusive Section - Only show if there are exclusive products */}
       {hasExclusiveProducts && (
-        <section className="py-24 bg-gradient-to-br from-stone-100 via-amber-50/50 to-stone-100 relative overflow-hidden">
-          <div className="absolute top-20 left-10 w-64 h-64 bg-emerald-100/40 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-20 right-10 w-80 h-80 bg-purple-100/30 rounded-full blur-3xl"></div>
+        <section
+          className={
+            isModern
+              ? "relative overflow-hidden border-y border-border bg-card py-20"
+              : "py-24 bg-gradient-to-br from-secondary via-background to-secondary relative overflow-hidden"
+          }
+        >
+          <div className="absolute top-20 left-10 w-64 h-64 bg-primary/10 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-20 right-10 w-80 h-80 bg-accent/10 rounded-full blur-3xl"></div>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             {/* Section Header */}
             <motion.div
@@ -295,28 +659,28 @@ export function ProductsSection() {
               viewport={{ once: true }}
             >
               <div className="flex items-center justify-center gap-2 mb-4">
-                <Sparkles className="w-5 h-5 text-amber-500" />
-                <span className="text-sm font-medium text-stone-500 uppercase tracking-wider">
+                <Sparkles className="w-5 h-5 text-accent" />
+                <span className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
                   {exclusiveTitle}
                 </span>
-                <Sparkles className="w-5 h-5 text-amber-500" />
+                <Sparkles className="w-5 h-5 text-accent" />
               </div>
-              <h2 className="text-4xl font-light text-stone-800 mb-4">
-                Handpicked <span className="font-semibold">For You</span>
+              <h2 className="text-4xl font-light text-foreground mb-4">
+                <span className="font-semibold">{exclusiveTitle}</span>
               </h2>
-              <p className="text-stone-500 max-w-lg mx-auto font-light">
+              <p className="text-muted-foreground max-w-lg mx-auto font-light">
                 {DEFAULT_EXCLUSIVE.description}
               </p>
             </motion.div>
 
             {/* Exclusive Products Grid */}
-            {exclusiveLoading ? (
+            {displayExclusiveLoading ? (
               <div className="flex justify-center py-12">
-                <div className="w-8 h-8 border-2 border-stone-300 border-t-stone-600 rounded-full animate-spin"></div>
+                <div className="w-8 h-8 border-2 border-muted border-t-primary rounded-full animate-spin"></div>
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                {exclusiveProductsData.map((item, index) => {
+                {displayExclusiveProductsData.map((item, index) => {
                   // Use custom image if provided, otherwise use product image
                   const displayImage = item.customImage
                     ? resolveImageUrl(item.customImage)
@@ -333,7 +697,7 @@ export function ProductsSection() {
                     >
                       <Link href={`/products/${item.product.id}`}>
                         <div className="group cursor-pointer">
-                          <div className="relative aspect-square rounded-2xl overflow-hidden mb-4 bg-white shadow-md group-hover:shadow-xl transition-shadow duration-300">
+                          <div className="relative aspect-square rounded-[var(--theme-image-radius)] overflow-hidden mb-4 bg-card shadow-md group-hover:shadow-xl transition-shadow duration-300">
                             <Image
                               src={displayImage}
                               alt={displayTitle}
@@ -343,10 +707,10 @@ export function ProductsSection() {
                             />
                           </div>
                           <div className="text-center">
-                            <h3 className="text-lg font-medium text-stone-800 group-hover:text-stone-900 transition-colors line-clamp-2">
+                            <h3 className="text-lg font-medium text-foreground group-hover:text-primary transition-colors line-clamp-2">
                               {displayTitle}
                             </h3>
-                            <p className="text-stone-600 font-semibold mt-1">
+                            <p className="text-primary font-semibold mt-1">
                               ${item.product.price.toFixed(2)}
                             </p>
                           </div>
@@ -369,7 +733,7 @@ export function ProductsSection() {
               <Link href="/products">
                 <Button
                   size="lg"
-                  className="bg-stone-800 text-white hover:bg-stone-900 rounded-full px-8 py-6 font-medium transition-all duration-300 shadow-lg hover:shadow-xl"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-[var(--theme-button-radius)] px-8 py-6 font-medium transition-all duration-300 shadow-lg hover:shadow-xl"
                 >
                   Explore Collection <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>

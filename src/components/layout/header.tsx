@@ -43,7 +43,7 @@ export function Header() {
   const { totalItems: favoriteItems, isOpen: isFavoritesOpen } = useAppSelector(
     (state) => state.favorites
   );
-  const { tenant } = useAppSelector((state) => state.tenant);
+  const { tenant, theme } = useAppSelector((state) => state.tenant);
 
   useEffect(() => {
     setMounted(true);
@@ -69,6 +69,388 @@ export function Header() {
       ? rawLogoUrl
       : `${process.env.NEXT_PUBLIC_IMAGE_URL}${rawLogoUrl}`
     : null;
+  const headerVariant = theme.layout.headerVariant;
+  const tagline = tenant?.brand?.tagline;
+  const isEditorial = headerVariant === "editorial";
+  const isModern = headerVariant === "modern";
+  const isLuxury = headerVariant === "luxury";
+  const navItems = [
+    { name: "Home", href: "/" },
+    { name: "Shop", href: "/products" },
+    { name: "About", href: "/about" },
+    { name: "Contact", href: "/contact" },
+  ];
+  const actionItems = [
+    {
+      name: "Favorites",
+      Icon: Heart,
+      count: favoriteItems.toString(),
+      onClick: handleFavoritesClick,
+    },
+    {
+      name: "Cart",
+      Icon: ShoppingCart,
+      count: cartItems.toString(),
+      onClick: handleCartClick,
+    },
+  ];
+
+  if (isModern) {
+    return (
+      <>
+        <motion.header
+          className="sticky top-0 z-50 border-b border-border bg-card/95 backdrop-blur-xl"
+          initial={{ y: -100 }}
+          animate={{ y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <div className="mx-auto flex min-h-20 max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
+            <Link href="/" className="flex min-w-0 items-center gap-3">
+              {logoUrl ? (
+                <Image
+                  src={logoUrl}
+                  alt={storeName}
+                  width={132}
+                  height={48}
+                  className="h-11 w-auto object-contain"
+                  unoptimized
+                />
+              ) : (
+                <div className="truncate text-xl font-semibold text-foreground">
+                  {storeName}
+                </div>
+              )}
+            </Link>
+
+            <div className="order-3 flex w-full items-center gap-2 border border-border bg-background px-3 py-2 md:order-none md:w-[320px]">
+              <Search className="h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search products..."
+                className="h-8 border-0 bg-transparent p-0 text-sm focus-visible:ring-0"
+              />
+            </div>
+
+            <div className="flex items-center gap-2">
+              {actionItems.map(({ name, Icon, count, onClick }) => (
+                <Button
+                  key={name}
+                  variant="outline"
+                  size="sm"
+                  className="relative rounded-[var(--theme-button-radius)] border-border bg-background"
+                  onClick={onClick}
+                >
+                  <Icon className="h-4 w-4" />
+                  <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-sm bg-primary px-1 text-[10px] text-primary-foreground">
+                    {count}
+                  </span>
+                </Button>
+              ))}
+              {isLoggedIn ? (
+                <DropdownMenu
+                  trigger={
+                    <Button variant="outline" size="sm" className="rounded-[var(--theme-button-radius)] border-border bg-background">
+                      <UserCircle className="h-4 w-4" />
+                    </Button>
+                  }
+                >
+                  <div className="border-b border-border px-4 py-2">
+                    <p className="text-sm font-medium text-foreground">
+                      {userData?.name || "User"}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {userData?.email || ""}
+                    </p>
+                  </div>
+                  <Link href="/profile">
+                    <DropdownMenuItem>
+                      <UserCircle className="mr-2 h-4 w-4" />
+                      Profile
+                    </DropdownMenuItem>
+                  </Link>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenu>
+              ) : (
+                <Link href="/login">
+                  <Button variant="outline" size="sm" className="rounded-[var(--theme-button-radius)] border-border bg-background">
+                    <User className="h-4 w-4" />
+                  </Button>
+                </Link>
+              )}
+            </div>
+          </div>
+          <nav className="hidden border-t border-border bg-secondary/60 md:block">
+            <div className="mx-auto flex max-w-7xl items-center gap-8 px-4 py-3 sm:px-6 lg:px-8">
+              {navItems.map((item) => (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className={`text-xs font-semibold uppercase tracking-[0.16em] transition-colors ${
+                    mounted && pathname === item.href
+                      ? "text-primary"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {item.name}
+                </Link>
+              ))}
+            </div>
+          </nav>
+        </motion.header>
+        <CartDrawer isOpen={isCartOpen} onClose={() => dispatch(toggleCart())} />
+        <FavoritesDrawer
+          isOpen={isFavoritesOpen}
+          onClose={() => dispatch(toggleFavorites())}
+        />
+      </>
+    );
+  }
+
+  if (isLuxury) {
+    return (
+      <>
+        <motion.header
+          className="sticky top-0 z-50 bg-foreground text-background"
+          initial={{ y: -100 }}
+          animate={{ y: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+          <div className="mx-auto grid min-h-20 max-w-7xl grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 sm:px-6 lg:px-8">
+            <nav className="hidden items-center gap-7 lg:flex">
+              {navItems.slice(0, 2).map((item) => (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className={`text-xs font-semibold uppercase tracking-[0.22em] transition-colors ${
+                    mounted && pathname === item.href
+                      ? "text-primary"
+                      : "text-background/65 hover:text-background"
+                  }`}
+                >
+                  {item.name}
+                </Link>
+              ))}
+            </nav>
+
+            <Link href="/" className="justify-self-center">
+              {logoUrl ? (
+                <Image
+                  src={logoUrl}
+                  alt={storeName}
+                  width={150}
+                  height={54}
+                  className="h-12 w-auto object-contain brightness-0 invert"
+                  unoptimized
+                />
+              ) : (
+                <div className="max-w-[220px] truncate text-center text-2xl font-semibold uppercase tracking-[0.22em]">
+                  {storeName}
+                </div>
+              )}
+            </Link>
+
+            <div className="flex items-center justify-end gap-2">
+              <nav className="mr-4 hidden items-center gap-7 lg:flex">
+                {navItems.slice(2).map((item) => (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    className={`text-xs font-semibold uppercase tracking-[0.22em] transition-colors ${
+                      mounted && pathname === item.href
+                        ? "text-primary"
+                        : "text-background/65 hover:text-background"
+                    }`}
+                  >
+                    {item.name}
+                  </Link>
+                ))}
+              </nav>
+              {actionItems.map(({ name, Icon, count, onClick }) => (
+                <Button
+                  key={name}
+                  variant="ghost"
+                  size="sm"
+                  className="relative rounded-none text-background hover:bg-background/10 hover:text-background"
+                  onClick={onClick}
+                >
+                  <Icon className="h-5 w-5" />
+                  <span className="absolute -right-1 top-1 flex h-4 min-w-4 items-center justify-center bg-primary px-1 text-[10px] text-primary-foreground">
+                    {count}
+                  </span>
+                </Button>
+              ))}
+              {isLoggedIn ? (
+                <DropdownMenu
+                  trigger={
+                    <Button variant="ghost" size="sm" className="rounded-none text-background hover:bg-background/10 hover:text-background">
+                      <UserCircle className="h-5 w-5" />
+                    </Button>
+                  }
+                >
+                  <div className="border-b border-border px-4 py-2">
+                    <p className="text-sm font-medium text-foreground">
+                      {userData?.name || "User"}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {userData?.email || ""}
+                    </p>
+                  </div>
+                  <Link href="/profile">
+                    <DropdownMenuItem>
+                      <UserCircle className="mr-2 h-4 w-4" />
+                      Profile
+                    </DropdownMenuItem>
+                  </Link>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenu>
+              ) : (
+                <Link href="/login">
+                  <Button variant="ghost" size="sm" className="rounded-none text-background hover:bg-background/10 hover:text-background">
+                    <User className="h-5 w-5" />
+                  </Button>
+                </Link>
+              )}
+              <Button variant="ghost" size="sm" className="rounded-none text-background hover:bg-background/10 hover:text-background lg:hidden">
+                <Menu className="h-5 w-5" />
+              </Button>
+            </div>
+          </div>
+        </motion.header>
+        <CartDrawer isOpen={isCartOpen} onClose={() => dispatch(toggleCart())} />
+        <FavoritesDrawer
+          isOpen={isFavoritesOpen}
+          onClose={() => dispatch(toggleFavorites())}
+        />
+      </>
+    );
+  }
+
+  if (isEditorial) {
+    return (
+      <>
+        <motion.header
+          className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-xl"
+          initial={{ y: -100 }}
+          animate={{ y: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+          {tagline && (
+            <div className="border-b border-border/70 px-4 py-2 text-center text-[11px] font-semibold uppercase tracking-[0.28em] text-muted-foreground">
+              {tagline}
+            </div>
+          )}
+          <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+            <Link href="/" className="min-w-0">
+              {logoUrl ? (
+                <Image
+                  src={logoUrl}
+                  alt={storeName}
+                  width={150}
+                  height={54}
+                  className="h-12 w-auto object-contain"
+                  unoptimized
+                />
+              ) : (
+                <div className="max-w-[190px] truncate text-2xl font-semibold uppercase tracking-[0.16em] text-foreground">
+                  {storeName}
+                </div>
+              )}
+            </Link>
+
+            <nav className="hidden items-center gap-8 lg:flex">
+              {navItems.map((item) => (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className={`text-xs font-semibold uppercase tracking-[0.24em] transition-colors ${
+                    mounted && pathname === item.href
+                      ? "text-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {item.name}
+                </Link>
+              ))}
+            </nav>
+
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="hidden items-center gap-2 border-b border-foreground/40 px-0 py-2 md:flex">
+                <Search className="h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search"
+                  className="h-7 w-32 border-0 bg-transparent p-0 text-xs uppercase tracking-[0.16em] focus-visible:ring-0 lg:w-44"
+                />
+              </div>
+              {actionItems.map(({ name, Icon, count, onClick }) => (
+                <Button
+                  key={name}
+                  variant="ghost"
+                  size="sm"
+                  className="relative rounded-none"
+                  onClick={onClick}
+                >
+                  <Icon className="h-5 w-5" />
+                  <span className="absolute -right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-none bg-accent px-1 text-[10px] font-semibold text-accent-foreground">
+                    {count}
+                  </span>
+                </Button>
+              ))}
+              {isLoggedIn ? (
+                <DropdownMenu
+                  trigger={
+                    <Button variant="ghost" size="sm" className="rounded-none">
+                      <UserCircle className="h-5 w-5 text-foreground" />
+                    </Button>
+                  }
+                >
+                  <div className="border-b border-border px-4 py-2">
+                    <p className="text-sm font-medium text-foreground">
+                      {userData?.name || "User"}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {userData?.email || ""}
+                    </p>
+                  </div>
+                  <Link href="/profile">
+                    <DropdownMenuItem>
+                      <UserCircle className="mr-2 h-4 w-4" />
+                      Profile
+                    </DropdownMenuItem>
+                  </Link>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenu>
+              ) : (
+                <Link href="/login">
+                  <Button variant="ghost" size="sm" className="rounded-none">
+                    <User className="h-5 w-5" />
+                  </Button>
+                </Link>
+              )}
+              <Button variant="ghost" size="sm" className="rounded-none lg:hidden">
+                <Menu className="h-5 w-5" />
+              </Button>
+            </div>
+          </div>
+        </motion.header>
+        <CartDrawer isOpen={isCartOpen} onClose={() => dispatch(toggleCart())} />
+        <FavoritesDrawer
+          isOpen={isFavoritesOpen}
+          onClose={() => dispatch(toggleFavorites())}
+        />
+      </>
+    );
+  }
 
   return (
     <>
@@ -102,12 +484,7 @@ export function Header() {
               </Link>
             </motion.div>
             <nav className="hidden md:flex space-x-8">
-              {[
-                { name: "Home", href: "/" },
-                { name: "Shop", href: "/products" },
-                { name: "About", href: "/about" },
-                { name: "Contact", href: "/contact" },
-              ].map((item) => (
+              {navItems.map((item) => (
                 <motion.div key={item.name}>
                   <Link
                     href={item.href}
@@ -187,11 +564,11 @@ export function Header() {
                         </Button>
                       }
                     >
-                      <div className="px-4 py-2 border-b border-gray-100">
-                        <p className="text-sm font-medium text-gray-900">
+                      <div className="px-4 py-2 border-b border-border">
+                        <p className="text-sm font-medium text-foreground">
                           {userData?.name || "User"}
                         </p>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-muted-foreground">
                           {userData?.email || ""}
                         </p>
                       </div>
