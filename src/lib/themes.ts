@@ -1,5 +1,7 @@
 // Theme configuration for multi-tenant white-label e-commerce
-// Themes are accessible by index (1, 2, 3) as stored in backend
+// Themes are accessible by index as stored in backend.
+
+export type StorefrontVariant = "natural" | "modern" | "luxury" | "editorial";
 
 export interface ThemeColors {
   // Light mode colors (HSL values without 'hsl()' wrapper)
@@ -49,10 +51,26 @@ export interface ThemeColorsDark {
 
 export interface Theme {
   id: number;
+  slug: string;
   name: string;
   description: string;
   light: ThemeColors;
   dark: ThemeColorsDark;
+  layout: {
+    homeVariant: StorefrontVariant;
+    headerVariant: StorefrontVariant;
+    footerVariant: StorefrontVariant;
+    productCardVariant: StorefrontVariant;
+  };
+  appearance: {
+    sectionSpacing: string;
+    imageRadius: string;
+    cardRadius: string;
+    cardShadow: string;
+    buttonRadius: string;
+    headingTracking: string;
+    textTransform: "none" | "uppercase";
+  };
   // Additional brand-specific styles
   gradients: {
     primary: string;
@@ -69,6 +87,7 @@ export const themes: Theme[] = [
   // Theme 1: Natural/Earthy (Default - Current theme)
   {
     id: 1,
+    slug: "natural",
     name: "Natural",
     description: "Earthy tones with green accents - warm and organic feel",
     light: {
@@ -114,6 +133,21 @@ export const themes: Theme[] = [
       input: "20 14% 22%",
       ring: "150 25% 50%",
     },
+    layout: {
+      homeVariant: "natural",
+      headerVariant: "natural",
+      footerVariant: "natural",
+      productCardVariant: "natural",
+    },
+    appearance: {
+      sectionSpacing: "6rem",
+      imageRadius: "1.5rem",
+      cardRadius: "1.25rem",
+      cardShadow: "0 12px 30px hsl(25 30% 15% / 0.08)",
+      buttonRadius: "999px",
+      headingTracking: "0",
+      textTransform: "none",
+    },
     gradients: {
       primary:
         "linear-gradient(135deg, hsl(145 50% 42%) 0%, hsl(145 50% 32%) 100%)",
@@ -130,6 +164,7 @@ export const themes: Theme[] = [
   // Theme 2: Modern Blue (Tech/Corporate)
   {
     id: 2,
+    slug: "modern-blue",
     name: "Modern Blue",
     description: "Clean blue tones - professional and trustworthy",
     light: {
@@ -175,6 +210,21 @@ export const themes: Theme[] = [
       input: "222 47% 20%",
       ring: "217 91% 60%",
     },
+    layout: {
+      homeVariant: "modern",
+      headerVariant: "modern",
+      footerVariant: "modern",
+      productCardVariant: "modern",
+    },
+    appearance: {
+      sectionSpacing: "5.5rem",
+      imageRadius: "0.375rem",
+      cardRadius: "0.5rem",
+      cardShadow: "0 18px 44px hsl(220 40% 12% / 0.12)",
+      buttonRadius: "0.5rem",
+      headingTracking: "0",
+      textTransform: "none",
+    },
     gradients: {
       primary:
         "linear-gradient(135deg, hsl(215 85% 48%) 0%, hsl(215 85% 38%) 100%)",
@@ -191,6 +241,7 @@ export const themes: Theme[] = [
   // Theme 3: Luxury Gold (Premium/Fashion)
   {
     id: 3,
+    slug: "luxury-gold",
     name: "Luxury Gold",
     description: "Elegant champagne and gold - premium and luxurious",
     light: {
@@ -236,12 +287,105 @@ export const themes: Theme[] = [
       input: "0 0% 18%",
       ring: "45 93% 50%",
     },
+    layout: {
+      homeVariant: "luxury",
+      headerVariant: "luxury",
+      footerVariant: "luxury",
+      productCardVariant: "luxury",
+    },
+    appearance: {
+      sectionSpacing: "7rem",
+      imageRadius: "0.125rem",
+      cardRadius: "0.125rem",
+      cardShadow: "0 22px 56px hsl(30 25% 10% / 0.16)",
+      buttonRadius: "0.125rem",
+      headingTracking: "0.06em",
+      textTransform: "uppercase",
+    },
     gradients: {
       primary:
         "linear-gradient(135deg, hsl(42 88% 55%) 0%, hsl(38 85% 45%) 100%)",
       secondary:
         "linear-gradient(135deg, hsl(40 30% 78%) 0%, hsl(40 25% 70%) 100%)",
       hero: "linear-gradient(135deg, hsl(45 35% 90%) 0%, hsl(35 30% 85%) 100%)",
+    },
+    fonts: {
+      heading: "Inter, system-ui, sans-serif",
+      body: "Inter, system-ui, sans-serif",
+    },
+  },
+
+  // Theme 4: Editorial Boutique (Magazine-style premium storefront)
+  {
+    id: 4,
+    slug: "editorial-boutique",
+    name: "Editorial Boutique",
+    description:
+      "Magazine-inspired premium storefront with asymmetric layouts and refined product presentation",
+    light: {
+      background: "38 22% 96%",
+      foreground: "220 18% 10%",
+      card: "40 30% 99%",
+      cardForeground: "220 18% 10%",
+      popover: "40 30% 99%",
+      popoverForeground: "220 18% 10%",
+      primary: "220 18% 10%",
+      primaryForeground: "38 22% 96%",
+      secondary: "35 28% 88%",
+      secondaryForeground: "220 18% 10%",
+      muted: "35 18% 90%",
+      mutedForeground: "220 9% 40%",
+      accent: "7 72% 55%",
+      accentForeground: "0 0% 100%",
+      destructive: "0 70% 50%",
+      destructiveForeground: "0 0% 100%",
+      border: "35 18% 80%",
+      input: "35 18% 80%",
+      ring: "7 72% 55%",
+      radius: "0.25rem",
+    },
+    dark: {
+      background: "220 18% 8%",
+      foreground: "38 22% 96%",
+      card: "220 16% 12%",
+      cardForeground: "38 22% 96%",
+      popover: "220 16% 12%",
+      popoverForeground: "38 22% 96%",
+      primary: "38 22% 96%",
+      primaryForeground: "220 18% 8%",
+      secondary: "220 12% 18%",
+      secondaryForeground: "38 22% 96%",
+      muted: "220 12% 18%",
+      mutedForeground: "38 12% 70%",
+      accent: "7 72% 60%",
+      accentForeground: "0 0% 100%",
+      destructive: "0 65% 52%",
+      destructiveForeground: "0 0% 100%",
+      border: "220 12% 24%",
+      input: "220 12% 24%",
+      ring: "7 72% 60%",
+    },
+    layout: {
+      homeVariant: "editorial",
+      headerVariant: "editorial",
+      footerVariant: "editorial",
+      productCardVariant: "editorial",
+    },
+    appearance: {
+      sectionSpacing: "7.5rem",
+      imageRadius: "0.125rem",
+      cardRadius: "0.25rem",
+      cardShadow: "0 24px 70px hsl(220 18% 10% / 0.14)",
+      buttonRadius: "0.125rem",
+      headingTracking: "0.02em",
+      textTransform: "uppercase",
+    },
+    gradients: {
+      primary:
+        "linear-gradient(135deg, hsl(220 18% 10%) 0%, hsl(220 14% 24%) 100%)",
+      secondary:
+        "linear-gradient(135deg, hsl(38 22% 96%) 0%, hsl(35 28% 88%) 100%)",
+      hero: "linear-gradient(135deg, hsl(38 22% 96%) 0%, hsl(18 48% 90%) 100%)",
     },
     fonts: {
       heading: "Inter, system-ui, sans-serif",
@@ -272,6 +416,7 @@ export function applyTheme(theme: Theme, isDark: boolean = false): void {
 
   const root = document.documentElement;
   const colors = isDark ? theme.dark : theme.light;
+  root.dataset.theme = theme.slug;
 
   // Apply CSS custom properties
   root.style.setProperty("--background", colors.background);
@@ -296,6 +441,25 @@ export function applyTheme(theme: Theme, isDark: boolean = false): void {
   root.style.setProperty("--border", colors.border);
   root.style.setProperty("--input", colors.input);
   root.style.setProperty("--ring", colors.ring);
+  root.style.setProperty(
+    "--theme-section-spacing",
+    theme.appearance.sectionSpacing
+  );
+  root.style.setProperty("--theme-image-radius", theme.appearance.imageRadius);
+  root.style.setProperty("--theme-card-radius", theme.appearance.cardRadius);
+  root.style.setProperty("--theme-card-shadow", theme.appearance.cardShadow);
+  root.style.setProperty(
+    "--theme-button-radius",
+    theme.appearance.buttonRadius
+  );
+  root.style.setProperty(
+    "--theme-heading-tracking",
+    theme.appearance.headingTracking
+  );
+  root.style.setProperty(
+    "--theme-text-transform",
+    theme.appearance.textTransform
+  );
 
   // Apply radius only from light theme (shared)
   if (!isDark && "radius" in colors) {

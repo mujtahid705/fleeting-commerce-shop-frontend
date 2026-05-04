@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { ImageWithFallback } from "@/components/ui/image-with-fallback";
 import Link from "next/link";
+import { useAppSelector } from "@/hooks/hooks";
 interface Product {
   id: string;
   name: string;
@@ -20,6 +21,182 @@ interface ProductCardProps {
   index: number;
 }
 export function ProductCard({ product, index }: ProductCardProps) {
+  const { theme } = useAppSelector((state) => state.tenant);
+  const productCardVariant = theme.layout.productCardVariant;
+  const isEditorial = productCardVariant === "editorial";
+  const isModern = productCardVariant === "modern";
+  const isLuxury = productCardVariant === "luxury";
+
+  if (isModern) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 22 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{
+          duration: 0.45,
+          delay: index * 0.05,
+        }}
+        viewport={{ once: true }}
+        className="group"
+      >
+        <div className="h-full border border-border bg-card transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--theme-card-shadow)]">
+          <Link href={`/products/${product.id}`}>
+            <div className="relative aspect-[4/3] overflow-hidden bg-muted">
+              <ImageWithFallback
+                src={product.image}
+                alt={product.name}
+                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+              />
+              {product.originalPrice > product.price && (
+                <Badge className="absolute left-3 top-3 rounded-[var(--theme-button-radius)] bg-primary text-primary-foreground">
+                  {Math.round((1 - product.price / product.originalPrice) * 100)}%
+                  off
+                </Badge>
+              )}
+            </div>
+          </Link>
+          <div className="p-4">
+            <Link href={`/products/${product.id}`}>
+              <h3 className="line-clamp-2 min-h-12 text-sm font-semibold leading-6 text-card-foreground group-hover:text-primary">
+                {product.name}
+              </h3>
+            </Link>
+            <div className="mt-4 flex items-center justify-between border-t border-border pt-4">
+              <span className="text-lg font-semibold text-card-foreground">
+                ৳ {product.price.toLocaleString()}
+              </span>
+              <Button
+                size="sm"
+                className="h-9 rounded-[var(--theme-button-radius)] px-3"
+              >
+                <ShoppingCart className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+    );
+  }
+
+  if (isLuxury) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 28 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{
+          duration: 0.55,
+          delay: index * 0.07,
+        }}
+        viewport={{ once: true }}
+        className="group"
+      >
+        <div className="h-full bg-card">
+          <Link href={`/products/${product.id}`}>
+            <div className="relative aspect-[3/4] overflow-hidden border border-border bg-muted">
+              <ImageWithFallback
+                src={product.image}
+                alt={product.name}
+                className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
+              />
+            </div>
+          </Link>
+          <div className="px-1 py-5">
+            <Link href={`/products/${product.id}`}>
+              <h3 className="line-clamp-2 min-h-12 text-sm font-semibold uppercase leading-6 tracking-[0.08em] text-card-foreground group-hover:text-primary">
+                {product.name}
+              </h3>
+            </Link>
+            <div className="mt-4 flex items-center justify-between border-t border-border pt-4">
+              <span className="text-sm font-semibold text-primary">
+                ৳ {product.price.toLocaleString()}
+              </span>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-9 rounded-none border-border px-3 text-xs uppercase tracking-[0.16em]"
+              >
+                View
+              </Button>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+    );
+  }
+
+  if (isEditorial) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 24 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{
+          duration: 0.5,
+          delay: index * 0.06,
+        }}
+        viewport={{ once: true }}
+        className="group"
+      >
+        <div className="border border-border bg-card">
+          <Link href={`/products/${product.id}`}>
+            <div className="relative aspect-[4/5] overflow-hidden bg-muted">
+              <ImageWithFallback
+                src={product.image}
+                alt={product.name}
+                className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+              />
+              {product.originalPrice > product.price && (
+                <Badge className="absolute left-4 top-4 rounded-none border-0 bg-accent px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-accent-foreground">
+                  {Math.round((1 - product.price / product.originalPrice) * 100)}%
+                  off
+                </Badge>
+              )}
+              <div className="absolute inset-x-0 bottom-0 translate-y-full border-t border-border bg-background/95 p-4 backdrop-blur transition-transform duration-300 group-hover:translate-y-0">
+                <Button
+                  size="sm"
+                  className="w-full rounded-[var(--theme-button-radius)] text-xs font-semibold uppercase tracking-[0.18em]"
+                >
+                  Quick view
+                  <ShoppingCart className="ml-2 h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </Link>
+          <div className="p-4">
+            <Link href={`/products/${product.id}`}>
+              <h3 className="min-h-12 text-sm font-semibold uppercase leading-6 tracking-[0.08em] text-card-foreground transition-colors group-hover:text-accent">
+                {product.name}
+              </h3>
+            </Link>
+            <div className="mt-5 flex items-end justify-between gap-4 border-t border-border pt-4">
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+                  Price
+                </p>
+                <div className="mt-1 flex flex-wrap items-center gap-2">
+                  <span className="text-base font-semibold text-card-foreground">
+                    ৳ {product.price.toLocaleString()}
+                  </span>
+                  {product.originalPrice > product.price && (
+                    <span className="text-xs text-muted-foreground line-through">
+                      ৳ {product.originalPrice.toLocaleString()}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-9 w-9 rounded-none p-0"
+              >
+                <Heart className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+    );
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
@@ -31,9 +208,9 @@ export function ProductCard({ product, index }: ProductCardProps) {
       viewport={{ once: true }}
       className="group"
     >
-      <Card className="cursor-pointer overflow-hidden border border-stone-100 shadow-sm hover:shadow-xl transition-all duration-500 bg-white rounded-2xl">
+      <Card className="cursor-pointer overflow-hidden border border-border bg-card shadow-sm transition-all duration-500 hover:shadow-xl rounded-[var(--theme-card-radius)]">
         <Link href={`/products/${product.id}`}>
-          <div className="relative aspect-square overflow-hidden bg-stone-50">
+          <div className="relative aspect-square overflow-hidden bg-muted">
             <ImageWithFallback
               src={product.image}
               alt={product.name}
@@ -47,9 +224,9 @@ export function ProductCard({ product, index }: ProductCardProps) {
                 <Button
                   size="sm"
                   variant="secondary"
-                  className="w-9 h-9 p-0 rounded-full bg-white shadow-md hover:bg-stone-50 border-0"
+                  className="w-9 h-9 p-0 rounded-full bg-card shadow-md hover:bg-muted border-0"
                 >
-                  <Heart className="w-4 h-4 text-stone-500" />
+                  <Heart className="w-4 h-4 text-muted-foreground" />
                 </Button>
               </motion.div>
               <motion.div
@@ -59,14 +236,14 @@ export function ProductCard({ product, index }: ProductCardProps) {
                 <Button
                   size="sm"
                   variant="secondary"
-                  className="w-9 h-9 p-0 rounded-full bg-white shadow-md hover:bg-stone-50 border-0"
+                  className="w-9 h-9 p-0 rounded-full bg-card shadow-md hover:bg-muted border-0"
                 >
-                  <ShoppingCart className="w-4 h-4 text-stone-500" />
+                  <ShoppingCart className="w-4 h-4 text-muted-foreground" />
                 </Button>
               </motion.div>
             </div>
             {product.originalPrice > product.price && (
-              <Badge className="absolute top-3 left-3 bg-rose-500 text-white border-0 shadow-sm z-20 rounded-full px-3">
+              <Badge className="absolute top-3 left-3 bg-destructive text-destructive-foreground border-0 shadow-sm z-20 rounded-full px-3">
                 {Math.round((1 - product.price / product.originalPrice) * 100)}%
                 OFF
               </Badge>
@@ -76,42 +253,44 @@ export function ProductCard({ product, index }: ProductCardProps) {
         <div className="p-5 h-48 flex flex-col">
           <div className="space-y-3 flex-1 flex flex-col">
             <Link href={`/products/${product.id}`}>
-              <h3 className="font-medium text-stone-800 leading-tight line-clamp-2 h-12 group-hover:text-stone-600 transition-colors duration-300">
+              <h3 className="font-medium text-card-foreground leading-tight line-clamp-2 h-12 group-hover:text-primary transition-colors duration-300">
                 {product.name}
               </h3>
             </Link>
-            <div className="flex items-center space-x-1">
+            {product.rating > 0 && (
+              <div className="flex items-center space-x-1">
               <div className="flex items-center">
                 {[...Array(5)].map((_, i) => (
                   <Star
                     key={i}
                     className={`w-3.5 h-3.5 ${
                       i < Math.floor(product.rating)
-                        ? "text-amber-400 fill-current"
-                        : "text-stone-200"
+                        ? "text-accent fill-current"
+                        : "text-muted"
                     }`}
                   />
                 ))}
               </div>
-              <span className="text-xs text-stone-400">
+              <span className="text-xs text-muted-foreground">
                 ({product.reviews})
               </span>
-            </div>
+              </div>
+            )}
             <div className="flex items-center justify-between pt-1 mt-auto">
               <div className="flex-1">
                 <div className="flex items-center space-x-2">
-                  <span className="text-lg font-semibold text-stone-800">
+                  <span className="text-lg font-semibold text-card-foreground">
                     ৳ {product.price.toLocaleString()}
                   </span>
                   {product.originalPrice > product.price && (
-                    <span className="text-sm text-stone-400 line-through">
+                    <span className="text-sm text-muted-foreground line-through">
                       ৳ {product.originalPrice.toLocaleString()}
                     </span>
                   )}
                 </div>
                 <div className="h-5 mt-0.5">
                   {product.originalPrice > product.price && (
-                    <p className="text-xs text-emerald-600 font-medium">
+                    <p className="text-xs text-primary font-medium">
                       Save ৳{" "}
                       {(product.originalPrice - product.price).toLocaleString()}
                     </p>
@@ -125,7 +304,7 @@ export function ProductCard({ product, index }: ProductCardProps) {
               >
                 <Button
                   size="sm"
-                  className="bg-stone-800 hover:bg-stone-900 text-white rounded-full w-10 h-10 p-0 shadow-md"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full w-10 h-10 p-0 shadow-md"
                 >
                   <ShoppingCart className="w-4 h-4" />
                 </Button>
