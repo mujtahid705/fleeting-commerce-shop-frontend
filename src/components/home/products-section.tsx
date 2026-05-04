@@ -18,6 +18,10 @@ import type {
   FeaturedCategoryItem,
   ExclusiveProductItem,
 } from "@/redux/slices/tenantSlice";
+import {
+  getThemePreviewExclusiveProducts,
+  getThemePreviewProductsByCategory,
+} from "@/lib/theme-preview";
 
 type CardProduct = {
   id: string;
@@ -48,7 +52,9 @@ function resolveImageUrl(src: string | undefined | null): string {
 
 export function ProductsSection() {
   const dispatch = useDispatch<AppDispatch>();
-  const { tenant, theme } = useAppSelector((state) => state.tenant);
+  const { tenant, theme, isThemePreview } = useAppSelector(
+    (state) => state.tenant
+  );
 
   // API returns sections directly under brand, not under customization
   const featuredCategoriesSection = tenant?.brand?.featuredCategories;
@@ -90,6 +96,20 @@ export function ProductsSection() {
   >([]);
   const [exclusiveLoading, setExclusiveLoading] = React.useState(false);
 
+  const previewCategoryProducts = React.useMemo(
+    () => getThemePreviewProductsByCategory(),
+    []
+  );
+  const previewExclusiveProducts = React.useMemo(
+    () =>
+      getThemePreviewExclusiveProducts().map((product) => ({
+        product,
+        customTitle: product.name,
+        customImage: product.image,
+      })),
+    []
+  );
+
   const mapToCard = React.useCallback(
     (
       items: Array<{
@@ -113,6 +133,7 @@ export function ProductsSection() {
 
   // Fetch products for featured categories
   React.useEffect(() => {
+    if (isThemePreview) return;
     if (featuredCategories.length === 0) return;
 
     let active = true;
@@ -152,10 +173,11 @@ export function ProductsSection() {
     return () => {
       active = false;
     };
-  }, [dispatch, featuredCategories, mapToCard]);
+  }, [dispatch, featuredCategories, isThemePreview, mapToCard]);
 
   // Fetch exclusive products by productId
   React.useEffect(() => {
+    if (isThemePreview) return;
     if (exclusiveProducts.length === 0) return;
 
     let active = true;
@@ -200,11 +222,20 @@ export function ProductsSection() {
     return () => {
       active = false;
     };
-  }, [dispatch, exclusiveProducts, mapToCard]);
+  }, [dispatch, exclusiveProducts, isThemePreview, mapToCard]);
 
   // Show exclusive section even without featured categories
   const hasFeaturedCategories = featuredCategories.length > 0;
-  const hasExclusiveProducts = exclusiveProducts.length > 0;
+  const hasExclusiveProducts =
+    exclusiveProducts.length > 0 ||
+    (isThemePreview && previewExclusiveProducts.length > 0);
+  const displayCategoryProducts = isThemePreview
+    ? previewCategoryProducts
+    : categoryProducts;
+  const displayExclusiveProductsData = isThemePreview
+    ? previewExclusiveProducts
+    : exclusiveProductsData;
+  const displayExclusiveLoading = isThemePreview ? false : exclusiveLoading;
   const homeVariant = theme.layout.homeVariant;
   const isEditorial = homeVariant === "editorial";
   const isModern = homeVariant === "modern";
@@ -266,7 +297,7 @@ export function ProductsSection() {
                 )}
                 {!loading[category.id] && !error[category.id] && (
                   <div className="grid grid-cols-1 gap-px overflow-hidden border border-border bg-border sm:grid-cols-2 lg:grid-cols-4">
-                    {categoryProducts[category.id]
+                    {displayCategoryProducts[category.id]
                       ?.slice(0, 4)
                       .map((product, index) => (
                         <ProductCard
@@ -304,13 +335,13 @@ export function ProductsSection() {
                 </p>
               </motion.div>
 
-              {exclusiveLoading ? (
+              {displayExclusiveLoading ? (
                 <div className="flex justify-center py-12">
                   <div className="h-8 w-8 animate-spin rounded-full border-2 border-muted border-t-primary" />
                 </div>
               ) : (
                 <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-                  {exclusiveProductsData.map((item, index) => {
+                  {displayExclusiveProductsData.map((item, index) => {
                     const displayImage = item.customImage
                       ? resolveImageUrl(item.customImage)
                       : item.product.image;
@@ -413,7 +444,7 @@ export function ProductsSection() {
                 )}
                 {!loading[category.id] && !error[category.id] && (
                   <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-                    {categoryProducts[category.id]
+                    {displayCategoryProducts[category.id]
                       ?.slice(0, 4)
                       .map((product, index) => (
                         <ProductCard
@@ -451,13 +482,13 @@ export function ProductsSection() {
                 </p>
               </motion.div>
 
-              {exclusiveLoading ? (
+              {displayExclusiveLoading ? (
                 <div className="flex justify-center py-12">
                   <div className="h-8 w-8 animate-spin rounded-full border-2 border-background/30 border-t-background" />
                 </div>
               ) : (
                 <div className="grid gap-px overflow-hidden bg-background/20 lg:grid-cols-4">
-                  {exclusiveProductsData.map((item, index) => {
+                  {displayExclusiveProductsData.map((item, index) => {
                     const displayImage = item.customImage
                       ? resolveImageUrl(item.customImage)
                       : item.product.image;
@@ -593,7 +624,7 @@ export function ProductsSection() {
                 )}
                 {!loading[category.id] &&
                   !error[category.id] &&
-                  categoryProducts[category.id]
+                  displayCategoryProducts[category.id]
                     ?.slice(0, 5)
                     .map((product, index) => (
                       <ProductCard
@@ -643,13 +674,13 @@ export function ProductsSection() {
             </motion.div>
 
             {/* Exclusive Products Grid */}
-            {exclusiveLoading ? (
+            {displayExclusiveLoading ? (
               <div className="flex justify-center py-12">
                 <div className="w-8 h-8 border-2 border-muted border-t-primary rounded-full animate-spin"></div>
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                {exclusiveProductsData.map((item, index) => {
+                {displayExclusiveProductsData.map((item, index) => {
                   // Use custom image if provided, otherwise use product image
                   const displayImage = item.customImage
                     ? resolveImageUrl(item.customImage)

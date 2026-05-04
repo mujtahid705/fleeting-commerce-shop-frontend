@@ -1,5 +1,10 @@
 import { createSlice, PayloadAction, createAsyncThunk } from "@reduxjs/toolkit";
 import { Theme, getThemeByIndex, getDefaultTheme } from "@/lib/themes";
+import {
+  createThemePreviewTenant,
+  getThemePreviewIndexFromPath,
+  isThemePreviewHostname,
+} from "@/lib/theme-preview";
 
 // SubCategory type
 export interface SubCategory {
@@ -122,6 +127,7 @@ export interface TenantState {
   isLoading: boolean;
   isInitialized: boolean;
   storeNotFound: boolean;
+  isThemePreview: boolean;
   error: string | null;
 }
 
@@ -132,6 +138,7 @@ const initialState: TenantState = {
   isLoading: true,
   isInitialized: false,
   storeNotFound: false,
+  isThemePreview: false,
   error: null,
 };
 
@@ -141,6 +148,11 @@ export function extractDomain(): string {
   const hostname = window.location.hostname;
   const parts = hostname.split(".");
   return parts[0];
+}
+
+export function isThemePreviewDomain(): boolean {
+  if (typeof window === "undefined") return false;
+  return isThemePreviewHostname(window.location.hostname);
 }
 
 // Check if subdomain exists
@@ -160,13 +172,21 @@ export function hasSubdomain(): boolean {
 
 // Initialize tenant from URL
 export const initializeTenant = createAsyncThunk<
-  { tenant: TenantInfo; theme: Theme },
+  { tenant: TenantInfo; theme: Theme; isThemePreview?: boolean },
   void,
   { rejectValue: string }
 >("tenant/initialize", async (_, { rejectWithValue }) => {
   const domain = extractDomain();
   console.log("[Tenant] Domain extracted:", domain);
   console.log("[Tenant] Has subdomain:", hasSubdomain());
+
+  if (isThemePreviewDomain()) {
+    const themeIndex = getThemePreviewIndexFromPath(window.location.pathname);
+    const tenant = createThemePreviewTenant(themeIndex);
+    const theme = getThemeByIndex(themeIndex);
+    console.log("[Tenant] Theme preview loaded:", theme.name);
+    return { tenant, theme, isThemePreview: true };
+  }
 
   if (!hasSubdomain()) {
     console.log("[Tenant] No subdomain detected, rejecting");
@@ -224,6 +244,7 @@ const tenantSlice = createSlice({
       state.tenant = action.payload;
       state.theme = getThemeByIndex(action.payload.brand.theme);
       state.storeNotFound = false;
+      state.isThemePreview = false;
     },
     setThemeByIndex: (state, action: PayloadAction<number>) => {
       state.theme = getThemeByIndex(action.payload);
@@ -249,6 +270,7 @@ const tenantSlice = createSlice({
       state.isDarkMode = false;
       state.error = null;
       state.storeNotFound = false;
+      state.isThemePreview = false;
     },
   },
   extraReducers: (builder) => {
@@ -264,6 +286,7 @@ const tenantSlice = createSlice({
         state.isLoading = false;
         state.isInitialized = true;
         state.storeNotFound = false;
+        state.isThemePreview = Boolean(action.payload.isThemePreview);
         state.error = null;
       })
       .addCase(initializeTenant.rejected, (state, action) => {
@@ -276,6 +299,7 @@ const tenantSlice = createSlice({
         ) {
           state.storeNotFound = true;
         }
+        state.isThemePreview = false;
         state.error = action.payload || "Failed to initialize tenant";
       });
   },
