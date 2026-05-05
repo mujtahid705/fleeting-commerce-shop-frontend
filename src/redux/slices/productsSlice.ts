@@ -84,6 +84,17 @@ const getTenantDomain = () => {
   return parts[0];
 };
 
+const withCacheBuster = (url: string) => {
+  const separator = url.includes("?") ? "&" : "?";
+  return `${url}${separator}_t=${Date.now()}`;
+};
+
+const catalogHeaders = () => ({
+  "x-tenant-domain": getTenantDomain(),
+  "Cache-Control": "no-store",
+  Pragma: "no-cache",
+});
+
 export const fetchAllProducts = createAsyncThunk(
   "products/fetchAll",
   async (filters?: {
@@ -100,13 +111,13 @@ export const fetchAllProducts = createAsyncThunk(
       params.set("subCategoryId", String(filters.subCategory));
     }
     const qs = params.toString();
-    const url = `${base}/storefront/products${qs ? `?${qs}` : ""}`;
+    const url = withCacheBuster(
+      `${base}/storefront/products${qs ? `?${qs}` : ""}`
+    );
     console.log("🔍 Fetching products from:", url);
     const res = await fetch(url, {
-      cache: "no-cache",
-      headers: {
-        "x-tenant-domain": getTenantDomain(),
-      },
+      cache: "no-store",
+      headers: catalogHeaders(),
     });
     if (!res.ok) {
       console.error("❌ Products API failed:", res.status, res.statusText);
@@ -212,19 +223,24 @@ export const fetchProductById = createAsyncThunk(
   async (id: string | number) => {
     const base = process.env.NEXT_PUBLIC_BASE_URL ?? "";
     const imageBase = process.env.NEXT_PUBLIC_IMAGE_URL ?? "";
-    const res = await fetch(`${base}/storefront/products/${id}`, {
-      cache: "force-cache",
-      next: { revalidate: 30 },
-      headers: {
-        "x-tenant-domain": getTenantDomain(),
-      },
-    } as any);
+    const res = await fetch(
+      withCacheBuster(`${base}/storefront/products/${id}`),
+      {
+        cache: "no-store",
+        headers: catalogHeaders(),
+      }
+    );
     if (!res.ok) {
       const msg = await res.text();
       throw new Error(msg || `Failed to fetch product ${id}`);
     }
     const json = await res.json();
-    const d = json?.data ?? {};
+    const rawData = json?.data ?? json ?? {};
+    const d = Array.isArray(rawData)
+      ? rawData.find((item) => String(item?.id) === String(id)) ??
+        rawData[0] ??
+        {}
+      : rawData;
     const isAbsolute = (u: string) => /^https?:\/\//i.test(u);
     const joinUrl = (root: string, path?: string) => {
       if (!path) return "/vercel.svg";
@@ -243,19 +259,20 @@ export const fetchProductById = createAsyncThunk(
           return { url: joinUrl(imageBase, raw) };
         })
       : [];
+    const stockQuantity = Number(d?.inventory?.quantity ?? d?.stock) || 0;
     const product: Product = {
       id: String(d?.id ?? id),
       title: d?.title ?? "Untitled",
       slug: d?.slug ?? String(d?.id ?? id),
       price: Number(d?.price) || 0,
-      stock: Number(d?.inventory?.quantity ?? d?.stock) || 0,
+      stock: stockQuantity,
       brand: d?.brand ?? "",
       description: d?.description ?? "",
       categoryId: d?.categoryId ?? d?.category?.id ?? d?.category ?? undefined,
       subCategoryId:
         d?.subCategoryId ?? d?.subCategory?.id ?? d?.subCategory ?? undefined,
       images,
-      inventory: d?.inventory,
+      inventory: d?.inventory ?? { quantity: stockQuantity },
       category: d?.category,
       subCategory: d?.subCategory,
     };
@@ -266,11 +283,9 @@ export const fetchCategories = createAsyncThunk(
   "products/fetchCategories",
   async () => {
     const base = process.env.NEXT_PUBLIC_BASE_URL ?? "";
-    const res = await fetch(`${base}/storefront/categories`, {
-      cache: "no-cache",
-      headers: {
-        "x-tenant-domain": getTenantDomain(),
-      },
+    const res = await fetch(withCacheBuster(`${base}/storefront/categories`), {
+      cache: "no-store",
+      headers: catalogHeaders(),
     });
     if (!res.ok) throw new Error("Failed to load categories");
     const json = await res.json();
@@ -287,14 +302,14 @@ export const fetchSubcategories = createAsyncThunk(
   async (categoryId: string | number) => {
     const base = process.env.NEXT_PUBLIC_BASE_URL ?? "";
     const res = await fetch(
-      `${base}/storefront/subcategories?categoryId=${encodeURIComponent(
-        String(categoryId)
-      )}`,
+      withCacheBuster(
+        `${base}/storefront/subcategories?categoryId=${encodeURIComponent(
+          String(categoryId)
+        )}`
+      ),
       {
-        cache: "no-cache",
-        headers: {
-          "x-tenant-domain": getTenantDomain(),
-        },
+        cache: "no-store",
+        headers: catalogHeaders(),
       }
     );
     if (!res.ok) throw new Error("Failed to load subcategories");
@@ -312,12 +327,13 @@ export const fetchAllSubcategories = createAsyncThunk(
   "products/fetchAllSubcategories",
   async () => {
     const base = process.env.NEXT_PUBLIC_BASE_URL ?? "";
-    const res = await fetch(`${base}/storefront/subcategories`, {
-      cache: "no-cache",
-      headers: {
-        "x-tenant-domain": getTenantDomain(),
-      },
-    });
+    const res = await fetch(
+      withCacheBuster(`${base}/storefront/subcategories`),
+      {
+        cache: "no-store",
+        headers: catalogHeaders(),
+      }
+    );
     if (!res.ok) throw new Error("Failed to load subcategories");
     const json = await res.json();
     const data: any[] = json?.data ?? json ?? [];

@@ -86,9 +86,21 @@ export const createOrder = createAsyncThunk(
   "orders/createOrder",
   async (
     orderData: {
+      totalAmount?: number;
+      paymentMethod?: "COD";
+      deliveryInfo?: {
+        phone: string;
+        address: string;
+        city: string;
+        state: string;
+        zipCode: string;
+        country: string;
+        note?: string;
+      };
       order_items: Array<{
         productId: string;
         quantity: number;
+        unitPrice?: number;
       }>;
     },
     { rejectWithValue }

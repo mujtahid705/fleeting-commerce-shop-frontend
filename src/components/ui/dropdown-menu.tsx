@@ -2,6 +2,11 @@
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+
+const DropdownMenuContext = React.createContext<{ close: () => void } | null>(
+  null
+);
+
 interface DropdownMenuProps {
   children: React.ReactNode;
   trigger: React.ReactNode;
@@ -39,7 +44,10 @@ export function DropdownMenu({
   };
   return (
     <div className="relative" ref={dropdownRef}>
-      <div onClick={() => setOpen(!open)} className="cursor-pointer">
+      <div
+        onClick={() => setOpen((current) => !current)}
+        className="cursor-pointer"
+      >
         {trigger}
       </div>
       <AnimatePresence>
@@ -59,7 +67,11 @@ export function DropdownMenu({
               sideClasses[side]
             )}
           >
-            {children}
+            <DropdownMenuContext.Provider
+              value={{ close: () => setOpen(false) }}
+            >
+              {children}
+            </DropdownMenuContext.Provider>
           </motion.div>
         )}
       </AnimatePresence>
@@ -78,10 +90,18 @@ export function DropdownMenuItem({
   className,
   disabled = false,
 }: DropdownMenuItemProps) {
+  const menu = React.useContext(DropdownMenuContext);
+
+  const handleClick = () => {
+    if (disabled) return;
+    onClick?.();
+    menu?.close();
+  };
+
   return (
     <motion.div
       whileHover={!disabled ? { backgroundColor: "#f3f4f6" } : {}}
-      onClick={disabled ? undefined : onClick}
+      onClick={handleClick}
       className={cn(
         "px-4 py-2 text-sm cursor-pointer transition-colors",
         disabled

@@ -137,41 +137,61 @@ export function ProductsSection() {
     if (featuredCategories.length === 0) return;
 
     let active = true;
+    let lastFocusRefreshAt = 0;
 
-    const fetchCategoryProducts = async (category: Category) => {
-      setLoading((prev) => ({ ...prev, [category.id]: true }));
+    const fetchFeaturedCategoryProducts = () => {
+      featuredCategories.forEach((category) => {
+        setLoading((prev) => ({ ...prev, [category.id]: true }));
 
-      try {
-        const products = await dispatch(
-          fetchAllProducts({ category: category.id })
-        ).unwrap();
-        if (active) {
-          setCategoryProducts((prev) => ({
-            ...prev,
-            [category.id]: mapToCard(products),
-          }));
-        }
-      } catch (e: unknown) {
-        const errorMessage = e instanceof Error ? e.message : String(e);
-        if (active) {
-          setError((prev) => ({
-            ...prev,
-            [category.id]: errorMessage || "Failed to load",
-          }));
-        }
-      } finally {
-        if (active) {
-          setLoading((prev) => ({ ...prev, [category.id]: false }));
-        }
+        dispatch(fetchAllProducts({ category: category.id }))
+          .unwrap()
+          .then((products) => {
+            if (active) {
+              setCategoryProducts((prev) => ({
+                ...prev,
+                [category.id]: mapToCard(products),
+              }));
+              setError((prev) => ({ ...prev, [category.id]: null }));
+            }
+          })
+          .catch((e: unknown) => {
+            const errorMessage = e instanceof Error ? e.message : String(e);
+            if (active) {
+              setError((prev) => ({
+                ...prev,
+                [category.id]: errorMessage || "Failed to load",
+              }));
+            }
+          })
+          .finally(() => {
+            if (active) {
+              setLoading((prev) => ({ ...prev, [category.id]: false }));
+            }
+          });
+      });
+    };
+
+    const refreshFeaturedCategoryProductsOnce = () => {
+      const now = Date.now();
+      if (now - lastFocusRefreshAt < 500) return;
+      lastFocusRefreshAt = now;
+      fetchFeaturedCategoryProducts();
+    };
+
+    const refreshIfVisible = () => {
+      if (document.visibilityState === "visible") {
+        refreshFeaturedCategoryProductsOnce();
       }
     };
 
-    featuredCategories.forEach((category) => {
-      fetchCategoryProducts(category);
-    });
+    refreshFeaturedCategoryProductsOnce();
+    window.addEventListener("focus", refreshFeaturedCategoryProductsOnce);
+    document.addEventListener("visibilitychange", refreshIfVisible);
 
     return () => {
       active = false;
+      window.removeEventListener("focus", refreshFeaturedCategoryProductsOnce);
+      document.removeEventListener("visibilitychange", refreshIfVisible);
     };
   }, [dispatch, featuredCategories, isThemePreview, mapToCard]);
 
@@ -181,46 +201,76 @@ export function ProductsSection() {
     if (exclusiveProducts.length === 0) return;
 
     let active = true;
-    setExclusiveLoading(true);
+    let lastFocusRefreshAt = 0;
 
-    const fetchExclusiveProducts = async () => {
-      const results: Array<{
-        product: CardProduct;
-        customTitle?: string;
-        customImage?: string;
-      }> = [];
+    const fetchExclusiveProducts = () => {
+      setExclusiveLoading(true);
 
-      for (const item of exclusiveProducts) {
+      const fetches = exclusiveProducts.map(async (item) => {
         try {
           const productData = await dispatch(
             fetchProductById(item.productId)
           ).unwrap();
-          if (active && productData) {
-            const cardProduct = mapToCard([productData])[0];
-            results.push({
-              product: cardProduct,
-              customTitle: item.customTitle,
-              customImage: item.customImage,
-            });
-          }
+          if (!productData) return null;
+
+          return {
+            product: mapToCard([productData])[0],
+            customTitle: item.customTitle,
+            customImage: item.customImage,
+          };
         } catch (e) {
           console.error(
             `Failed to fetch exclusive product ${item.productId}:`,
             e
           );
+          return null;
         }
-      }
+      });
 
-      if (active) {
-        setExclusiveProductsData(results);
-        setExclusiveLoading(false);
+      Promise.all(fetches)
+        .then((results) => {
+          if (active) {
+            setExclusiveProductsData(
+              results.filter(
+                (
+                  item
+                ): item is {
+                  product: CardProduct;
+                  customTitle?: string;
+                  customImage?: string;
+                } => Boolean(item)
+              )
+            );
+          }
+        })
+        .finally(() => {
+          if (active) {
+            setExclusiveLoading(false);
+          }
+        });
+    };
+
+    const refreshExclusiveProductsOnce = () => {
+      const now = Date.now();
+      if (now - lastFocusRefreshAt < 500) return;
+      lastFocusRefreshAt = now;
+      fetchExclusiveProducts();
+    };
+
+    const refreshIfVisible = () => {
+      if (document.visibilityState === "visible") {
+        refreshExclusiveProductsOnce();
       }
     };
 
-    fetchExclusiveProducts();
+    refreshExclusiveProductsOnce();
+    window.addEventListener("focus", refreshExclusiveProductsOnce);
+    document.addEventListener("visibilitychange", refreshIfVisible);
 
     return () => {
       active = false;
+      window.removeEventListener("focus", refreshExclusiveProductsOnce);
+      document.removeEventListener("visibilitychange", refreshIfVisible);
     };
   }, [dispatch, exclusiveProducts, isThemePreview, mapToCard]);
 

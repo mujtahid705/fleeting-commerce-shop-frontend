@@ -1,10 +1,19 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+
+import {
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { motion } from "framer-motion";
-import { Search, Filter } from "lucide-react";
+import { Filter, Search, SlidersHorizontal, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ProductCard } from "@/components/products/product-card";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import type { RootState, AppDispatch } from "@/redux/store";
 import {
@@ -12,6 +21,7 @@ import {
   fetchCategories,
   fetchAllSubcategories,
 } from "@/redux/slices/productsSlice";
+
 type CardProduct = {
   id: string;
   name: string;
@@ -22,17 +32,54 @@ type CardProduct = {
   image: string;
   category: string;
 };
+
+function parseFilterId(value: string | null): number | "" {
+  if (!value) return "";
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : "";
+}
+
+function ProductsFallback() {
+  return (
+    <div className="min-h-screen bg-background">
+      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+        <div className="mb-12 h-24 max-w-3xl animate-pulse rounded bg-muted" />
+        <div className="mb-8 h-24 animate-pulse rounded-lg bg-muted" />
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
+          {Array.from({ length: 10 }).map((_, index) => (
+            <div key={index} className="overflow-hidden rounded-lg bg-card">
+              <div className="aspect-square animate-pulse bg-muted" />
+              <div className="space-y-2 p-4">
+                <div className="h-4 animate-pulse rounded bg-muted" />
+                <div className="h-4 w-2/3 animate-pulse rounded bg-muted" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function ProductsPage() {
+  return (
+    <Suspense fallback={<ProductsFallback />}>
+      <ProductsContent />
+    </Suspense>
+  );
+}
+
+function ProductsContent() {
   const dispatch = useDispatch<AppDispatch>();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const {
     items,
     loading,
     error,
     categories,
     subcategories,
-    categoriesLoading,
-    subcategoriesLoading,
-    lastFetched,
   } = useSelector((s: RootState) => s.products);
   const { theme, tenant } = useSelector((s: RootState) => s.tenant);
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | "">("");
@@ -42,46 +89,130 @@ export default function ProductsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("featured");
   const [isClient, setIsClient] = useState(false);
+  const lastFocusRefreshAt = useRef(0);
+
+  const categoryParam = searchParams.get("category");
+  const subCategoryParam = searchParams.get("subCategory");
+
   useEffect(() => {
     setIsClient(true);
   }, []);
+
+  useEffect(() => {
+    const categoryId = parseFilterId(categoryParam);
+    const subCategoryId = categoryId ? parseFilterId(subCategoryParam) : "";
+
+    setSelectedCategoryId(categoryId);
+    setSelectedSubCategoryId(subCategoryId);
+  }, [categoryParam, subCategoryParam]);
+
+  const updateFilterUrl = (
+    categoryId: number | "",
+    subCategoryId: number | ""
+  ) => {
+    const params = new URLSearchParams(searchParams.toString());
+
+    if (categoryId) {
+      params.set("category", String(categoryId));
+    } else {
+      params.delete("category");
+    }
+
+    if (categoryId && subCategoryId) {
+      params.set("subCategory", String(subCategoryId));
+    } else {
+      params.delete("subCategory");
+    }
+
+    const nextQuery = params.toString();
+    router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, {
+      scroll: false,
+    });
+  };
+
+  const handleCategoryChange = (value: string) => {
+    const categoryId = value ? Number(value) : "";
+    setSelectedCategoryId(categoryId);
+    setSelectedSubCategoryId("");
+    updateFilterUrl(categoryId, "");
+  };
+
+  const handleSubCategoryChange = (value: string) => {
+    const subCategoryId = value ? Number(value) : "";
+    setSelectedSubCategoryId(subCategoryId);
+    updateFilterUrl(selectedCategoryId, subCategoryId);
+  };
+
+  const clearFilters = () => {
+    setSelectedCategoryId("");
+    setSelectedSubCategoryId("");
+    setSearchQuery("");
+    updateFilterUrl("", "");
+  };
+
   const filteredSubcategories = useMemo(() => {
     if (!selectedCategoryId) return [];
     return subcategories.filter((sub) => sub.categoryId === selectedCategoryId);
   }, [subcategories, selectedCategoryId]);
-  useEffect(() => {
-    const now = Date.now();
-    const shouldFetchCategories =
-      categories.length === 0 &&
-      !categoriesLoading &&
-      (!lastFetched.categories || now - lastFetched.categories > 5 * 60 * 1000);
-    const shouldFetchSubcategories =
-      subcategories.length === 0 &&
-      !subcategoriesLoading &&
-      (!lastFetched.subcategories ||
-        now - lastFetched.subcategories > 5 * 60 * 1000);
-    if (shouldFetchCategories) {
-      dispatch(fetchCategories());
-    }
-    if (shouldFetchSubcategories) {
-      dispatch(fetchAllSubcategories());
-    }
-  }, [dispatch]);
-  useEffect(() => {
-    if (!items.length) dispatch(fetchAllProducts());
-  }, [dispatch]);
-  useEffect(() => {
-    const hasCat = selectedCategoryId !== "";
-    const hasSub = selectedSubCategoryId !== "";
-    if (!hasCat && !hasSub) {
-      dispatch(fetchAllProducts());
-      return;
-    }
+
+  const selectedCategory = useMemo(
+    () => categories.find((category) => category.id === selectedCategoryId),
+    [categories, selectedCategoryId]
+  );
+  const selectedSubCategory = useMemo(
+    () =>
+      subcategories.find(
+        (subcategory) => subcategory.id === selectedSubCategoryId
+      ),
+    [subcategories, selectedSubCategoryId]
+  );
+
+  const fetchCurrentProducts = useCallback(() => {
     const payload: { category?: number; subCategory?: number } = {};
-    if (hasCat) payload.category = selectedCategoryId as number;
-    if (hasSub) payload.subCategory = selectedSubCategoryId as number;
+    if (selectedCategoryId) payload.category = selectedCategoryId;
+    if (selectedCategoryId && selectedSubCategoryId) {
+      payload.subCategory = selectedSubCategoryId;
+    }
+
     dispatch(fetchAllProducts(payload));
   }, [dispatch, selectedCategoryId, selectedSubCategoryId]);
+
+  useEffect(() => {
+    if (!isClient) return;
+    dispatch(fetchCategories());
+    dispatch(fetchAllSubcategories());
+  }, [dispatch, isClient]);
+
+  useEffect(() => {
+    if (!isClient) return;
+    fetchCurrentProducts();
+  }, [fetchCurrentProducts, isClient]);
+
+  useEffect(() => {
+    if (!isClient) return;
+
+    const refreshCurrentProductsOnce = () => {
+      const now = Date.now();
+      if (now - lastFocusRefreshAt.current < 500) return;
+      lastFocusRefreshAt.current = now;
+      fetchCurrentProducts();
+    };
+
+    const refreshIfVisible = () => {
+      if (document.visibilityState === "visible") {
+        refreshCurrentProductsOnce();
+      }
+    };
+
+    window.addEventListener("focus", refreshCurrentProductsOnce);
+    document.addEventListener("visibilitychange", refreshIfVisible);
+
+    return () => {
+      window.removeEventListener("focus", refreshCurrentProductsOnce);
+      document.removeEventListener("visibilitychange", refreshIfVisible);
+    };
+  }, [fetchCurrentProducts, isClient]);
+
   const allProducts: CardProduct[] = useMemo(
     () =>
       items.map((p) => {
@@ -95,16 +226,18 @@ export default function ProductsPage() {
           rating: 0,
           reviews: 0,
           image: imageUrl,
-          category: p.brand || "all",
+          category: p.category?.name || p.brand || "all",
         };
       }),
     [items]
   );
+
   const filteredProducts = useMemo(() => {
-    const q = searchQuery.toLowerCase();
+    const q = searchQuery.trim().toLowerCase();
     if (!q) return allProducts;
     return allProducts.filter((p) => p.name.toLowerCase().includes(q));
   }, [allProducts, searchQuery]);
+
   const sortedProducts = useMemo(() => {
     const arr = [...filteredProducts];
     switch (sortBy) {
@@ -112,19 +245,22 @@ export default function ProductsPage() {
         return arr.sort((a, b) => a.price - b.price);
       case "price-high":
         return arr.sort((a, b) => b.price - a.price);
-      case "rating":
-        return arr.sort((a, b) => b.rating - a.rating);
-      case "newest":
-        return arr.sort((a, b) => Number(b.id) - Number(a.id));
+      case "name":
+        return arr.sort((a, b) => a.name.localeCompare(b.name));
       default:
         return arr;
     }
   }, [filteredProducts, sortBy]);
+
   const pageVariant = theme.layout.homeVariant;
   const isEditorial = pageVariant === "editorial";
   const isModern = pageVariant === "modern";
   const isLuxury = pageVariant === "luxury";
   const storeName = tenant?.name || "Store";
+  const hasActiveFilters =
+    Boolean(selectedCategoryId) ||
+    Boolean(selectedSubCategoryId) ||
+    Boolean(searchQuery.trim());
 
   const titleClass =
     isEditorial || isLuxury
@@ -132,35 +268,38 @@ export default function ProductsPage() {
       : isModern
       ? "text-5xl font-semibold leading-tight text-foreground sm:text-6xl"
       : "text-4xl font-light text-foreground mb-4";
-  const controlsShellClass = isEditorial || isModern || isLuxury
-    ? "border-y border-border bg-card px-4 py-5"
-    : "mb-8";
-  const inputShellClass = isEditorial || isLuxury
-    ? "flex items-center space-x-2 border-b border-foreground/40 bg-transparent px-0 py-2 flex-1 max-w-md"
-    : isModern
-    ? "flex items-center space-x-2 border border-border bg-card px-4 py-2 flex-1 max-w-md"
-    : "flex items-center space-x-2 bg-card rounded-lg px-4 py-2 flex-1 max-w-md";
-  const selectClass = isEditorial || isLuxury
-    ? "border border-border bg-background px-3 py-2 text-xs uppercase tracking-[0.18em] focus:outline-none focus:ring-2 focus:ring-ring"
-    : isModern
-    ? "border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-    : "border border-border bg-background rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring";
+  const controlsShellClass =
+    isEditorial || isModern || isLuxury
+      ? "border-y border-border bg-card px-4 py-5"
+      : "rounded-lg border border-border bg-card p-4 shadow-sm";
+  const inputShellClass =
+    isEditorial || isLuxury
+      ? "flex min-w-0 flex-1 items-center gap-2 border-b border-foreground/40 bg-transparent px-0 py-2"
+      : isModern
+      ? "flex min-w-0 flex-1 items-center gap-2 border border-border bg-background px-4 py-2"
+      : "flex min-w-0 flex-1 items-center gap-2 rounded-lg bg-background px-4 py-2";
+  const selectClass =
+    isEditorial || isLuxury
+      ? "min-h-10 border border-border bg-background px-3 py-2 text-xs uppercase tracking-[0.18em] focus:outline-none focus:ring-2 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+      : isModern
+      ? "min-h-10 border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+      : "min-h-10 rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50";
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         {!isClient ? (
           <div
             className={
               isEditorial || isLuxury || isModern
                 ? "mb-12 max-w-3xl"
-                : "text-center mb-12"
+                : "mb-12 text-center"
             }
           >
             <h1 className={titleClass}>
               Our <span className="font-semibold">Products</span>
             </h1>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto font-light">
+            <p className="mx-auto max-w-2xl text-lg font-light text-muted-foreground">
               Browse products available from this store.
             </p>
           </div>
@@ -169,7 +308,7 @@ export default function ProductsPage() {
             className={
               isEditorial || isLuxury || isModern
                 ? "mb-14 max-w-3xl"
-                : "text-center mb-12"
+                : "mb-12 text-center"
             }
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -197,24 +336,19 @@ export default function ProductsPage() {
                   ? "mt-6 max-w-xl text-base leading-7 text-muted-foreground"
                   : isLuxury || isModern
                   ? "mt-6 max-w-xl text-base leading-7 text-muted-foreground"
-                  : "text-lg text-muted-foreground max-w-2xl mx-auto font-light"
+                  : "mx-auto max-w-2xl text-lg font-light text-muted-foreground"
               }
             >
               Browse products available from this store.
             </p>
           </motion.div>
         )}
+
         {!isClient ? (
-          <div className="mb-8">
-            <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-              <div className="flex items-center space-x-2 bg-card rounded-lg px-4 py-2 flex-1 max-w-md">
-                <Search className="w-4 h-4 text-muted-foreground" />
-                <div className="h-6 w-full bg-muted rounded animate-pulse" />
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="border border-border rounded-lg px-3 py-2 w-32 h-10 bg-muted animate-pulse" />
-                <div className="border border-border rounded-lg px-3 py-2 w-24 h-10 bg-muted animate-pulse" />
-              </div>
+          <div className="mb-8 rounded-lg border border-border bg-card p-4">
+            <div className="flex flex-col gap-4 lg:flex-row">
+              <div className="h-10 flex-1 rounded bg-muted animate-pulse" />
+              <div className="h-10 w-full rounded bg-muted animate-pulse lg:w-80" />
             </div>
           </div>
         ) : (
@@ -224,47 +358,45 @@ export default function ProductsPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-              <div className={inputShellClass}>
-                <Search className="w-4 h-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search products..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="border-0 bg-transparent focus-visible:ring-0 text-sm"
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <select
-                  value={
-                    selectedCategoryId === "" ? "" : String(selectedCategoryId)
-                  }
-                  onChange={(e) => {
-                    const v = e.target.value;
-                    setSelectedCategoryId(v ? Number(v) : "");
-                    setSelectedSubCategoryId("");
-                  }}
-                  className={selectClass}
-                >
-                  <option value="">All Categories</option>
-                  {categories.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
-                    </option>
-                  ))}
-                </select>
-                {selectedCategoryId !== "" && (
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                <div className={inputShellClass}>
+                  <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
+                  <Input
+                    placeholder="Search products..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="border-0 bg-transparent p-0 text-sm focus-visible:ring-0"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+                  <select
+                    value={
+                      selectedCategoryId === ""
+                        ? ""
+                        : String(selectedCategoryId)
+                    }
+                    onChange={(e) => handleCategoryChange(e.target.value)}
+                    className={selectClass}
+                  >
+                    <option value="">All Categories</option>
+                    {categories.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </select>
+
                   <select
                     value={
                       selectedSubCategoryId === ""
                         ? ""
                         : String(selectedSubCategoryId)
                     }
-                    onChange={(e) => {
-                      const v = e.target.value;
-                      setSelectedSubCategoryId(v ? Number(v) : "");
-                    }}
+                    onChange={(e) => handleSubCategoryChange(e.target.value)}
                     className={selectClass}
+                    disabled={!selectedCategoryId}
                   >
                     <option value="">All Subcategories</option>
                     {filteredSubcategories.map((s) => (
@@ -273,118 +405,129 @@ export default function ProductsPage() {
                       </option>
                     ))}
                   </select>
-                )}
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setSelectedCategoryId("");
-                    setSelectedSubCategoryId("");
-                  }}
-                >
-                  Clear
-                </Button>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Filter className="w-4 h-4 text-muted-foreground" />
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  className={selectClass}
-                >
-                  <option value="featured">Featured</option>
-                  <option value="price-low">Price: Low to High</option>
-                  <option value="price-high">Price: High to Low</option>
-                  <option value="rating">Highest Rated</option>
-                  <option value="newest">Newest</option>
-                </select>
-              </div>
-            </div>
-          </motion.div>
-        )}
-        {!isClient ? (
-          <div className="mb-6">
-            <div className="h-6 w-48 bg-muted rounded animate-pulse" />
-          </div>
-        ) : (
-          <motion.div
-            className="mb-6"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-          >
-            <p className="text-muted-foreground">
-              {loading
-                ? "Loading products..."
-                : error
-                ? `Error: ${error}`
-                : `Showing ${sortedProducts.length} of ${allProducts.length} products`}
-            </p>
-          </motion.div>
-        )}
-        {!isClient ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-            {Array.from({ length: 10 }).map((_, i) => (
-              <div
-                key={i}
-                className="bg-card rounded-lg shadow-lg overflow-hidden"
-              >
-                <div className="aspect-square bg-muted animate-pulse" />
-                <div className="p-4 space-y-2">
-                  <div className="h-4 bg-muted rounded animate-pulse" />
-                  <div className="h-4 bg-muted rounded w-3/4 animate-pulse" />
-                  <div className="h-4 bg-muted rounded w-1/2 animate-pulse" />
+
+                  <div className="flex items-center gap-2">
+                    <Filter className="h-4 w-4 text-muted-foreground" />
+                    <select
+                      value={sortBy}
+                      onChange={(e) => setSortBy(e.target.value)}
+                      className={selectClass}
+                    >
+                      <option value="featured">Featured</option>
+                      <option value="price-low">Price: Low to High</option>
+                      <option value="price-high">Price: High to Low</option>
+                      <option value="name">Name: A to Z</option>
+                    </select>
+                  </div>
+
+                  <Button
+                    variant="outline"
+                    onClick={clearFilters}
+                    disabled={!hasActiveFilters}
+                    className="gap-2"
+                  >
+                    <X className="h-4 w-4" />
+                    Clear
+                  </Button>
                 </div>
               </div>
-            ))}
-          </div>
-        ) : (
-          <motion.div
-            className={
-              isEditorial
-                ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
-                : isLuxury || isModern
-                ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
-                : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6"
-            }
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.5 }}
-          >
-            {!loading &&
-              !error &&
-              sortedProducts.map((product, index) => (
+
+              <div className="flex flex-col gap-3 border-t border-border pt-4 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex flex-wrap items-center gap-2">
+                  <SlidersHorizontal className="h-4 w-4" />
+                  {selectedCategory ? (
+                    <span className="rounded-full bg-secondary px-3 py-1">
+                      Category: {selectedCategory.name}
+                    </span>
+                  ) : (
+                    <span className="rounded-full bg-secondary px-3 py-1">
+                      All categories
+                    </span>
+                  )}
+                  {selectedSubCategory && (
+                    <span className="rounded-full bg-secondary px-3 py-1">
+                      Subcategory: {selectedSubCategory.name}
+                    </span>
+                  )}
+                  {searchQuery.trim() && (
+                    <span className="rounded-full bg-secondary px-3 py-1">
+                      Search: {searchQuery.trim()}
+                    </span>
+                  )}
+                </div>
+                <p>
+                  {loading
+                    ? "Loading products..."
+                    : error
+                    ? `Error: ${error}`
+                    : `Showing ${sortedProducts.length} of ${allProducts.length} products`}
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        <div className="mt-8">
+          {!isClient || loading ? (
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
+              {Array.from({ length: 10 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="overflow-hidden rounded-lg bg-card shadow-lg"
+                >
+                  <div className="aspect-square animate-pulse bg-muted" />
+                  <div className="space-y-2 p-4">
+                    <div className="h-4 animate-pulse rounded bg-muted" />
+                    <div className="h-4 w-3/4 animate-pulse rounded bg-muted" />
+                    <div className="h-4 w-1/2 animate-pulse rounded bg-muted" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : error ? (
+            <div className="rounded-lg border border-destructive/30 bg-card p-8 text-center text-destructive">
+              {error}
+            </div>
+          ) : sortedProducts.length > 0 ? (
+            <motion.div
+              className={
+                isEditorial || isLuxury || isModern
+                  ? "grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4"
+                  : "grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5"
+              }
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+            >
+              {sortedProducts.map((product, index) => (
                 <ProductCard key={product.id} product={product} index={index} />
               ))}
-          </motion.div>
-        )}
-        {isClient && !loading && !error && sortedProducts.length === 0 && (
-          <motion.div
-            className="text-center py-12"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6 }}
-          >
-            <div className="w-24 h-24 mx-auto mb-4 bg-muted rounded-full flex items-center justify-center">
-              <Search className="w-8 h-8 text-muted-foreground" />
-            </div>
-            <h3 className="text-xl font-semibold text-foreground mb-2">
-              No products found
-            </h3>
-            <p className="text-muted-foreground mb-4">
-              Try adjusting your search or filter criteria
-            </p>
-            <Button
-              onClick={() => {
-                setSearchQuery("");
-                setSelectedCategoryId("");
-                setSelectedSubCategoryId("");
-              }}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground"
+            </motion.div>
+          ) : (
+            <motion.div
+              className="py-16 text-center"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.6 }}
             >
-              Clear Filters
-            </Button>
-          </motion.div>
-        )}
+              <div className="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-muted">
+                <Search className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <h3 className="mb-2 text-xl font-semibold text-foreground">
+                No products found
+              </h3>
+              <p className="mb-4 text-muted-foreground">
+                Try adjusting your search or filters.
+              </p>
+              <Button
+                onClick={clearFilters}
+                className="bg-primary text-primary-foreground hover:bg-primary/90"
+              >
+                Clear Filters
+              </Button>
+            </motion.div>
+          )}
+        </div>
       </div>
     </div>
   );
