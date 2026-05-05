@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import {
   ArrowLeft,
   Heart,
-  Star,
   Minus,
   Plus,
   Truck,
@@ -16,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ImageWithFallback } from "@/components/ui/image-with-fallback";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch } from "@/redux/store";
 import {
@@ -32,13 +31,21 @@ import {
 import type { RootState } from "@/redux/store";
 import { ProductCard } from "@/components/products/product-card";
 import { toast } from "sonner";
+import {
+  formatCurrency,
+  getOriginalPrice,
+  getSaleDiscountAmount,
+  getSaleDiscountPercentage,
+  getSalePrice,
+  hasSaleDiscount,
+} from "@/lib/discount-pricing";
 export default function ProductDetailPage() {
   const params = useParams<{ id: string }>();
   const id = params?.id;
-  const router = useRouter();
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const lastFocusRefreshAt = useRef(0);
 
   const dispatch = useDispatch<AppDispatch>();
   const {
@@ -55,26 +62,53 @@ export default function ProductDetailPage() {
     product ? selectIsInFavorites(state, product.id) : false
   );
 
-  // Fetch product by id via thunk
-  useEffect(() => {
+  const refreshProduct = useCallback(() => {
     if (!id) return;
     dispatch(fetchProductById(String(id)));
   }, [dispatch, id]);
 
-  // After product loads, fetch related products by category/subCategory
+  const refreshRelatedProducts = useCallback(() => {
+    if (!product?.categoryId) return;
+    dispatch(
+      fetchAllProducts({
+        category: product.categoryId,
+      })
+    );
+  }, [dispatch, product?.categoryId]);
+
+  // Fetch product by id via thunk
   useEffect(() => {
-    if (!product) return;
-    const cat = product.categoryId;
-    const sub = product.subCategoryId;
-    if (cat || sub) {
-      dispatch(
-        fetchAllProducts({
-          category: cat ?? "",
-          subCategory: sub ?? "",
-        })
-      );
-    }
-  }, [dispatch, product]);
+    refreshProduct();
+  }, [refreshProduct]);
+
+  // After product loads, fetch related products from the same category.
+  useEffect(() => {
+    refreshRelatedProducts();
+  }, [refreshRelatedProducts]);
+
+  useEffect(() => {
+    const refreshCatalogData = () => {
+      const now = Date.now();
+      if (now - lastFocusRefreshAt.current < 500) return;
+      lastFocusRefreshAt.current = now;
+      refreshProduct();
+      refreshRelatedProducts();
+    };
+
+    const refreshIfVisible = () => {
+      if (document.visibilityState === "visible") {
+        refreshCatalogData();
+      }
+    };
+
+    window.addEventListener("focus", refreshCatalogData);
+    document.addEventListener("visibilitychange", refreshIfVisible);
+
+    return () => {
+      window.removeEventListener("focus", refreshCatalogData);
+      document.removeEventListener("visibilitychange", refreshIfVisible);
+    };
+  }, [refreshProduct, refreshRelatedProducts]);
 
   const stockQuantity = product?.inventory?.quantity ?? product?.stock ?? 0;
 
@@ -98,6 +132,7 @@ export default function ProductDetailPage() {
             description: product.description,
             categoryId: product.categoryId,
             subCategoryId: product.subCategoryId,
+            pricing: product.pricing,
           },
           quantity,
         })
@@ -136,7 +171,9 @@ export default function ProductDetailPage() {
           description: product.description,
           categoryId: product.categoryId,
           subCategoryId: product.subCategoryId,
+          pricing: product.pricing,
         },
+        originalPrice: getOriginalPrice(product),
         rating: 4.5,
       })
     );
@@ -183,6 +220,12 @@ export default function ProductDetailPage() {
         return imageUrl || "/vercel.svg";
       })
     : ["/vercel.svg"];
+  const originalPrice = getOriginalPrice(product);
+  const salePrice = getSalePrice(product);
+  const saleDiscountAmount = getSaleDiscountAmount(product);
+  const discountPercentage = getSaleDiscountPercentage(product);
+  const isOnSale = hasSaleDiscount(product);
+  const activeSaleTitle = product.pricing?.activeSaleDiscount?.title;
 
   return (
     <div className="min-h-screen bg-stone-50">
@@ -250,10 +293,14 @@ export default function ProductDetailPage() {
               <p className="text-sm text-stone-600 mb-4">
                 {product.category?.name} / {product.subCategory?.name}
               </p>
-              <div className="flex items-center space-x-4 mb-4">
-                <span className="text-3xl font-bold text-stone-800">
-                  ৳ {product.price.toLocaleString()}
-                </span>
+              <div className="mb-4 flex flex-wrap items-center gap-3">
+                {isOnSale && (
+                  <Badge className="bg-red-600 text-white hover:bg-red-600">
+                    {discountPercentage > 0
+                      ? `${discountPercentage}% OFF`
+                      : "Sale"}
+                  </Badge>
+                )}
                 <Badge
                   className={
                     stockQuantity > 0
@@ -266,6 +313,24 @@ export default function ProductDetailPage() {
                     : "Out of Stock"}
                 </Badge>
               </div>
+              <div className="mb-3 flex flex-wrap items-end gap-3">
+                <span className="text-3xl font-bold text-stone-800">
+                  {formatCurrency(salePrice)}
+                </span>
+                {isOnSale && (
+                  <span className="pb-1 text-lg text-stone-400 line-through">
+                    {formatCurrency(originalPrice)}
+                  </span>
+                )}
+              </div>
+              {isOnSale && (
+                <div className="rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  <span className="font-semibold">
+                    {activeSaleTitle || "Limited sale"}
+                  </span>
+                  <span> saves you {formatCurrency(saleDiscountAmount)}.</span>
+                </div>
+              )}
             </div>
 
             <div className="space-y-6">
@@ -412,39 +477,47 @@ export default function ProductDetailPage() {
           <h2 className="text-2xl font-bold text-stone-800 mb-8">
             Related Products
           </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6">
-            {relatedProducts.slice(0, 5).map((r, index) => (
-              <motion.div
-                key={r.id}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                viewport={{ once: true }}
-                whileHover={{ y: -5 }}
-              >
-                <ProductCard
-                  index={index}
-                  product={{
-                    id: String(r.id),
-                    name: r.title,
-                    price: Number(r.price) || 0,
-                    originalPrice: Number(r.price) || 0,
-                    rating: 4.5,
-                    reviews: 0,
-                    image:
-                      r.images?.[0]?.imageUrl ||
-                      r.images?.[0]?.url ||
-                      "/vercel.svg",
-                  }}
-                />
-              </motion.div>
-            ))}
-            {relatedLoading && (
-              <div className="col-span-full text-center text-sm text-stone-500">
-                Loading related products...
-              </div>
-            )}
-          </div>
+          {relatedLoading ? (
+            <div className="rounded-xl border border-stone-100 bg-white p-8 text-center text-stone-600">
+              Loading related products...
+            </div>
+          ) : relatedProducts.length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6">
+              {relatedProducts.slice(0, 5).map((r, index) => (
+                <motion.div
+                  key={r.id}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                  whileHover={{ y: -5 }}
+                >
+                  <ProductCard
+                    index={index}
+                    product={{
+                      id: String(r.id),
+                      name: r.title,
+                      price: getSalePrice(r),
+                      originalPrice: getOriginalPrice(r),
+                      rating: 4.5,
+                      reviews: 0,
+                      image:
+                        r.images?.[0]?.imageUrl ||
+                        r.images?.[0]?.url ||
+                        "/vercel.svg",
+                      saleTitle: r.pricing?.activeSaleDiscount?.title,
+                      discountPercentage: getSaleDiscountPercentage(r),
+                      saleDiscountAmount: getSaleDiscountAmount(r),
+                    }}
+                  />
+                </motion.div>
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-xl border border-stone-100 bg-white p-8 text-center text-stone-600">
+              No related products found in this category.
+            </div>
+          )}
         </motion.section>
       </div>
     </div>

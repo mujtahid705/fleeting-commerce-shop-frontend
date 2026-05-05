@@ -1,9 +1,16 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import {
+  getOriginalPrice,
+  getSalePrice,
+  type ProductPricing,
+} from "@/lib/discount-pricing";
+
 export interface FavoriteItem {
   id: string;
   title: string;
   price: number;
   originalPrice?: number;
+  pricing?: ProductPricing;
   image: string;
   brand: string;
   slug: string;
@@ -20,6 +27,7 @@ export interface FavoriteItem {
     description?: string;
     categoryId?: string | number;
     subCategoryId?: string | number;
+    pricing?: ProductPricing;
   };
 }
 interface FavoritesState {
@@ -80,8 +88,9 @@ const favoritesSlice = createSlice({
         const newItem: FavoriteItem = {
           id: productData.id,
           title: productData.title,
-          price: productData.price,
-          originalPrice,
+          price: getSalePrice(productData),
+          originalPrice: originalPrice ?? getOriginalPrice(productData),
+          pricing: productData.pricing,
           image: imageUrl || "/vercel.svg",
           brand: productData.brand,
           slug: productData.slug,
@@ -121,8 +130,9 @@ const favoritesSlice = createSlice({
         const newItem: FavoriteItem = {
           id: productData.id,
           title: productData.title,
-          price: productData.price,
-          originalPrice,
+          price: getSalePrice(productData),
+          originalPrice: originalPrice ?? getOriginalPrice(productData),
+          pricing: productData.pricing,
           image: imageUrl || "/vercel.svg",
           brand: productData.brand,
           slug: productData.slug,

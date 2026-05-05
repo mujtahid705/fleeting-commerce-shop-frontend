@@ -22,6 +22,14 @@ import {
   getThemePreviewExclusiveProducts,
   getThemePreviewProductsByCategory,
 } from "@/lib/theme-preview";
+import {
+  getOriginalPrice,
+  getSaleDiscountAmount,
+  getSaleDiscountPercentage,
+  getSalePrice,
+  formatCurrency,
+  type ProductPricing,
+} from "@/lib/discount-pricing";
 
 type CardProduct = {
   id: string;
@@ -31,6 +39,28 @@ type CardProduct = {
   rating: number;
   reviews: number;
   image: string;
+  saleTitle?: string;
+  discountPercentage?: number;
+  saleDiscountAmount?: number;
+};
+
+type ExclusiveProductCard = {
+  product: CardProduct;
+  customTitle?: string;
+  customImage?: string;
+};
+
+type ProductSource = {
+  id: string | number;
+  title?: string;
+  name?: string;
+  price?: number;
+  originalPrice?: number;
+  rating?: number;
+  reviews?: number;
+  image?: string;
+  pricing?: ProductPricing;
+  images?: Array<{ url?: string; imageUrl?: string }>;
 };
 
 // Default exclusive section for when API returns empty products array
@@ -92,7 +122,7 @@ export function ProductsSection() {
 
   // State for exclusive products (fetched by productId)
   const [exclusiveProductsData, setExclusiveProductsData] = React.useState<
-    Array<{ product: CardProduct; customTitle?: string; customImage?: string }>
+    ExclusiveProductCard[]
   >([]);
   const [exclusiveLoading, setExclusiveLoading] = React.useState(false);
 
@@ -102,31 +132,32 @@ export function ProductsSection() {
   );
   const previewExclusiveProducts = React.useMemo(
     () =>
-      getThemePreviewExclusiveProducts().map((product) => ({
-        product,
-        customTitle: product.name,
-        customImage: product.image,
-      })),
+      getThemePreviewExclusiveProducts().map((product) => {
+        const item: ExclusiveProductCard = { product };
+        item.customTitle = product.name;
+        item.customImage = product.image;
+        return item;
+      }),
     []
   );
 
   const mapToCard = React.useCallback(
-    (
-      items: Array<{
-        id: string;
-        title?: string;
-        price?: number;
-        images?: Array<{ url?: string; imageUrl?: string }>;
-      }>
-    ): CardProduct[] =>
+    (items: ProductSource[]): CardProduct[] =>
       items.map((p) => ({
         id: String(p.id),
-        name: p.title ?? "Untitled",
-        price: Number(p.price) || 0,
-        originalPrice: Number(p.price) || 0,
-        rating: 0,
-        reviews: 0,
-        image: p.images?.[0]?.imageUrl || p.images?.[0]?.url || "/vercel.svg",
+        name: p.title ?? p.name ?? "Untitled",
+        price: getSalePrice(p),
+        originalPrice: getOriginalPrice(p),
+        rating: Number(p.rating) || 0,
+        reviews: Number(p.reviews) || 0,
+        image:
+          p.image ||
+          p.images?.[0]?.imageUrl ||
+          p.images?.[0]?.url ||
+          "/vercel.svg",
+        saleTitle: p.pricing?.activeSaleDiscount?.title,
+        discountPercentage: getSaleDiscountPercentage(p),
+        saleDiscountAmount: getSaleDiscountAmount(p),
       })),
     []
   );
@@ -137,41 +168,61 @@ export function ProductsSection() {
     if (featuredCategories.length === 0) return;
 
     let active = true;
+    let lastFocusRefreshAt = 0;
 
-    const fetchCategoryProducts = async (category: Category) => {
-      setLoading((prev) => ({ ...prev, [category.id]: true }));
+    const fetchFeaturedCategoryProducts = () => {
+      featuredCategories.forEach((category) => {
+        setLoading((prev) => ({ ...prev, [category.id]: true }));
 
-      try {
-        const products = await dispatch(
-          fetchAllProducts({ category: category.id })
-        ).unwrap();
-        if (active) {
-          setCategoryProducts((prev) => ({
-            ...prev,
-            [category.id]: mapToCard(products),
-          }));
-        }
-      } catch (e: unknown) {
-        const errorMessage = e instanceof Error ? e.message : String(e);
-        if (active) {
-          setError((prev) => ({
-            ...prev,
-            [category.id]: errorMessage || "Failed to load",
-          }));
-        }
-      } finally {
-        if (active) {
-          setLoading((prev) => ({ ...prev, [category.id]: false }));
-        }
+        dispatch(fetchAllProducts({ category: category.id }))
+          .unwrap()
+          .then((products) => {
+            if (active) {
+              setCategoryProducts((prev) => ({
+                ...prev,
+                [category.id]: mapToCard(products),
+              }));
+              setError((prev) => ({ ...prev, [category.id]: null }));
+            }
+          })
+          .catch((e: unknown) => {
+            const errorMessage = e instanceof Error ? e.message : String(e);
+            if (active) {
+              setError((prev) => ({
+                ...prev,
+                [category.id]: errorMessage || "Failed to load",
+              }));
+            }
+          })
+          .finally(() => {
+            if (active) {
+              setLoading((prev) => ({ ...prev, [category.id]: false }));
+            }
+          });
+      });
+    };
+
+    const refreshFeaturedCategoryProductsOnce = () => {
+      const now = Date.now();
+      if (now - lastFocusRefreshAt < 500) return;
+      lastFocusRefreshAt = now;
+      fetchFeaturedCategoryProducts();
+    };
+
+    const refreshIfVisible = () => {
+      if (document.visibilityState === "visible") {
+        refreshFeaturedCategoryProductsOnce();
       }
     };
 
-    featuredCategories.forEach((category) => {
-      fetchCategoryProducts(category);
-    });
+    refreshFeaturedCategoryProductsOnce();
+    window.addEventListener("focus", refreshFeaturedCategoryProductsOnce);
+    document.addEventListener("visibilitychange", refreshIfVisible);
 
     return () => {
       active = false;
+      window.removeEventListener("focus", refreshFeaturedCategoryProductsOnce);
+      document.removeEventListener("visibilitychange", refreshIfVisible);
     };
   }, [dispatch, featuredCategories, isThemePreview, mapToCard]);
 
@@ -181,46 +232,72 @@ export function ProductsSection() {
     if (exclusiveProducts.length === 0) return;
 
     let active = true;
-    setExclusiveLoading(true);
+    let lastFocusRefreshAt = 0;
 
-    const fetchExclusiveProducts = async () => {
-      const results: Array<{
-        product: CardProduct;
-        customTitle?: string;
-        customImage?: string;
-      }> = [];
+    const fetchExclusiveProducts = () => {
+      setExclusiveLoading(true);
 
-      for (const item of exclusiveProducts) {
+      const fetches = exclusiveProducts.map(async (item) => {
         try {
           const productData = await dispatch(
             fetchProductById(item.productId)
           ).unwrap();
-          if (active && productData) {
-            const cardProduct = mapToCard([productData])[0];
-            results.push({
-              product: cardProduct,
-              customTitle: item.customTitle,
-              customImage: item.customImage,
-            });
-          }
+          if (!productData) return null;
+
+          const exclusiveProduct: ExclusiveProductCard = {
+            product: mapToCard([productData])[0],
+          };
+          if (item.customTitle) exclusiveProduct.customTitle = item.customTitle;
+          if (item.customImage) exclusiveProduct.customImage = item.customImage;
+
+          return exclusiveProduct;
         } catch (e) {
           console.error(
             `Failed to fetch exclusive product ${item.productId}:`,
             e
           );
+          return null;
         }
-      }
+      });
 
-      if (active) {
-        setExclusiveProductsData(results);
-        setExclusiveLoading(false);
+      Promise.all(fetches)
+        .then((results) => {
+          if (active) {
+            setExclusiveProductsData(
+              results.filter(
+                (item): item is ExclusiveProductCard => item !== null
+              )
+            );
+          }
+        })
+        .finally(() => {
+          if (active) {
+            setExclusiveLoading(false);
+          }
+        });
+    };
+
+    const refreshExclusiveProductsOnce = () => {
+      const now = Date.now();
+      if (now - lastFocusRefreshAt < 500) return;
+      lastFocusRefreshAt = now;
+      fetchExclusiveProducts();
+    };
+
+    const refreshIfVisible = () => {
+      if (document.visibilityState === "visible") {
+        refreshExclusiveProductsOnce();
       }
     };
 
-    fetchExclusiveProducts();
+    refreshExclusiveProductsOnce();
+    window.addEventListener("focus", refreshExclusiveProductsOnce);
+    document.addEventListener("visibilitychange", refreshIfVisible);
 
     return () => {
       active = false;
+      window.removeEventListener("focus", refreshExclusiveProductsOnce);
+      document.removeEventListener("visibilitychange", refreshIfVisible);
     };
   }, [dispatch, exclusiveProducts, isThemePreview, mapToCard]);
 
@@ -273,16 +350,6 @@ export function ProductsSection() {
                   <h2 className="mt-4 text-4xl font-semibold uppercase tracking-[0.08em] sm:text-5xl">
                     {category.name}
                   </h2>
-                  <p
-                    className={`mx-auto mt-5 max-w-lg text-sm leading-7 ${
-                      categoryIndex % 2 === 0
-                        ? "text-muted-foreground"
-                        : "text-background/65"
-                    }`}
-                  >
-                    {category.subCategories?.length || 0} subcategories
-                    available.
-                  </p>
                 </motion.div>
 
                 {loading[category.id] && (
@@ -371,7 +438,7 @@ export function ProductsSection() {
                                 {displayTitle}
                               </h3>
                               <p className="mt-2 text-sm font-semibold text-primary">
-                                ${item.product.price.toFixed(2)}
+                                {formatCurrency(item.product.price)}
                               </p>
                             </div>
                           </div>
@@ -417,10 +484,6 @@ export function ProductsSection() {
                     </h2>
                   </div>
                   <div className="flex flex-col gap-5 lg:items-end">
-                    <p className="max-w-lg text-sm leading-7 text-muted-foreground lg:text-right">
-                      {category.subCategories?.length || 0} subcategories
-                      available.
-                    </p>
                     <Link href={`/products?category=${category.id}`}>
                       <Button
                         variant="outline"
@@ -523,7 +586,7 @@ export function ProductsSection() {
                               {displayTitle}
                             </h3>
                             <p className="mt-4 text-sm font-semibold">
-                              ${item.product.price.toFixed(2)}
+                              {formatCurrency(item.product.price)}
                             </p>
                           </div>
                         </Link>
@@ -590,10 +653,6 @@ export function ProductsSection() {
                   <h2 className="text-3xl font-light text-foreground">
                     {category.name}
                   </h2>
-                  <p className="text-muted-foreground mt-2 font-light">
-                    {category.subCategories?.length || 0} subcategories
-                    available
-                  </p>
                 </div>
                 <Link href={`/products?category=${category.id}`}>
                   <Button
@@ -711,7 +770,7 @@ export function ProductsSection() {
                               {displayTitle}
                             </h3>
                             <p className="text-primary font-semibold mt-1">
-                              ${item.product.price.toFixed(2)}
+                              {formatCurrency(item.product.price)}
                             </p>
                           </div>
                         </div>

@@ -7,6 +7,8 @@ import { Card } from "@/components/ui/card";
 import { ImageWithFallback } from "@/components/ui/image-with-fallback";
 import Link from "next/link";
 import { useAppSelector } from "@/hooks/hooks";
+import { formatCurrency } from "@/lib/discount-pricing";
+
 interface Product {
   id: string;
   name: string;
@@ -15,6 +17,9 @@ interface Product {
   rating: number;
   reviews: number;
   image: string;
+  saleTitle?: string;
+  discountPercentage?: number;
+  saleDiscountAmount?: number;
 }
 interface ProductCardProps {
   product: Product;
@@ -26,6 +31,11 @@ export function ProductCard({ product, index }: ProductCardProps) {
   const isEditorial = productCardVariant === "editorial";
   const isModern = productCardVariant === "modern";
   const isLuxury = productCardVariant === "luxury";
+  const hasSale = product.originalPrice > product.price;
+  const saleLabel =
+    product.discountPercentage && product.discountPercentage > 0
+      ? `${product.discountPercentage}% off`
+      : product.saleTitle || "Sale";
 
   if (isModern) {
     return (
@@ -47,10 +57,9 @@ export function ProductCard({ product, index }: ProductCardProps) {
                 alt={product.name}
                 className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
               />
-              {product.originalPrice > product.price && (
+              {hasSale && (
                 <Badge className="absolute left-3 top-3 rounded-[var(--theme-button-radius)] bg-primary text-primary-foreground">
-                  {Math.round((1 - product.price / product.originalPrice) * 100)}%
-                  off
+                  {saleLabel}
                 </Badge>
               )}
             </div>
@@ -62,9 +71,16 @@ export function ProductCard({ product, index }: ProductCardProps) {
               </h3>
             </Link>
             <div className="mt-4 flex items-center justify-between border-t border-border pt-4">
-              <span className="text-lg font-semibold text-card-foreground">
-                ৳ {product.price.toLocaleString()}
-              </span>
+              <div className="min-w-0">
+                <span className="text-lg font-semibold text-card-foreground">
+                  {formatCurrency(product.price)}
+                </span>
+                {hasSale && (
+                  <span className="ml-2 text-xs text-muted-foreground line-through">
+                    {formatCurrency(product.originalPrice)}
+                  </span>
+                )}
+              </div>
               <Button
                 size="sm"
                 className="h-9 rounded-[var(--theme-button-radius)] px-3"
@@ -98,6 +114,11 @@ export function ProductCard({ product, index }: ProductCardProps) {
                 alt={product.name}
                 className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
               />
+              {hasSale && (
+                <Badge className="absolute left-4 top-4 rounded-none border-0 bg-primary px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-primary-foreground">
+                  {saleLabel}
+                </Badge>
+              )}
             </div>
           </Link>
           <div className="px-1 py-5">
@@ -107,9 +128,16 @@ export function ProductCard({ product, index }: ProductCardProps) {
               </h3>
             </Link>
             <div className="mt-4 flex items-center justify-between border-t border-border pt-4">
-              <span className="text-sm font-semibold text-primary">
-                ৳ {product.price.toLocaleString()}
-              </span>
+              <div className="min-w-0">
+                <span className="text-sm font-semibold text-primary">
+                  {formatCurrency(product.price)}
+                </span>
+                {hasSale && (
+                  <span className="ml-2 text-xs text-muted-foreground line-through">
+                    {formatCurrency(product.originalPrice)}
+                  </span>
+                )}
+              </div>
               <Button
                 size="sm"
                 variant="outline"
@@ -144,10 +172,9 @@ export function ProductCard({ product, index }: ProductCardProps) {
                 alt={product.name}
                 className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
               />
-              {product.originalPrice > product.price && (
+              {hasSale && (
                 <Badge className="absolute left-4 top-4 rounded-none border-0 bg-accent px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-accent-foreground">
-                  {Math.round((1 - product.price / product.originalPrice) * 100)}%
-                  off
+                  {saleLabel}
                 </Badge>
               )}
               <div className="absolute inset-x-0 bottom-0 translate-y-full border-t border-border bg-background/95 p-4 backdrop-blur transition-transform duration-300 group-hover:translate-y-0">
@@ -174,11 +201,11 @@ export function ProductCard({ product, index }: ProductCardProps) {
                 </p>
                 <div className="mt-1 flex flex-wrap items-center gap-2">
                   <span className="text-base font-semibold text-card-foreground">
-                    ৳ {product.price.toLocaleString()}
+                    {formatCurrency(product.price)}
                   </span>
-                  {product.originalPrice > product.price && (
+                  {hasSale && (
                     <span className="text-xs text-muted-foreground line-through">
-                      ৳ {product.originalPrice.toLocaleString()}
+                      {formatCurrency(product.originalPrice)}
                     </span>
                   )}
                 </div>
@@ -242,10 +269,9 @@ export function ProductCard({ product, index }: ProductCardProps) {
                 </Button>
               </motion.div>
             </div>
-            {product.originalPrice > product.price && (
+            {hasSale && (
               <Badge className="absolute top-3 left-3 bg-destructive text-destructive-foreground border-0 shadow-sm z-20 rounded-full px-3">
-                {Math.round((1 - product.price / product.originalPrice) * 100)}%
-                OFF
+                {saleLabel.toUpperCase()}
               </Badge>
             )}
           </div>
@@ -259,40 +285,40 @@ export function ProductCard({ product, index }: ProductCardProps) {
             </Link>
             {product.rating > 0 && (
               <div className="flex items-center space-x-1">
-              <div className="flex items-center">
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    className={`w-3.5 h-3.5 ${
-                      i < Math.floor(product.rating)
-                        ? "text-accent fill-current"
-                        : "text-muted"
-                    }`}
-                  />
-                ))}
-              </div>
-              <span className="text-xs text-muted-foreground">
-                ({product.reviews})
-              </span>
+                <div className="flex items-center">
+                  {[...Array(5)].map((_, i) => (
+                    <Star
+                      key={i}
+                      className={`w-3.5 h-3.5 ${
+                        i < Math.floor(product.rating)
+                          ? "text-accent fill-current"
+                          : "text-muted"
+                      }`}
+                    />
+                  ))}
+                </div>
+                <span className="text-xs text-muted-foreground">
+                  ({product.reviews})
+                </span>
               </div>
             )}
             <div className="flex items-center justify-between pt-1 mt-auto">
               <div className="flex-1">
                 <div className="flex items-center space-x-2">
                   <span className="text-lg font-semibold text-card-foreground">
-                    ৳ {product.price.toLocaleString()}
+                    {formatCurrency(product.price)}
                   </span>
-                  {product.originalPrice > product.price && (
+                  {hasSale && (
                     <span className="text-sm text-muted-foreground line-through">
-                      ৳ {product.originalPrice.toLocaleString()}
+                      {formatCurrency(product.originalPrice)}
                     </span>
                   )}
                 </div>
                 <div className="h-5 mt-0.5">
-                  {product.originalPrice > product.price && (
+                  {hasSale && (
                     <p className="text-xs text-primary font-medium">
-                      Save ৳{" "}
-                      {(product.originalPrice - product.price).toLocaleString()}
+                      Save{" "}
+                      {formatCurrency(product.originalPrice - product.price)}
                     </p>
                   )}
                 </div>

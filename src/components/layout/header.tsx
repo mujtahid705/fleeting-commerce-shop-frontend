@@ -55,6 +55,9 @@ export function Header() {
     dispatch(logout());
     router.push("/");
   };
+  const handleProfileClick = () => {
+    router.push("/profile");
+  };
   const handleCartClick = () => {
     dispatch(toggleCart());
   };
@@ -161,12 +164,10 @@ export function Header() {
                       {userData?.email || ""}
                     </p>
                   </div>
-                  <Link href="/profile">
-                    <DropdownMenuItem>
-                      <UserCircle className="mr-2 h-4 w-4" />
-                      Profile
-                    </DropdownMenuItem>
-                  </Link>
+                  <DropdownMenuItem onClick={handleProfileClick}>
+                    <UserCircle className="mr-2 h-4 w-4" />
+                    Profile
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout}>
                     <LogOut className="mr-2 h-4 w-4" />
@@ -298,12 +299,10 @@ export function Header() {
                       {userData?.email || ""}
                     </p>
                   </div>
-                  <Link href="/profile">
-                    <DropdownMenuItem>
-                      <UserCircle className="mr-2 h-4 w-4" />
-                      Profile
-                    </DropdownMenuItem>
-                  </Link>
+                  <DropdownMenuItem onClick={handleProfileClick}>
+                    <UserCircle className="mr-2 h-4 w-4" />
+                    Profile
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout}>
                     <LogOut className="mr-2 h-4 w-4" />
@@ -418,12 +417,10 @@ export function Header() {
                       {userData?.email || ""}
                     </p>
                   </div>
-                  <Link href="/profile">
-                    <DropdownMenuItem>
-                      <UserCircle className="mr-2 h-4 w-4" />
-                      Profile
-                    </DropdownMenuItem>
-                  </Link>
+                  <DropdownMenuItem onClick={handleProfileClick}>
+                    <UserCircle className="mr-2 h-4 w-4" />
+                    Profile
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout}>
                     <LogOut className="mr-2 h-4 w-4" />
@@ -572,12 +569,10 @@ export function Header() {
                           {userData?.email || ""}
                         </p>
                       </div>
-                      <Link href="/profile">
-                        <DropdownMenuItem>
-                          <UserCircle className="w-4 h-4 mr-2" />
-                          Profile
-                        </DropdownMenuItem>
-                      </Link>
+                      <DropdownMenuItem onClick={handleProfileClick}>
+                        <UserCircle className="w-4 h-4 mr-2" />
+                        Profile
+                      </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={handleLogout}>
                         <LogOut className="w-4 h-4 mr-2" />

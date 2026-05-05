@@ -4,6 +4,7 @@ import { useAppSelector } from "@/hooks/hooks";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { Suspense } from "react";
+import { ActiveSalesBanner } from "@/components/discounts/active-sales-banner";
 
 interface StoreLayoutProps {
   children: React.ReactNode;
@@ -25,6 +26,7 @@ export function StoreLayout({ children }: StoreLayoutProps) {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
+      <ActiveSalesBanner />
       <Suspense
         fallback={
           <div className="min-h-screen flex items-center justify-center bg-background">

@@ -31,6 +31,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
+import { formatCurrency } from "@/lib/discount-pricing";
 export default function ProfilePage() {
   const { isLoggedIn, userData } = useSelector(
     (state: RootState) => state.user
@@ -115,6 +116,30 @@ export default function ProfilePage() {
       console.error("Error calculating order total:", error);
       return 0;
     }
+  };
+  const getOrderTotal = (order: Order) => {
+    const total = Number(order.totalAmount);
+    return order.totalAmount !== undefined &&
+      order.totalAmount !== null &&
+      Number.isFinite(total)
+      ? total
+      : calculateOrderTotal(order.order_items);
+  };
+  const getOrderSubtotal = (order: Order) => {
+    const subtotal = Number(order.subtotalAmount);
+    return order.subtotalAmount !== undefined &&
+      order.subtotalAmount !== null &&
+      Number.isFinite(subtotal)
+      ? subtotal
+      : calculateOrderTotal(order.order_items);
+  };
+  const getOrderDiscount = (order: Order) => {
+    const discount = Number(order.discountAmount);
+    if (Number.isFinite(discount) && discount > 0) return discount;
+    return (
+      (Number(order.saleDiscountAmount) || 0) +
+      (Number(order.couponDiscount) || 0)
+    );
   };
   const getTotalItems = (
     orderItems: Order["order_items"] | undefined | null
@@ -276,7 +301,7 @@ export default function ProfilePage() {
                           </div>
                           <div className="flex items-center">
                             <CreditCard className="w-4 h-4 mr-2" />
-                            Credit Card
+                            Cash on Delivery
                           </div>
                         </div>
                         <div className="mt-4">
@@ -301,7 +326,8 @@ export default function ProfilePage() {
                                     {item.product.title}
                                   </p>
                                   <p className="text-xs text-stone-500">
-                                    Qty: {item.quantity} × ৳{item.unitPrice}
+                                    Qty: {item.quantity} x{" "}
+                                    {formatCurrency(Number(item.unitPrice) || 0)}
                                   </p>
                                 </div>
                               </div>
@@ -311,8 +337,13 @@ export default function ProfilePage() {
                       </div>
                       <div className="text-right ml-6">
                         <div className="text-2xl font-bold text-stone-800 mb-3">
-                          ৳{calculateOrderTotal(order.order_items).toFixed(2)}
+                          {formatCurrency(getOrderTotal(order))}
                         </div>
+                        {getOrderDiscount(order) > 0 && (
+                          <div className="mb-3 text-xs font-medium text-green-700">
+                            Saved {formatCurrency(getOrderDiscount(order))}
+                          </div>
+                        )}
                         <div className="space-y-2">
                           <Button
                             variant="outline"
@@ -402,7 +433,7 @@ export default function ProfilePage() {
                     </div>
                     <div>
                       <span className="text-stone-500">Payment Method:</span>{" "}
-                      Credit Card
+                      Cash on Delivery
                     </div>
                     <div>
                       <span className="text-stone-500">Customer:</span>{" "}
@@ -435,10 +466,18 @@ export default function ProfilePage() {
                       </div>
                       <div className="text-right">
                         <div className="font-semibold text-stone-800">
-                          ৳{(item.unitPrice * item.quantity).toFixed(2)}
+                          {formatCurrency(
+                            (Number(item.unitPrice) || 0) *
+                              (Number(item.quantity) || 0)
+                          )}
                         </div>
+                        {Number(item.discount) > 0 && (
+                          <div className="text-xs text-green-700">
+                            -{formatCurrency(Number(item.discount))}
+                          </div>
+                        )}
                         <div className="text-sm text-stone-500">
-                          ৳{item.unitPrice.toFixed(2)} each
+                          {formatCurrency(Number(item.unitPrice) || 0)} each
                         </div>
                       </div>
                     </div>
@@ -446,12 +485,45 @@ export default function ProfilePage() {
                 </div>
               </div>
               <div className="border-t border-stone-200 pt-4">
-                <div className="flex justify-between items-center">
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm text-stone-600">
+                    <span>Subtotal</span>
+                    <span>
+                      {formatCurrency(getOrderSubtotal(selectedOrder))}
+                    </span>
+                  </div>
+                  {Number(selectedOrder.saleDiscountAmount) > 0 && (
+                    <div className="flex justify-between text-sm text-green-700">
+                      <span>Sale discount</span>
+                      <span>
+                        {`-${formatCurrency(
+                          Number(selectedOrder.saleDiscountAmount)
+                        )}`}
+                      </span>
+                    </div>
+                  )}
+                  {Number(selectedOrder.couponDiscount) > 0 && (
+                    <div className="flex justify-between text-sm text-green-700">
+                      <span>
+                        Coupon discount
+                        {selectedOrder.couponCode
+                          ? ` (${selectedOrder.couponCode})`
+                          : ""}
+                      </span>
+                      <span>
+                        {`-${formatCurrency(
+                          Number(selectedOrder.couponDiscount)
+                        )}`}
+                      </span>
+                    </div>
+                  )}
+                </div>
+                <div className="mt-3 flex justify-between border-t border-stone-200 pt-3">
                   <span className="text-lg font-semibold text-stone-800">
                     Total
                   </span>
                   <span className="text-2xl font-bold text-stone-800">
-                    ৳{calculateOrderTotal(selectedOrder.order_items).toFixed(2)}
+                    {formatCurrency(getOrderTotal(selectedOrder))}
                   </span>
                 </div>
               </div>

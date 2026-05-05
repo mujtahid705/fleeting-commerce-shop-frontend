@@ -116,9 +116,6 @@ export function CategoriesSection() {
                     <h3 className="text-2xl font-semibold text-foreground">
                       {category.name}
                     </h3>
-                    <p className="mt-3 text-sm text-muted-foreground">
-                      {category.subCategories?.length || 0} subcategories
-                    </p>
                   </div>
                 </Link>
               </motion.div>
@@ -163,9 +160,6 @@ export function CategoriesSection() {
                       <h3 className="text-3xl font-semibold uppercase leading-tight tracking-[0.06em]">
                         {category.name}
                       </h3>
-                      <p className="mt-4 text-sm text-background/60 transition-colors group-hover:text-foreground/60">
-                        {category.subCategories?.length || 0} subcategories
-                      </p>
                     </div>
                   </div>
                 </Link>
@@ -191,7 +185,7 @@ export function CategoriesSection() {
               </h2>
             </div>
             <p className="max-w-xl text-base leading-7 text-muted-foreground lg:justify-self-end">
-              Browse available categories and subcategories from this store.
+              Browse available product categories from this store.
             </p>
           </div>
 
@@ -218,9 +212,6 @@ export function CategoriesSection() {
                     <h3 className="text-3xl font-semibold uppercase leading-none">
                       {category.name}
                     </h3>
-                    <p className="mt-5 text-sm text-muted-foreground transition-colors group-hover:text-background/70">
-                      {category.subCategories?.length || 0} subcategories
-                    </p>
                   </div>
                 </Link>
               </motion.div>
@@ -267,7 +258,7 @@ export function CategoriesSection() {
             Find What You <span className="font-semibold">Love</span>
           </h2>
           <p className="text-muted-foreground max-w-lg mx-auto font-light">
-            Browse available product categories and subcategories.
+            Browse available product categories.
           </p>
         </motion.div>
 
@@ -307,9 +298,6 @@ export function CategoriesSection() {
                         <h3 className="text-xl font-semibold text-card-foreground group-hover:text-foreground transition-colors">
                           {category.name}
                         </h3>
-                        <p className={`text-sm ${style.textColor} font-medium`}>
-                          {category.subCategories?.length || 0} subcategories
-                        </p>
                       </div>
                     </div>
                     <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-border to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>

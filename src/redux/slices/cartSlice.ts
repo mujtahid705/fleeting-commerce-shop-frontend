@@ -1,8 +1,16 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import {
+  getOriginalPrice,
+  getSalePrice,
+  type ProductPricing,
+} from "@/lib/discount-pricing";
+
 export interface CartItem {
   id: string;
   title: string;
   price: number;
+  originalPrice?: number;
+  pricing?: ProductPricing;
   quantity: number;
   image: string;
   brand: string;
@@ -21,6 +29,7 @@ export interface CartItem {
     description?: string;
     categoryId?: string | number;
     subCategoryId?: string | number;
+    pricing?: ProductPricing;
   };
 }
 interface CartState {
@@ -38,7 +47,7 @@ const initialState: CartState = {
 const calculateTotals = (items: CartItem[]) => {
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
   const totalAmount = items.reduce(
-    (sum, item) => sum + item.price * item.quantity,
+    (sum, item) => sum + getSalePrice(item) * item.quantity,
     0
   );
   return { totalItems, totalAmount };
@@ -85,9 +94,6 @@ const cartSlice = createSlice({
       }>
     ) => {
       const { productData, quantity = 1, size, color } = action.payload;
-      const itemId = `${productData.id}-${size || "default"}-${
-        color || "default"
-      }`;
       const existingItem = state.items.find(
         (item) =>
           item.id === productData.id &&
@@ -96,13 +102,19 @@ const cartSlice = createSlice({
       );
       if (existingItem) {
         existingItem.quantity += quantity;
+        existingItem.price = getSalePrice(productData);
+        existingItem.originalPrice = getOriginalPrice(productData);
+        existingItem.pricing = productData.pricing;
+        existingItem.productData = productData;
       } else {
         const imageUrl =
           productData.images[0]?.imageUrl || productData.images[0]?.url;
         const newItem: CartItem = {
           id: productData.id,
           title: productData.title,
-          price: productData.price,
+          price: getSalePrice(productData),
+          originalPrice: getOriginalPrice(productData),
+          pricing: productData.pricing,
           quantity,
           image: imageUrl || "/vercel.svg",
           brand: productData.brand,

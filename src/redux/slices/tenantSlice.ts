@@ -155,6 +155,11 @@ export function isThemePreviewDomain(): boolean {
   return isThemePreviewHostname(window.location.hostname);
 }
 
+function withCacheBuster(url: string): string {
+  const separator = url.includes("?") ? "&" : "?";
+  return `${url}${separator}_t=${Date.now()}`;
+}
+
 // Check if subdomain exists
 export function hasSubdomain(): boolean {
   if (typeof window === "undefined") return false;
@@ -196,14 +201,19 @@ export const initializeTenant = createAsyncThunk<
   try {
     const apiUrl =
       process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5000/api";
-    const fullUrl = `${apiUrl}/tenants/storefront?domain=${encodeURIComponent(
-      domain
-    )}`;
+    const fullUrl = withCacheBuster(
+      `${apiUrl}/tenants/storefront?domain=${encodeURIComponent(domain)}`
+    );
     console.log("[Tenant] Fetching from:", fullUrl);
 
     const response = await fetch(fullUrl, {
       method: "GET",
-      headers: { "Content-Type": "application/json" },
+      cache: "no-store",
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": "no-store",
+        Pragma: "no-cache",
+      },
       credentials: "include",
     });
 
