@@ -7,12 +7,17 @@ import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/redux/store";
 import {
   removeFromFavorites,
-  setFavoritesOpen,
   type FavoriteItem,
 } from "@/redux/slices/favoritesSlice";
 import { addToCart } from "@/redux/slices/cartSlice";
 import Link from "next/link";
 import { toast } from "sonner";
+import {
+  formatCurrency,
+  getOriginalPrice,
+  getSalePrice,
+  hasSaleDiscount,
+} from "@/lib/discount-pricing";
 interface FavoritesDrawerProps {
   isOpen: boolean;
   onClose: () => void;
@@ -97,7 +102,7 @@ export function FavoritesDrawer({ isOpen, onClose }: FavoritesDrawerProps) {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            className="fixed right-0 top-0 h-full w-96 bg-white shadow-2xl z-[9999] flex flex-col"
+            className="fixed right-0 top-0 z-[9999] flex h-full w-full max-w-sm flex-col bg-white shadow-2xl"
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
@@ -180,11 +185,11 @@ export function FavoritesDrawer({ isOpen, onClose }: FavoritesDrawerProps) {
                             <div className="flex items-center justify-between mt-2">
                               <div className="flex items-center space-x-2">
                                 <span className="text-sm font-semibold text-stone-800">
-                                  ৳{item.price.toFixed(2)}
+                                  {formatCurrency(getSalePrice(item))}
                                 </span>
-                                {item.originalPrice && (
+                                {hasSaleDiscount(item) && (
                                   <span className="text-xs text-stone-400 line-through">
-                                    ৳{item.originalPrice.toFixed(2)}
+                                    {formatCurrency(getOriginalPrice(item))}
                                   </span>
                                 )}
                               </div>

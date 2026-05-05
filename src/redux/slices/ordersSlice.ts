@@ -13,6 +13,7 @@ export interface OrderProduct {
   productId: string;
   quantity: number;
   unitPrice: number;
+  discount?: number;
   createdAt: string;
   updatedAt: string;
   product: {
@@ -35,6 +36,11 @@ export interface Order {
   id: number;
   userId: string;
   totalAmount: number;
+  subtotalAmount?: number;
+  saleDiscountAmount?: number;
+  couponDiscount?: number;
+  discountAmount?: number;
+  couponCode?: string | null;
   status: "pending" | "processing" | "shipped" | "delivered" | "cancelled";
   createdAt: string;
   updatedAt: string;
@@ -102,6 +108,7 @@ export const createOrder = createAsyncThunk(
         quantity: number;
         unitPrice?: number;
       }>;
+      couponCode?: string;
     },
     { rejectWithValue }
   ) => {

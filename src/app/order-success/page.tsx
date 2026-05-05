@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   CheckCircle,
@@ -13,9 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 export default function OrderSuccessPage() {
-  const router = useRouter();
   const [orderNumber] = useState(() =>
     Math.random().toString(36).substr(2, 9).toUpperCase()
   );
@@ -70,7 +68,7 @@ export default function OrderSuccessPage() {
                   </div>
                   <div className="flex justify-between">
                     <span>Payment Method:</span>
-                    <span>Credit Card</span>
+                    <span>Cash on Delivery</span>
                   </div>
                 </div>
               </div>

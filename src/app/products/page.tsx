@@ -21,6 +21,12 @@ import {
   fetchCategories,
   fetchAllSubcategories,
 } from "@/redux/slices/productsSlice";
+import {
+  getOriginalPrice,
+  getSaleDiscountAmount,
+  getSaleDiscountPercentage,
+  getSalePrice,
+} from "@/lib/discount-pricing";
 
 type CardProduct = {
   id: string;
@@ -31,6 +37,9 @@ type CardProduct = {
   reviews: number;
   image: string;
   category: string;
+  saleTitle?: string;
+  discountPercentage?: number;
+  saleDiscountAmount?: number;
 };
 
 function parseFilterId(value: string | null): number | "" {
@@ -221,12 +230,15 @@ function ProductsContent() {
         return {
           id: String(p.id),
           name: p.title ?? "Untitled",
-          price: Number(p.price) || 0,
-          originalPrice: Number(p.price) || 0,
+          price: getSalePrice(p),
+          originalPrice: getOriginalPrice(p),
           rating: 0,
           reviews: 0,
           image: imageUrl,
           category: p.category?.name || p.brand || "all",
+          saleTitle: p.pricing?.activeSaleDiscount?.title,
+          discountPercentage: getSaleDiscountPercentage(p),
+          saleDiscountAmount: getSaleDiscountAmount(p),
         };
       }),
     [items]

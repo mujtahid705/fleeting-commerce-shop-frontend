@@ -31,6 +31,14 @@ import {
 import type { RootState } from "@/redux/store";
 import { ProductCard } from "@/components/products/product-card";
 import { toast } from "sonner";
+import {
+  formatCurrency,
+  getOriginalPrice,
+  getSaleDiscountAmount,
+  getSaleDiscountPercentage,
+  getSalePrice,
+  hasSaleDiscount,
+} from "@/lib/discount-pricing";
 export default function ProductDetailPage() {
   const params = useParams<{ id: string }>();
   const id = params?.id;
@@ -124,6 +132,7 @@ export default function ProductDetailPage() {
             description: product.description,
             categoryId: product.categoryId,
             subCategoryId: product.subCategoryId,
+            pricing: product.pricing,
           },
           quantity,
         })
@@ -162,7 +171,9 @@ export default function ProductDetailPage() {
           description: product.description,
           categoryId: product.categoryId,
           subCategoryId: product.subCategoryId,
+          pricing: product.pricing,
         },
+        originalPrice: getOriginalPrice(product),
         rating: 4.5,
       })
     );
@@ -209,6 +220,12 @@ export default function ProductDetailPage() {
         return imageUrl || "/vercel.svg";
       })
     : ["/vercel.svg"];
+  const originalPrice = getOriginalPrice(product);
+  const salePrice = getSalePrice(product);
+  const saleDiscountAmount = getSaleDiscountAmount(product);
+  const discountPercentage = getSaleDiscountPercentage(product);
+  const isOnSale = hasSaleDiscount(product);
+  const activeSaleTitle = product.pricing?.activeSaleDiscount?.title;
 
   return (
     <div className="min-h-screen bg-stone-50">
@@ -276,10 +293,14 @@ export default function ProductDetailPage() {
               <p className="text-sm text-stone-600 mb-4">
                 {product.category?.name} / {product.subCategory?.name}
               </p>
-              <div className="flex items-center space-x-4 mb-4">
-                <span className="text-3xl font-bold text-stone-800">
-                  ৳ {product.price.toLocaleString()}
-                </span>
+              <div className="mb-4 flex flex-wrap items-center gap-3">
+                {isOnSale && (
+                  <Badge className="bg-red-600 text-white hover:bg-red-600">
+                    {discountPercentage > 0
+                      ? `${discountPercentage}% OFF`
+                      : "Sale"}
+                  </Badge>
+                )}
                 <Badge
                   className={
                     stockQuantity > 0
@@ -292,6 +313,24 @@ export default function ProductDetailPage() {
                     : "Out of Stock"}
                 </Badge>
               </div>
+              <div className="mb-3 flex flex-wrap items-end gap-3">
+                <span className="text-3xl font-bold text-stone-800">
+                  {formatCurrency(salePrice)}
+                </span>
+                {isOnSale && (
+                  <span className="pb-1 text-lg text-stone-400 line-through">
+                    {formatCurrency(originalPrice)}
+                  </span>
+                )}
+              </div>
+              {isOnSale && (
+                <div className="rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  <span className="font-semibold">
+                    {activeSaleTitle || "Limited sale"}
+                  </span>
+                  <span> saves you {formatCurrency(saleDiscountAmount)}.</span>
+                </div>
+              )}
             </div>
 
             <div className="space-y-6">
@@ -458,14 +497,17 @@ export default function ProductDetailPage() {
                     product={{
                       id: String(r.id),
                       name: r.title,
-                      price: Number(r.price) || 0,
-                      originalPrice: Number(r.price) || 0,
+                      price: getSalePrice(r),
+                      originalPrice: getOriginalPrice(r),
                       rating: 4.5,
                       reviews: 0,
                       image:
                         r.images?.[0]?.imageUrl ||
                         r.images?.[0]?.url ||
                         "/vercel.svg",
+                      saleTitle: r.pricing?.activeSaleDiscount?.title,
+                      discountPercentage: getSaleDiscountPercentage(r),
+                      saleDiscountAmount: getSaleDiscountAmount(r),
                     }}
                   />
                 </motion.div>

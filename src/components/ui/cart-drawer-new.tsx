@@ -8,10 +8,14 @@ import { RootState } from "@/redux/store";
 import {
   updateQuantity,
   removeFromCart,
-  setCartOpen,
-  type CartItem,
 } from "@/redux/slices/cartSlice";
 import Link from "next/link";
+import {
+  formatCurrency,
+  getOriginalPrice,
+  getSalePrice,
+  hasSaleDiscount,
+} from "@/lib/discount-pricing";
 interface CartDrawerProps {
   isOpen: boolean;
   onClose: () => void;
@@ -38,8 +42,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   ) => {
     dispatch(removeFromCart({ id, size, color }));
   };
-  const shipping = 5.99;
-  const total = totalAmount + (cartItems.length > 0 ? shipping : 0);
+  const total = totalAmount;
   return (
     <>
       <AnimatePresence>
@@ -56,7 +59,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            className="fixed right-0 top-0 h-full w-96 bg-white shadow-2xl z-50 flex flex-col"
+            className="fixed right-0 top-0 z-50 flex h-full w-full max-w-sm flex-col bg-white shadow-2xl"
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
@@ -124,9 +127,16 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                           {item.size && <span>Size: {item.size}</span>}
                           {item.color && <span>Color: {item.color}</span>}
                         </div>
-                        <p className="text-sm font-semibold text-stone-800">
-                          ৳{item.price.toFixed(2)}
-                        </p>
+                        <div className="mt-1 flex flex-wrap items-center gap-2">
+                          <p className="text-sm font-semibold text-stone-800">
+                            {formatCurrency(getSalePrice(item))}
+                          </p>
+                          {hasSaleDiscount(item) && (
+                            <p className="text-xs text-stone-400 line-through">
+                              {formatCurrency(getOriginalPrice(item))}
+                            </p>
+                          )}
+                        </div>
                       </div>
                       <div className="flex flex-col items-end space-y-2">
                         <motion.button
@@ -186,15 +196,11 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                 <div className="space-y-2 mb-4">
                   <div className="flex justify-between text-sm text-stone-600">
                     <span>Subtotal</span>
-                    <span>৳{totalAmount.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between text-sm text-stone-600">
-                    <span>Shipping</span>
-                    <span>৳{shipping.toFixed(2)}</span>
+                    <span>{formatCurrency(totalAmount)}</span>
                   </div>
                   <div className="flex justify-between text-lg font-semibold text-stone-800 pt-2 border-t border-stone-300">
                     <span>Total</span>
-                    <span>৳{total.toFixed(2)}</span>
+                    <span>{formatCurrency(total)}</span>
                   </div>
                 </div>
                 <div className="space-y-2">

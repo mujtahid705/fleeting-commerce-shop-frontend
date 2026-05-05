@@ -1,4 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import type { ProductPricing } from "@/lib/discount-pricing";
 
 // Types
 export type Product = {
@@ -15,6 +16,7 @@ export type Product = {
   inventory?: { quantity: number };
   category?: { id: number; name: string; slug: string };
   subCategory?: { id: number; name: string; slug: string };
+  pricing?: ProductPricing;
 };
 
 export type Category = {
@@ -95,6 +97,26 @@ const catalogHeaders = () => ({
   Pragma: "no-cache",
 });
 
+const normalizePricing = (
+  pricing: unknown,
+  fallbackPrice: number
+): ProductPricing | undefined => {
+  if (!pricing || typeof pricing !== "object") return undefined;
+  const data = pricing as Partial<ProductPricing>;
+  const originalPrice = Number(data.originalPrice ?? fallbackPrice) || 0;
+  const salePrice = Number(data.salePrice ?? fallbackPrice) || 0;
+  const saleDiscountAmount = Number(data.saleDiscountAmount ?? 0) || 0;
+  const saleDiscountPercentage = Number(data.saleDiscountPercentage ?? 0) || 0;
+
+  return {
+    originalPrice,
+    salePrice,
+    saleDiscountAmount,
+    saleDiscountPercentage,
+    activeSaleDiscount: data.activeSaleDiscount ?? null,
+  };
+};
+
 export const fetchAllProducts = createAsyncThunk(
   "products/fetchAll",
   async (filters?: {
@@ -137,6 +159,7 @@ export const fetchAllProducts = createAsyncThunk(
       subCategoryId?: string | number;
       subCategory?: { id: string | number; name: string; slug: string };
       inventory?: { quantity: number };
+      pricing?: unknown;
       images?: Array<
         | {
             url?: string;
@@ -171,6 +194,7 @@ export const fetchAllProducts = createAsyncThunk(
       inventory: p?.inventory,
       category: p?.category,
       subCategory: p?.subCategory,
+      pricing: normalizePricing(p?.pricing, Number(p.price) || 0),
       images: Array.isArray(p.images)
         ? p.images.map((im: unknown) => {
             const raw =
@@ -275,6 +299,7 @@ export const fetchProductById = createAsyncThunk(
       inventory: d?.inventory ?? { quantity: stockQuantity },
       category: d?.category,
       subCategory: d?.subCategory,
+      pricing: normalizePricing(d?.pricing, Number(d?.price) || 0),
     };
     return product;
   }

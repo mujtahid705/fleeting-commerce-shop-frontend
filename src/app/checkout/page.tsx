@@ -3,11 +3,21 @@
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Banknote, Lock, Phone, Truck } from "lucide-react";
+import {
+  ArrowLeft,
+  Banknote,
+  CheckCircle2,
+  Lock,
+  Phone,
+  Tag,
+  Truck,
+  XCircle,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSelector, useDispatch } from "react-redux";
@@ -17,6 +27,12 @@ import { createOrder } from "@/redux/slices/ordersSlice";
 import { initializeAuth } from "@/redux/slices/userSlice";
 import Image from "next/image";
 import { toast } from "sonner";
+import {
+  formatCurrency,
+  getOriginalPrice,
+  getSalePrice,
+  hasSaleDiscount,
+} from "@/lib/discount-pricing";
 
 interface DeliveryFormData {
   phone: string;
@@ -27,6 +43,28 @@ interface DeliveryFormData {
   country: string;
   note: string;
 }
+
+type CouponValidation = {
+  coupon: {
+    code: string;
+    discountType: "PERCENTAGE" | "FIXED_AMOUNT";
+    value: number;
+    minOrderAmount?: number;
+    maxDiscountAmount?: number;
+  };
+  pricing: {
+    subtotalAmount: number;
+    saleDiscountAmount: number;
+    couponDiscount: number;
+    discountAmount: number;
+    totalAmount: number;
+  };
+};
+
+const getTenantDomain = () => {
+  if (typeof window === "undefined") return "";
+  return window.location.hostname.split(".")[0];
+};
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -47,6 +85,12 @@ export default function CheckoutPage() {
     note: "",
   });
   const [isProcessing, setIsProcessing] = useState(false);
+  const [couponCode, setCouponCode] = useState("");
+  const [appliedCouponCode, setAppliedCouponCode] = useState("");
+  const [couponValidation, setCouponValidation] =
+    useState<CouponValidation | null>(null);
+  const [couponError, setCouponError] = useState("");
+  const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
   const [isReady, setIsReady] = useState(false);
   const [hasPlacedOrder, setHasPlacedOrder] = useState(false);
 
@@ -75,9 +119,30 @@ export default function CheckoutPage() {
     }
   }, [cartItems.length, hasPlacedOrder, isLoggedIn, isReady, router]);
 
-  const shipping = 5.99;
-  const tax = totalAmount * 0.05;
-  const total = totalAmount + shipping + tax;
+  const orderItemsPayload = cartItems.map((item) => ({
+    productId: item.id,
+    quantity: item.quantity,
+  }));
+  const originalSubtotal = cartItems.reduce(
+    (sum, item) => sum + getOriginalPrice(item) * item.quantity,
+    0
+  );
+  const saleSubtotal = totalAmount;
+  const saleDiscountAmount = Math.max(0, originalSubtotal - saleSubtotal);
+  const pricing = couponValidation?.pricing;
+  const subtotalAmount = pricing?.subtotalAmount ?? originalSubtotal;
+  const displaySaleDiscount =
+    pricing?.saleDiscountAmount ?? saleDiscountAmount;
+  const couponDiscount = pricing?.couponDiscount ?? 0;
+  const discountAmount =
+    pricing?.discountAmount ?? displaySaleDiscount + couponDiscount;
+  const payableTotal = pricing?.totalAmount ?? saleSubtotal;
+  const couponCodeToSend =
+    appliedCouponCode &&
+    couponCode.trim().toUpperCase() === appliedCouponCode &&
+    couponValidation
+      ? appliedCouponCode
+      : undefined;
 
   const handleInputChange = (field: keyof DeliveryFormData, value: string) => {
     setFormData((prev) => ({
@@ -95,6 +160,81 @@ export default function CheckoutPage() {
         formData.zipCode.trim()
     );
 
+  const handleCouponChange = (value: string) => {
+    setCouponCode(value.toUpperCase());
+    setCouponError("");
+    if (value.trim().toUpperCase() !== appliedCouponCode) {
+      setCouponValidation(null);
+      setAppliedCouponCode("");
+    }
+  };
+
+  const handleValidateCoupon = async () => {
+    const code = couponCode.trim().toUpperCase();
+    if (!code) {
+      setCouponError("Enter a coupon code first.");
+      return;
+    }
+
+    setIsValidatingCoupon(true);
+    setCouponError("");
+
+    try {
+      const base = process.env.NEXT_PUBLIC_BASE_URL ?? "";
+      const response = await fetch(
+        `${base}/storefront/discounts/coupons/validate`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-tenant-domain": getTenantDomain(),
+          },
+          body: JSON.stringify({
+            code,
+            order_items: orderItemsPayload,
+          }),
+        }
+      );
+      const result = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        const message = result?.message || "Coupon could not be applied.";
+        setCouponError(Array.isArray(message) ? message.join(", ") : message);
+        setCouponValidation(null);
+        setAppliedCouponCode("");
+        return;
+      }
+
+      const validation = result?.data ?? result;
+      if (!validation?.pricing) {
+        setCouponError("Coupon response did not include pricing details.");
+        setCouponValidation(null);
+        setAppliedCouponCode("");
+        return;
+      }
+
+      setCouponValidation(validation);
+      setAppliedCouponCode(code);
+      toast.success("Coupon applied", {
+        description: `${code} has been added to this order.`,
+      });
+    } catch (error) {
+      console.error("Coupon validation failed:", error);
+      setCouponError("Could not validate coupon. Please try again.");
+      setCouponValidation(null);
+      setAppliedCouponCode("");
+    } finally {
+      setIsValidatingCoupon(false);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setCouponCode("");
+    setAppliedCouponCode("");
+    setCouponValidation(null);
+    setCouponError("");
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
@@ -107,7 +247,6 @@ export default function CheckoutPage() {
 
     try {
       const orderData = {
-        totalAmount: total,
         paymentMethod: "COD" as const,
         deliveryInfo: {
           phone: formData.phone.trim(),
@@ -118,11 +257,8 @@ export default function CheckoutPage() {
           country: formData.country.trim() || "Bangladesh",
           note: formData.note.trim() || undefined,
         },
-        order_items: cartItems.map((item) => ({
-          productId: item.id,
-          quantity: item.quantity,
-          unitPrice: item.price,
-        })),
+        order_items: orderItemsPayload,
+        ...(couponCodeToSend ? { couponCode: couponCodeToSend } : {}),
       };
 
       await dispatch(createOrder(orderData)).unwrap();
@@ -294,7 +430,7 @@ export default function CheckoutPage() {
                       <span>Payment method: Cash on Delivery</span>
                     </div>
                     <span className="font-semibold text-stone-800">
-                      Pay ৳{total.toFixed(2)} on delivery
+                      Pay {formatCurrency(payableTotal)} on delivery
                     </span>
                   </div>
 
@@ -351,30 +487,108 @@ export default function CheckoutPage() {
                       <p className="text-xs text-stone-500">
                         Qty: {item.quantity}
                       </p>
+                      {hasSaleDiscount(item) && (
+                        <Badge
+                          variant="secondary"
+                          className="mt-1 bg-red-50 text-[10px] font-medium text-red-700"
+                        >
+                          Sale price applied
+                        </Badge>
+                      )}
                     </div>
-                    <div className="text-sm font-medium text-stone-800">
-                      ৳{(item.price * item.quantity).toFixed(2)}
+                    <div className="text-right text-sm font-medium text-stone-800">
+                      <div>
+                        {formatCurrency(getSalePrice(item) * item.quantity)}
+                      </div>
+                      {hasSaleDiscount(item) && (
+                        <div className="text-xs font-normal text-stone-400 line-through">
+                          {formatCurrency(
+                            getOriginalPrice(item) * item.quantity
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}
               </div>
 
+              <div className="mb-5 rounded-lg border border-stone-200 bg-stone-50 p-3">
+                <div className="mb-2 flex items-center gap-2 text-sm font-medium text-stone-800">
+                  <Tag className="h-4 w-4" />
+                  Coupon
+                </div>
+                <div className="flex gap-2">
+                  <Input
+                    value={couponCode}
+                    onChange={(event) => handleCouponChange(event.target.value)}
+                    placeholder="SAVE20"
+                    className="h-10 uppercase"
+                    disabled={isValidatingCoupon}
+                  />
+                  {couponValidation ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleRemoveCoupon}
+                      className="h-10 shrink-0"
+                    >
+                      Remove
+                    </Button>
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={handleValidateCoupon}
+                      disabled={isValidatingCoupon || cartItems.length === 0}
+                      className="h-10 shrink-0 bg-stone-800 text-white hover:bg-stone-900"
+                    >
+                      {isValidatingCoupon ? "Checking..." : "Apply"}
+                    </Button>
+                  )}
+                </div>
+                {couponValidation && (
+                  <div className="mt-2 flex items-start gap-2 text-xs text-green-700">
+                    <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                    <span>
+                      {appliedCouponCode} applied. You saved{" "}
+                      {formatCurrency(couponValidation.pricing.couponDiscount)}
+                      .
+                    </span>
+                  </div>
+                )}
+                {couponError && (
+                  <div className="mt-2 flex items-start gap-2 text-xs text-red-600">
+                    <XCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                    <span>{couponError}</span>
+                  </div>
+                )}
+              </div>
+
               <div className="space-y-2 border-t border-stone-100 pt-4">
                 <div className="flex justify-between text-sm text-stone-600">
-                  <span>Subtotal ({totalItems} items)</span>
-                  <span>৳{totalAmount.toFixed(2)}</span>
+                  <span>Original subtotal ({totalItems} items)</span>
+                  <span>{formatCurrency(subtotalAmount)}</span>
                 </div>
-                <div className="flex justify-between text-sm text-stone-600">
-                  <span>Shipping</span>
-                  <span>৳{shipping.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-sm text-stone-600">
-                  <span>Tax</span>
-                  <span>৳{tax.toFixed(2)}</span>
-                </div>
+                {displaySaleDiscount > 0 && (
+                  <div className="flex justify-between text-sm text-green-700">
+                    <span>Sale discount</span>
+                    <span>-{formatCurrency(displaySaleDiscount)}</span>
+                  </div>
+                )}
+                {couponDiscount > 0 && (
+                  <div className="flex justify-between text-sm text-green-700">
+                    <span>Coupon discount</span>
+                    <span>-{formatCurrency(couponDiscount)}</span>
+                  </div>
+                )}
+                {discountAmount > 0 && (
+                  <div className="flex justify-between text-sm font-medium text-stone-700">
+                    <span>Total savings</span>
+                    <span>{formatCurrency(discountAmount)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between border-t border-stone-200 pt-3 text-lg font-semibold text-stone-800">
                   <span>Total</span>
-                  <span>৳{total.toFixed(2)}</span>
+                  <span>{formatCurrency(payableTotal)}</span>
                 </div>
               </div>
 
