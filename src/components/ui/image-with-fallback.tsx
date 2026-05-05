@@ -38,19 +38,8 @@ function getValidImageUrl(url: string | undefined | null): string {
     return cleanUrl;
   }
 
-  // Relative path - prepend base URL if available
+  // Relative path
   if (cleanUrl.startsWith("/")) {
-    const baseUrl = process.env.NEXT_PUBLIC_IMAGE_URL;
-    if (baseUrl && baseUrl.trim() !== "") {
-      const combined = `${baseUrl}${cleanUrl}`;
-      try {
-        new URL(combined);
-        return combined;
-      } catch {
-        return PLACEHOLDER_IMAGE;
-      }
-    }
-    // If no base URL, return the relative path (Next.js will handle it)
     return cleanUrl;
   }
 

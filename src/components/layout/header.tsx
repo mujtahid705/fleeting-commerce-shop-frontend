@@ -38,10 +38,10 @@ export function Header() {
   const [mounted, setMounted] = useState(false);
   const { isLoggedIn, userData } = useAppSelector((state) => state.user);
   const { totalItems: cartItems, isOpen: isCartOpen } = useAppSelector(
-    (state) => state.cart
+    (state) => state.cart,
   );
   const { totalItems: favoriteItems, isOpen: isFavoritesOpen } = useAppSelector(
-    (state) => state.favorites
+    (state) => state.favorites,
   );
   const { tenant, theme } = useAppSelector((state) => state.tenant);
 
@@ -70,7 +70,7 @@ export function Header() {
   const logoUrl = rawLogoUrl
     ? rawLogoUrl.startsWith("http://") || rawLogoUrl.startsWith("https://")
       ? rawLogoUrl
-      : `${process.env.NEXT_PUBLIC_IMAGE_URL}${rawLogoUrl}`
+      : rawLogoUrl
     : null;
   const headerVariant = theme.layout.headerVariant;
   const tagline = tenant?.brand?.tagline;
@@ -151,7 +151,11 @@ export function Header() {
               {isLoggedIn ? (
                 <DropdownMenu
                   trigger={
-                    <Button variant="outline" size="sm" className="rounded-[var(--theme-button-radius)] border-border bg-background">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="rounded-[var(--theme-button-radius)] border-border bg-background"
+                    >
                       <UserCircle className="h-4 w-4" />
                     </Button>
                   }
@@ -176,7 +180,11 @@ export function Header() {
                 </DropdownMenu>
               ) : (
                 <Link href="/login">
-                  <Button variant="outline" size="sm" className="rounded-[var(--theme-button-radius)] border-border bg-background">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="rounded-[var(--theme-button-radius)] border-border bg-background"
+                  >
                     <User className="h-4 w-4" />
                   </Button>
                 </Link>
@@ -201,7 +209,10 @@ export function Header() {
             </div>
           </nav>
         </motion.header>
-        <CartDrawer isOpen={isCartOpen} onClose={() => dispatch(toggleCart())} />
+        <CartDrawer
+          isOpen={isCartOpen}
+          onClose={() => dispatch(toggleCart())}
+        />
         <FavoritesDrawer
           isOpen={isFavoritesOpen}
           onClose={() => dispatch(toggleFavorites())}
@@ -286,7 +297,11 @@ export function Header() {
               {isLoggedIn ? (
                 <DropdownMenu
                   trigger={
-                    <Button variant="ghost" size="sm" className="rounded-none text-background hover:bg-background/10 hover:text-background">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="rounded-none text-background hover:bg-background/10 hover:text-background"
+                    >
                       <UserCircle className="h-5 w-5" />
                     </Button>
                   }
@@ -311,18 +326,29 @@ export function Header() {
                 </DropdownMenu>
               ) : (
                 <Link href="/login">
-                  <Button variant="ghost" size="sm" className="rounded-none text-background hover:bg-background/10 hover:text-background">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="rounded-none text-background hover:bg-background/10 hover:text-background"
+                  >
                     <User className="h-5 w-5" />
                   </Button>
                 </Link>
               )}
-              <Button variant="ghost" size="sm" className="rounded-none text-background hover:bg-background/10 hover:text-background lg:hidden">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="rounded-none text-background hover:bg-background/10 hover:text-background lg:hidden"
+              >
                 <Menu className="h-5 w-5" />
               </Button>
             </div>
           </div>
         </motion.header>
-        <CartDrawer isOpen={isCartOpen} onClose={() => dispatch(toggleCart())} />
+        <CartDrawer
+          isOpen={isCartOpen}
+          onClose={() => dispatch(toggleCart())}
+        />
         <FavoritesDrawer
           isOpen={isFavoritesOpen}
           onClose={() => dispatch(toggleFavorites())}
@@ -434,13 +460,20 @@ export function Header() {
                   </Button>
                 </Link>
               )}
-              <Button variant="ghost" size="sm" className="rounded-none lg:hidden">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="rounded-none lg:hidden"
+              >
                 <Menu className="h-5 w-5" />
               </Button>
             </div>
           </div>
         </motion.header>
-        <CartDrawer isOpen={isCartOpen} onClose={() => dispatch(toggleCart())} />
+        <CartDrawer
+          isOpen={isCartOpen}
+          onClose={() => dispatch(toggleCart())}
+        />
         <FavoritesDrawer
           isOpen={isFavoritesOpen}
           onClose={() => dispatch(toggleFavorites())}
