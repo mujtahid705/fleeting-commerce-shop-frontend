@@ -31,6 +31,7 @@ export function HeroSection() {
   const isNatural = homeVariant === "natural";
   const storeName = tenant?.name || "Store";
   const categoryCount = tenant?.categories?.length || 0;
+  const ctaText = heroData.ctaText?.trim();
 
   if (isModern) {
     return (
@@ -51,16 +52,18 @@ export function HeroSection() {
               {heroData.subtitle}
             </p>
             <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-              <Button
-                size="lg"
-                asChild
-                className="rounded-[var(--theme-button-radius)] px-7 py-6 font-semibold"
-              >
-                <Link href={heroData.ctaLink || "/products"}>
-                  {heroData.ctaText}
-                  <ArrowRight className="ml-3 h-4 w-4" />
-                </Link>
-              </Button>
+              {ctaText ? (
+                <Button
+                  size="lg"
+                  asChild
+                  className="rounded-[var(--theme-button-radius)] px-7 py-6 font-semibold"
+                >
+                  <Link href={heroData.ctaLink || "/products"}>
+                    {ctaText}
+                    <ArrowRight className="ml-3 h-4 w-4" />
+                  </Link>
+                </Button>
+              ) : null}
               <Button
                 size="lg"
                 variant="outline"
@@ -131,16 +134,18 @@ export function HeroSection() {
             <p className="mx-auto mt-7 max-w-2xl text-base leading-7 text-background/70 sm:text-lg">
               {heroData.subtitle}
             </p>
-            <Button
-              size="lg"
-              asChild
-              className="mt-9 rounded-[var(--theme-button-radius)] bg-primary px-8 py-6 text-xs font-semibold uppercase tracking-[0.22em] text-primary-foreground hover:bg-primary/90"
-            >
-              <Link href={heroData.ctaLink || "/products"}>
-                {heroData.ctaText}
-                <ArrowRight className="ml-3 h-4 w-4" />
-              </Link>
-            </Button>
+            {ctaText ? (
+              <Button
+                size="lg"
+                asChild
+                className="mt-9 rounded-[var(--theme-button-radius)] bg-primary px-8 py-6 text-xs font-semibold uppercase tracking-[0.22em] text-primary-foreground hover:bg-primary/90"
+              >
+                <Link href={heroData.ctaLink || "/products"}>
+                  {ctaText}
+                  <ArrowRight className="ml-3 h-4 w-4" />
+                </Link>
+              </Button>
+            ) : null}
           </motion.div>
 
           <motion.div
@@ -184,16 +189,18 @@ export function HeroSection() {
               {heroData.subtitle}
             </p>
             <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-center">
-              <Button
-                size="lg"
-                asChild
-                className="rounded-[var(--theme-button-radius)] px-8 py-6 text-xs font-semibold uppercase tracking-[0.22em]"
-              >
-                <Link href={heroData.ctaLink || "/products"}>
-                  {heroData.ctaText}
-                  <ArrowRight className="ml-3 h-4 w-4" />
-                </Link>
-              </Button>
+              {ctaText ? (
+                <Button
+                  size="lg"
+                  asChild
+                  className="rounded-[var(--theme-button-radius)] px-8 py-6 text-xs font-semibold uppercase tracking-[0.22em]"
+                >
+                  <Link href={heroData.ctaLink || "/products"}>
+                    {ctaText}
+                    <ArrowRight className="ml-3 h-4 w-4" />
+                  </Link>
+                </Button>
+              ) : null}
               <Link
                 href="/products"
                 className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground underline-offset-8 transition-colors hover:text-foreground hover:underline"
@@ -251,16 +258,18 @@ export function HeroSection() {
             <p className="mt-6 max-w-lg text-lg leading-8 text-muted-foreground">
               {heroData.subtitle}
             </p>
-            <Button
-              size="lg"
-              asChild
-              className="mt-9 rounded-[var(--theme-button-radius)] px-8 py-6 font-medium"
-            >
-              <Link href={heroData.ctaLink || "/products"}>
-                {heroData.ctaText}
-                <ArrowRight className="ml-3 h-4 w-4" />
-              </Link>
-            </Button>
+            {ctaText ? (
+              <Button
+                size="lg"
+                asChild
+                className="mt-9 rounded-[var(--theme-button-radius)] px-8 py-6 font-medium"
+              >
+                <Link href={heroData.ctaLink || "/products"}>
+                  {ctaText}
+                  <ArrowRight className="ml-3 h-4 w-4" />
+                </Link>
+              </Button>
+            ) : null}
           </motion.div>
 
           <motion.div
@@ -321,22 +330,24 @@ export function HeroSection() {
             {heroData.subtitle}
           </motion.p>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
-          >
-            <Button
-              size="lg"
-              asChild
-              className="mt-10 rounded-[var(--theme-button-radius)] bg-primary px-8 py-6 text-sm font-medium uppercase tracking-wider text-primary-foreground shadow-lg transition-all duration-300 hover:bg-primary/90 hover:shadow-xl"
+          {ctaText ? (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
             >
-              <Link href={heroData.ctaLink || "/products"}>
-                {heroData.ctaText}
-                <ArrowRight className="w-4 h-4 ml-3" />
-              </Link>
-            </Button>
-          </motion.div>
+              <Button
+                size="lg"
+                asChild
+                className="mt-10 rounded-[var(--theme-button-radius)] bg-primary px-8 py-6 text-sm font-medium uppercase tracking-wider text-primary-foreground shadow-lg transition-all duration-300 hover:bg-primary/90 hover:shadow-xl"
+              >
+                <Link href={heroData.ctaLink || "/products"}>
+                  {ctaText}
+                  <ArrowRight className="w-4 h-4 ml-3" />
+                </Link>
+              </Button>
+            </motion.div>
+          ) : null}
         </div>
       </div>
 

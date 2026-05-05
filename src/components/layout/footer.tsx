@@ -24,7 +24,7 @@ export function Footer() {
   const logoUrl = rawLogoUrl
     ? rawLogoUrl.startsWith("http://") || rawLogoUrl.startsWith("https://")
       ? rawLogoUrl
-      : `${process.env.NEXT_PUBLIC_IMAGE_URL}${rawLogoUrl}`
+      : rawLogoUrl
     : null;
   const description = tenant?.brand?.description;
   const categories = tenant?.categories || [];
@@ -89,7 +89,8 @@ export function Footer() {
                 )}
               </Link>
               <p className="mt-5 max-w-md text-sm leading-7 text-muted-foreground">
-                {description || "Browse products, categories, and store updates."}
+                {description ||
+                  "Browse products, categories, and store updates."}
               </p>
             </div>
 
@@ -133,11 +134,17 @@ export function Footer() {
                   Contact
                 </h3>
                 <div className="space-y-3 text-sm text-muted-foreground">
-                  <a href={`mailto:${contactEmail}`} className="block hover:text-foreground">
+                  <a
+                    href={`mailto:${contactEmail}`}
+                    className="block hover:text-foreground"
+                  >
                     {contactEmail}
                   </a>
                   {contactPhone && (
-                    <a href={`tel:${contactPhone}`} className="block hover:text-foreground">
+                    <a
+                      href={`tel:${contactPhone}`}
+                      className="block hover:text-foreground"
+                    >
                       {contactPhone}
                     </a>
                   )}
@@ -294,7 +301,8 @@ export function Footer() {
                 )}
               </Link>
               <p className="mt-8 max-w-sm text-sm leading-7 text-muted-foreground">
-                {description || "Browse products, categories, and store updates."}
+                {description ||
+                  "Browse products, categories, and store updates."}
               </p>
             </div>
 

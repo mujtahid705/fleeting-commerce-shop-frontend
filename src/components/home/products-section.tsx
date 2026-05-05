@@ -74,8 +74,7 @@ function resolveImageUrl(src: string | undefined | null): string {
   if (!src || typeof src !== "string" || src.trim() === "") return fallback;
   if (src.startsWith("http://") || src.startsWith("https://")) return src;
   if (src.startsWith("/")) {
-    const baseUrl = process.env.NEXT_PUBLIC_IMAGE_URL || "";
-    return `${baseUrl}${src}`;
+    return src;
   }
   return fallback;
 }
@@ -83,7 +82,7 @@ function resolveImageUrl(src: string | undefined | null): string {
 export function ProductsSection() {
   const dispatch = useDispatch<AppDispatch>();
   const { tenant, theme, isThemePreview } = useAppSelector(
-    (state) => state.tenant
+    (state) => state.tenant,
   );
 
   // API returns sections directly under brand, not under customization
@@ -96,7 +95,7 @@ export function ProductsSection() {
     return [...(featuredCategoriesSection?.categories || [])]
       .sort(
         (a: FeaturedCategoryItem, b: FeaturedCategoryItem) =>
-          a.displayOrder - b.displayOrder
+          a.displayOrder - b.displayOrder,
       )
       .map((item: FeaturedCategoryItem) => item.category);
   }, [featuredCategoriesSection?.categories]);
@@ -109,7 +108,7 @@ export function ProductsSection() {
   const exclusiveProducts = React.useMemo(() => {
     return [...(exclusiveSectionData?.products || [])].sort(
       (a: ExclusiveProductItem, b: ExclusiveProductItem) =>
-        a.displayOrder - b.displayOrder
+        a.displayOrder - b.displayOrder,
     );
   }, [exclusiveSectionData?.products]);
 
@@ -128,7 +127,7 @@ export function ProductsSection() {
 
   const previewCategoryProducts = React.useMemo(
     () => getThemePreviewProductsByCategory(),
-    []
+    [],
   );
   const previewExclusiveProducts = React.useMemo(
     () =>
@@ -138,7 +137,7 @@ export function ProductsSection() {
         item.customImage = product.image;
         return item;
       }),
-    []
+    [],
   );
 
   const mapToCard = React.useCallback(
@@ -159,7 +158,7 @@ export function ProductsSection() {
         discountPercentage: getSaleDiscountPercentage(p),
         saleDiscountAmount: getSaleDiscountAmount(p),
       })),
-    []
+    [],
   );
 
   // Fetch products for featured categories
@@ -240,7 +239,7 @@ export function ProductsSection() {
       const fetches = exclusiveProducts.map(async (item) => {
         try {
           const productData = await dispatch(
-            fetchProductById(item.productId)
+            fetchProductById(item.productId),
           ).unwrap();
           if (!productData) return null;
 
@@ -254,7 +253,7 @@ export function ProductsSection() {
         } catch (e) {
           console.error(
             `Failed to fetch exclusive product ${item.productId}:`,
-            e
+            e,
           );
           return null;
         }
@@ -265,8 +264,8 @@ export function ProductsSection() {
           if (active) {
             setExclusiveProductsData(
               results.filter(
-                (item): item is ExclusiveProductCard => item !== null
-              )
+                (item): item is ExclusiveProductCard => item !== null,
+              ),
             );
           }
         })

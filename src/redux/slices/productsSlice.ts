@@ -99,7 +99,7 @@ const catalogHeaders = () => ({
 
 const normalizePricing = (
   pricing: unknown,
-  fallbackPrice: number
+  fallbackPrice: number,
 ): ProductPricing | undefined => {
   if (!pricing || typeof pricing !== "object") return undefined;
   const data = pricing as Partial<ProductPricing>;
@@ -124,7 +124,6 @@ export const fetchAllProducts = createAsyncThunk(
     subCategory?: string | number;
   }) => {
     const base = process.env.NEXT_PUBLIC_BASE_URL ?? "";
-    const imageBase = process.env.NEXT_PUBLIC_IMAGE_URL ?? "";
     const params = new URLSearchParams();
     if (filters?.category !== undefined && filters?.category !== "") {
       params.set("categoryId", String(filters.category));
@@ -134,7 +133,7 @@ export const fetchAllProducts = createAsyncThunk(
     }
     const qs = params.toString();
     const url = withCacheBuster(
-      `${base}/storefront/products${qs ? `?${qs}` : ""}`
+      `${base}/storefront/products${qs ? `?${qs}` : ""}`,
     );
     console.log("🔍 Fetching products from:", url);
     const res = await fetch(url, {
@@ -172,15 +171,6 @@ export const fetchAllProducts = createAsyncThunk(
     }>;
     console.log("📋 Products list:", list);
     console.log("📊 Products count:", list.length);
-    const isAbsolute = (u: string) => /^https?:\/\//i.test(u);
-    const joinUrl = (root: string, path?: string) => {
-      if (!path) return "/vercel.svg";
-      if (isAbsolute(path)) return path;
-      if (!root) return path;
-      const r = root.endsWith("/") ? root.slice(0, -1) : root;
-      const p = path.startsWith("/") ? path : `/${path}`;
-      return `${r}${p}`;
-    };
     const mappedProducts = list.map((p) => ({
       id: p.id,
       title: p.title,
@@ -201,58 +191,57 @@ export const fetchAllProducts = createAsyncThunk(
               typeof im === "string"
                 ? im
                 : typeof im === "object" && im !== null
-                ? (
-                    im as {
-                      url?: string;
-                      imageUrl?: string;
-                      path?: string;
-                      src?: string;
-                    }
-                  )?.url ??
-                  (
-                    im as {
-                      url?: string;
-                      imageUrl?: string;
-                      path?: string;
-                      src?: string;
-                    }
-                  )?.imageUrl ??
-                  (
-                    im as {
-                      url?: string;
-                      imageUrl?: string;
-                      path?: string;
-                      src?: string;
-                    }
-                  )?.path ??
-                  (
-                    im as {
-                      url?: string;
-                      imageUrl?: string;
-                      path?: string;
-                      src?: string;
-                    }
-                  )?.src
-                : undefined;
-            return { url: joinUrl(imageBase, raw) };
+                  ? ((
+                      im as {
+                        url?: string;
+                        imageUrl?: string;
+                        path?: string;
+                        src?: string;
+                      }
+                    )?.url ??
+                    (
+                      im as {
+                        url?: string;
+                        imageUrl?: string;
+                        path?: string;
+                        src?: string;
+                      }
+                    )?.imageUrl ??
+                    (
+                      im as {
+                        url?: string;
+                        imageUrl?: string;
+                        path?: string;
+                        src?: string;
+                      }
+                    )?.path ??
+                    (
+                      im as {
+                        url?: string;
+                        imageUrl?: string;
+                        path?: string;
+                        src?: string;
+                      }
+                    )?.src)
+                  : undefined;
+            return { url: raw };
           })
         : [],
     })) as Product[];
     console.log("✅ Mapped products:", mappedProducts);
     return mappedProducts;
-  }
+  },
 );
 export const fetchProductById = createAsyncThunk(
   "products/fetchById",
   async (id: string | number) => {
     const base = process.env.NEXT_PUBLIC_BASE_URL ?? "";
-    const imageBase = process.env.NEXT_PUBLIC_IMAGE_URL ?? "";
     const res = await fetch(
       withCacheBuster(`${base}/storefront/products/${id}`),
       {
         cache: "no-store",
         headers: catalogHeaders(),
-      }
+      },
     );
     if (!res.ok) {
       const msg = await res.text();
@@ -261,26 +250,17 @@ export const fetchProductById = createAsyncThunk(
     const json = await res.json();
     const rawData = json?.data ?? json ?? {};
     const d = Array.isArray(rawData)
-      ? rawData.find((item) => String(item?.id) === String(id)) ??
+      ? (rawData.find((item) => String(item?.id) === String(id)) ??
         rawData[0] ??
-        {}
+        {})
       : rawData;
-    const isAbsolute = (u: string) => /^https?:\/\//i.test(u);
-    const joinUrl = (root: string, path?: string) => {
-      if (!path) return "/vercel.svg";
-      if (isAbsolute(path)) return path;
-      if (!root) return path;
-      const r = root.endsWith("/") ? root.slice(0, -1) : root;
-      const p = String(path).startsWith("/") ? String(path) : `/${path}`;
-      return `${r}${p}`;
-    };
     const images: { url: string }[] = Array.isArray(d?.images)
       ? d.images.map((im: any) => {
           const raw =
             typeof im === "string"
               ? im
-              : im?.imageUrl ?? im?.url ?? im?.path ?? im?.src;
-          return { url: joinUrl(imageBase, raw) };
+              : (im?.imageUrl ?? im?.url ?? im?.path ?? im?.src);
+          return { url: raw || "/vercel.svg" };
         })
       : [];
     const stockQuantity = Number(d?.inventory?.quantity ?? d?.stock) || 0;
@@ -302,7 +282,7 @@ export const fetchProductById = createAsyncThunk(
       pricing: normalizePricing(d?.pricing, Number(d?.price) || 0),
     };
     return product;
-  }
+  },
 );
 export const fetchCategories = createAsyncThunk(
   "products/fetchCategories",
@@ -320,7 +300,7 @@ export const fetchCategories = createAsyncThunk(
       name: c.name,
       slug: c.slug,
     })) as Category[];
-  }
+  },
 );
 export const fetchSubcategories = createAsyncThunk(
   "products/fetchSubcategories",
@@ -329,13 +309,13 @@ export const fetchSubcategories = createAsyncThunk(
     const res = await fetch(
       withCacheBuster(
         `${base}/storefront/subcategories?categoryId=${encodeURIComponent(
-          String(categoryId)
-        )}`
+          String(categoryId),
+        )}`,
       ),
       {
         cache: "no-store",
         headers: catalogHeaders(),
-      }
+      },
     );
     if (!res.ok) throw new Error("Failed to load subcategories");
     const json = await res.json();
@@ -346,7 +326,7 @@ export const fetchSubcategories = createAsyncThunk(
       slug: s.slug,
       categoryId: s.categoryId,
     })) as SubCategory[];
-  }
+  },
 );
 export const fetchAllSubcategories = createAsyncThunk(
   "products/fetchAllSubcategories",
@@ -357,7 +337,7 @@ export const fetchAllSubcategories = createAsyncThunk(
       {
         cache: "no-store",
         headers: catalogHeaders(),
-      }
+      },
     );
     if (!res.ok) throw new Error("Failed to load subcategories");
     const json = await res.json();
@@ -375,7 +355,7 @@ export const fetchAllSubcategories = createAsyncThunk(
           }
         : undefined,
     })) as SubCategory[];
-  }
+  },
 );
 
 // Slice

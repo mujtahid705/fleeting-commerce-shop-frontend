@@ -1,18 +1,101 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { headers } from "next/headers";
 import "./globals.css";
 import { ReduxProvider } from "@/redux/Providers";
 import { Toaster } from "sonner";
 import { TopLoader } from "@/components/top-loader";
 import { ThemeProvider } from "@/components/theme-provider";
 import { StoreLayout } from "@/components/store-layout";
+import type { TenantInfo } from "@/redux/slices/tenantSlice";
 
 const inter = Inter({ subsets: ["latin"] });
 
-export const metadata: Metadata = {
-  title: "Store - Your Shopping Experience",
-  description: "Discover amazing products at great prices.",
+const DEFAULT_TITLE = "Store - Your Shopping Experience";
+const DEFAULT_DESCRIPTION = "Discover amazing products at great prices.";
+
+const DEFAULT_METADATA: Metadata = {
+  title: DEFAULT_TITLE,
+  description: DEFAULT_DESCRIPTION,
 };
+
+function extractDomainFromHost(host: string): string | null {
+  const hostname = host.split(":")[0];
+  const parts = hostname.split(".");
+
+  if (hostname.includes("localhost")) {
+    return parts.length > 1 && parts[0] !== "localhost" && parts[0] !== "www"
+      ? parts[0]
+      : null;
+  }
+
+  return parts.length >= 3 && parts[0] !== "www" ? parts[0] : null;
+}
+
+async function getTenantForMetadata(): Promise<TenantInfo | null> {
+  const requestHeaders = await headers();
+  const host =
+    requestHeaders.get("x-forwarded-host") || requestHeaders.get("host") || "";
+  const domain = extractDomainFromHost(host);
+
+  if (!domain) {
+    return null;
+  }
+
+  try {
+    const apiUrl =
+      process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5000/api";
+    const response = await fetch(
+      `${apiUrl}/tenants/storefront?domain=${encodeURIComponent(domain)}`,
+      {
+        cache: "no-store",
+        headers: {
+          "Content-Type": "application/json",
+          "Cache-Control": "no-store",
+          Pragma: "no-cache",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const result = await response.json();
+    return (result.data as TenantInfo) || null;
+  } catch {
+    return null;
+  }
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const tenant = await getTenantForMetadata();
+
+  if (!tenant) {
+    return DEFAULT_METADATA;
+  }
+
+  const title = tenant.brand.tagline
+    ? `${tenant.name} - ${tenant.brand.tagline}`
+    : tenant.name;
+  const description = tenant.brand.description || DEFAULT_DESCRIPTION;
+
+  return {
+    title,
+    description,
+    icons: tenant.brand.logoUrl
+      ? {
+          icon: tenant.brand.logoUrl,
+          shortcut: tenant.brand.logoUrl,
+        }
+      : undefined,
+    openGraph: {
+      title,
+      description,
+      images: tenant.brand.logoUrl ? [tenant.brand.logoUrl] : undefined,
+    },
+  };
+}
 
 export default function RootLayout({
   children,
