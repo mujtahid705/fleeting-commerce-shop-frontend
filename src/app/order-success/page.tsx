@@ -12,11 +12,32 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { useAppSelector } from "@/hooks/hooks";
+import Image from "next/image";
 import Link from "next/link";
 export default function OrderSuccessPage() {
   const [orderNumber] = useState(() =>
     Math.random().toString(36).substr(2, 9).toUpperCase()
   );
+  const { tenant } = useAppSelector((state) => state.tenant);
+
+  const storeName = tenant?.name || "Store";
+  const logoUrl = tenant?.brand?.logoUrl || null;
+  const footerDetails = tenant?.brand?.footer;
+  const brandDescription =
+    tenant?.brand?.tagline ||
+    tenant?.brand?.description ||
+    "Thank you for shopping with us.";
+  const receiptAddress = footerDetails?.address || tenant?.address;
+  const receiptPhone = footerDetails?.phone;
+  const receiptEmail =
+    footerDetails?.email || (tenant?.domain ? `support@${tenant.domain}` : "");
+  const receiptDetails = [
+    receiptAddress ? `Address: ${receiptAddress}` : null,
+    receiptPhone ? `Phone: ${receiptPhone}` : null,
+    receiptEmail ? `Email: ${receiptEmail}` : null,
+  ].filter((detail): detail is string => Boolean(detail));
+
   return (
     <div className="min-h-screen bg-stone-50 py-8">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -44,6 +65,48 @@ export default function OrderSuccessPage() {
             be processed shortly.
           </p>
           <Card className="p-6 mb-8 text-left rounded-2xl border border-stone-100">
+            <div className="mb-6 border-b border-stone-200 pb-6">
+              <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+                <div className="flex items-center gap-4">
+                  {logoUrl ? (
+                    <Image
+                      src={logoUrl}
+                      alt={`${storeName} logo`}
+                      width={96}
+                      height={96}
+                      className="h-16 w-16 rounded-xl border border-stone-200 bg-white object-contain p-2"
+                      unoptimized
+                    />
+                  ) : (
+                    <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-stone-900 text-xl font-bold text-white">
+                      {storeName.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
+                      Official Receipt
+                    </p>
+                    <h2 className="mt-1 text-2xl font-bold text-stone-900">
+                      {storeName}
+                    </h2>
+                    <p className="mt-1 max-w-md text-sm text-stone-600">
+                      {brandDescription}
+                    </p>
+                  </div>
+                </div>
+                <div className="text-sm text-stone-600 sm:max-w-xs sm:text-right">
+                  {receiptDetails.length > 0 ? (
+                    <div className="space-y-1">
+                      {receiptDetails.map((detail) => (
+                        <p key={detail}>{detail}</p>
+                      ))}
+                    </div>
+                  ) : (
+                    <p>Customer receipt for your confirmed order.</p>
+                  )}
+                </div>
+              </div>
+            </div>
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold text-stone-800">
                 Order Details

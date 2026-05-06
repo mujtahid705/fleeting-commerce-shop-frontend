@@ -20,6 +20,7 @@ import { CartDrawer } from "@/components/ui/cart-drawer";
 import { FavoritesDrawer } from "@/components/ui/favorites-drawer";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import type { FormEvent } from "react";
 import { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { useAppSelector } from "@/hooks/hooks";
@@ -36,6 +37,7 @@ export function Header() {
   const router = useRouter();
   const dispatch = useDispatch();
   const [mounted, setMounted] = useState(false);
+  const [headerSearchQuery, setHeaderSearchQuery] = useState("");
   const { isLoggedIn, userData } = useAppSelector((state) => state.user);
   const { totalItems: cartItems, isOpen: isCartOpen } = useAppSelector(
     (state) => state.cart,
@@ -51,6 +53,33 @@ export function Header() {
     dispatch(initializeCart());
     dispatch(initializeFavorites());
   }, [dispatch]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    if (pathname === "/products") {
+      const params = new URLSearchParams(window.location.search);
+      setHeaderSearchQuery(params.get("search") || "");
+      return;
+    }
+
+    setHeaderSearchQuery("");
+  }, [pathname]);
+
+  const handleHeaderSearchSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const query = headerSearchQuery.trim();
+    const params = new URLSearchParams();
+
+    if (query) {
+      params.set("search", query);
+    }
+
+    router.push(
+      params.toString() ? `/products?${params.toString()}` : "/products"
+    );
+  };
+
   const handleLogout = () => {
     dispatch(logout());
     router.push("/");
@@ -77,12 +106,14 @@ export function Header() {
   const isEditorial = headerVariant === "editorial";
   const isModern = headerVariant === "modern";
   const isLuxury = headerVariant === "luxury";
+  const showAbout = tenant?.brand?.aboutPage?.isEnabled !== false;
+  const showContact = tenant?.brand?.contactPage?.isEnabled !== false;
   const navItems = [
     { name: "Home", href: "/" },
     { name: "Shop", href: "/products" },
-    { name: "About", href: "/about" },
-    { name: "Contact", href: "/contact" },
-  ];
+    showAbout ? { name: "About", href: "/about" } : null,
+    showContact ? { name: "Contact", href: "/contact" } : null,
+  ].filter((item): item is { name: string; href: string } => Boolean(item));
   const actionItems = [
     {
       name: "Favorites",
@@ -125,13 +156,18 @@ export function Header() {
               )}
             </Link>
 
-            <div className="order-3 flex w-full items-center gap-2 border border-border bg-background px-3 py-2 md:order-none md:w-[320px]">
+            <form
+              onSubmit={handleHeaderSearchSubmit}
+              className="order-3 flex w-full items-center gap-2 border border-border bg-background px-3 py-2 md:order-none md:w-[320px]"
+            >
               <Search className="h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search products..."
+                value={headerSearchQuery}
+                onChange={(event) => setHeaderSearchQuery(event.target.value)}
                 className="h-8 border-0 bg-transparent p-0 text-sm focus-visible:ring-0"
               />
-            </div>
+            </form>
 
             <div className="flex items-center gap-2">
               {actionItems.map(({ name, Icon, count, onClick }) => (
@@ -406,13 +442,18 @@ export function Header() {
             </nav>
 
             <div className="flex items-center gap-2 sm:gap-3">
-              <div className="hidden items-center gap-2 border-b border-foreground/40 px-0 py-2 md:flex">
+              <form
+                onSubmit={handleHeaderSearchSubmit}
+                className="hidden items-center gap-2 border-b border-foreground/40 px-0 py-2 md:flex"
+              >
                 <Search className="h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Search"
+                  value={headerSearchQuery}
+                  onChange={(event) => setHeaderSearchQuery(event.target.value)}
                   className="h-7 w-32 border-0 bg-transparent p-0 text-xs uppercase tracking-[0.16em] focus-visible:ring-0 lg:w-44"
                 />
-              </div>
+              </form>
               {actionItems.map(({ name, Icon, count, onClick }) => (
                 <Button
                   key={name}
@@ -530,13 +571,18 @@ export function Header() {
               ))}
             </nav>
             <div className="flex items-center space-x-4">
-              <div className="hidden md:flex items-center space-x-2 bg-secondary rounded-full px-4 py-2 max-w-md">
+              <form
+                onSubmit={handleHeaderSearchSubmit}
+                className="hidden md:flex items-center space-x-2 bg-secondary rounded-full px-4 py-2 max-w-md"
+              >
                 <Search className="w-4 h-4 text-muted-foreground" />
                 <Input
                   placeholder="Search products..."
+                  value={headerSearchQuery}
+                  onChange={(event) => setHeaderSearchQuery(event.target.value)}
                   className="border-0 bg-transparent focus:ring-0 text-sm"
                 />
-              </div>
+              </form>
               <div className="flex items-center space-x-2">
                 {[
                   {
