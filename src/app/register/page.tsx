@@ -9,13 +9,14 @@ import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ImageWithFallback } from "@/components/ui/image-with-fallback";
 import Link from "next/link";
-import { useAppDispatch } from "@/hooks/hooks";
+import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { registerUser } from "@/redux/slices/userSlice";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 export default function RegisterPage() {
   const router = useRouter();
   const dispatch = useAppDispatch();
+  const registerLoading = useAppSelector((state) => state.user.loading.register);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -29,12 +30,26 @@ export default function RegisterPage() {
   });
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Registration attempt:", formData);
+
+    if (formData.password !== formData.confirmPassword) {
+      toast.error("Registration failed", {
+        description: "Password and confirm password must match.",
+      });
+      return;
+    }
+
+    if (!formData.agreeToTerms) {
+      toast.error("Registration failed", {
+        description: "Please agree to the terms before creating an account.",
+      });
+      return;
+    }
+
     const data = {
-      email: formData.email,
+      email: formData.email.trim(),
       password: formData.password,
-      name: `${formData.firstName} ${formData.lastName}`,
-      phone: `+88${formData.phone}`,
+      name: `${formData.firstName.trim()} ${formData.lastName.trim()}`.trim(),
+      phone: `+88${formData.phone.trim()}`,
     };
     dispatch(registerUser(data))
       .unwrap()
@@ -44,7 +59,10 @@ export default function RegisterPage() {
       })
       .catch((err) => {
         console.error("Registration failed:", err);
-        toast.error("Registration failed. Please try again.");
+        toast.error("Registration failed", {
+          description:
+            typeof err === "string" ? err : "Please check your details.",
+        });
       });
   };
   const handleInputChange = (field: string, value: string | boolean) => {
@@ -269,9 +287,9 @@ export default function RegisterPage() {
                   <Button
                     type="submit"
                     className="w-full h-12 bg-stone-800 hover:bg-stone-900 text-white rounded-full font-medium transition-all duration-300"
-                    disabled={!formData.agreeToTerms}
+                    disabled={!formData.agreeToTerms || registerLoading}
                   >
-                    Create Account
+                    {registerLoading ? "Creating Account..." : "Create Account"}
                   </Button>
                 </motion.div>
                 <motion.div

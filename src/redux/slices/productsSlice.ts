@@ -17,6 +17,15 @@ export type Product = {
   category?: { id: number; name: string; slug: string };
   subCategory?: { id: number; name: string; slug: string };
   pricing?: ProductPricing;
+  averageRating?: number;
+  reviewCount?: number;
+  recentReviews?: {
+    id: string;
+    rating: number;
+    comment?: string | null;
+    createdAt: string;
+    user?: { id: string; name: string };
+  }[];
 };
 
 export type Category = {
@@ -159,6 +168,8 @@ export const fetchAllProducts = createAsyncThunk(
       subCategory?: { id: string | number; name: string; slug: string };
       inventory?: { quantity: number };
       pricing?: unknown;
+      averageRating?: number;
+      reviewCount?: number;
       images?: Array<
         | {
             url?: string;
@@ -185,6 +196,8 @@ export const fetchAllProducts = createAsyncThunk(
       category: p?.category,
       subCategory: p?.subCategory,
       pricing: normalizePricing(p?.pricing, Number(p.price) || 0),
+      averageRating: Number(p?.averageRating) || 0,
+      reviewCount: Number(p?.reviewCount) || 0,
       images: Array.isArray(p.images)
         ? p.images.map((im: unknown) => {
             const raw =
@@ -280,6 +293,9 @@ export const fetchProductById = createAsyncThunk(
       category: d?.category,
       subCategory: d?.subCategory,
       pricing: normalizePricing(d?.pricing, Number(d?.price) || 0),
+      averageRating: Number(d?.averageRating) || 0,
+      reviewCount: Number(d?.reviewCount) || 0,
+      recentReviews: Array.isArray(d?.recentReviews) ? d.recentReviews : [],
     };
     return product;
   },

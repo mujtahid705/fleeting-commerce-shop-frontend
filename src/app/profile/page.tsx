@@ -7,7 +7,13 @@ import {
   clearSelectedOrder,
   cancelOrder,
   Order,
+  OrderProduct,
 } from "@/redux/slices/ordersSlice";
+import {
+  createReview,
+  fetchMyReviews,
+} from "@/redux/slices/reviewsSlice";
+import { initializeAuth } from "@/redux/slices/userSlice";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
@@ -22,16 +28,35 @@ import {
   Download,
   Star,
   CreditCard,
-  MapPin,
-  Clock,
   X,
   AlertTriangle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import Image from "next/image";
 import { formatCurrency } from "@/lib/discount-pricing";
+
+type ReviewTarget = {
+  orderId: number;
+  productId: string;
+  productTitle: string;
+};
+
+function hasStoredCustomerSession() {
+  if (typeof window === "undefined") return false;
+
+  try {
+    const token = localStorage.getItem("token");
+    const userData = localStorage.getItem("userData");
+    if (!token || !userData) return false;
+
+    const parsedUser = JSON.parse(userData);
+    return Boolean(parsedUser?.id && parsedUser?.email);
+  } catch {
+    return false;
+  }
+}
+
 export default function ProfilePage() {
   const { isLoggedIn, userData } = useSelector(
     (state: RootState) => state.user
@@ -39,20 +64,47 @@ export default function ProfilePage() {
   const { orders, selectedOrder, loading, error } = useSelector(
     (state: RootState) => state.orders
   );
+  const { myReviews, createLoading } = useSelector(
+    (state: RootState) => state.reviews
+  );
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
+  const [reviewTarget, setReviewTarget] = useState<ReviewTarget | null>(null);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewComment, setReviewComment] = useState("");
+  const [authChecked, setAuthChecked] = useState(false);
+
   useEffect(() => {
+    dispatch(initializeAuth());
+    setAuthChecked(true);
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (!authChecked) return;
+
     if (!isLoggedIn) {
+      if (hasStoredCustomerSession()) return;
       router.push("/login");
       return;
     }
 
     if (userData.id) {
       dispatch(fetchUserOrders(userData.id));
+      dispatch(fetchMyReviews({ page: 1, limit: 100 }));
     }
-  }, [isLoggedIn, userData.id, router, dispatch]);
+  }, [authChecked, isLoggedIn, userData.id, router, dispatch]);
+
   const handleViewOrder = (order: Order) => {
     dispatch(setSelectedOrder(order));
+  };
+  const getOrderItems = (order: Order | null | undefined) => {
+    return Array.isArray(order?.order_items) ? order.order_items : [];
+  };
+  const getProductTitle = (item: OrderProduct) => {
+    return item.product?.title || "Product";
+  };
+  const getProductBrand = (item: OrderProduct) => {
+    return item.product?.brand || "-";
   };
   const handleCloseOrderModal = () => {
     dispatch(clearSelectedOrder());
@@ -72,6 +124,73 @@ export default function ProfilePage() {
         });
       }
     }
+  };
+  const openReviewModal = (order: Order, item: OrderProduct) => {
+    setReviewTarget({
+      orderId: order.id,
+      productId: item.productId,
+      productTitle: getProductTitle(item),
+    });
+    setReviewRating(5);
+    setReviewComment("");
+  };
+  const closeReviewModal = () => {
+    setReviewTarget(null);
+    setReviewRating(5);
+    setReviewComment("");
+  };
+  const getReviewErrorMessage = (reviewError: unknown) => {
+    const status =
+      typeof reviewError === "object" && reviewError !== null
+        ? (reviewError as { status?: number }).status
+        : undefined;
+    const message =
+      typeof reviewError === "object" && reviewError !== null
+        ? (reviewError as { message?: string }).message
+        : undefined;
+
+    if (status === 409) {
+      return "You already reviewed this product from this order.";
+    }
+    if (status === 403) {
+      return "Only delivered purchases can be reviewed.";
+    }
+    return message || "Please try again.";
+  };
+  const handleSubmitReview = async () => {
+    if (!reviewTarget) return;
+
+    try {
+      await dispatch(
+        createReview({
+          productId: reviewTarget.productId,
+          orderId: reviewTarget.orderId,
+          rating: reviewRating,
+          comment: reviewComment.trim() || undefined,
+        })
+      ).unwrap();
+
+      toast.success("Review submitted successfully!");
+      closeReviewModal();
+      dispatch(fetchMyReviews({ page: 1, limit: 100 }));
+      if (userData.id) {
+        dispatch(fetchUserOrders(userData.id));
+      }
+    } catch (error) {
+      toast.error("Failed to submit review", {
+        description: getReviewErrorMessage(error),
+      });
+    }
+  };
+  const hasReviewedOrderItem = (orderId: number, productId: string) => {
+    return myReviews.items.some((review) => {
+      const reviewedProductId = review.productId || review.product?.id;
+      return (
+        String(reviewedProductId) === String(productId) &&
+        review.orderId !== undefined &&
+        Number(review.orderId) === Number(orderId)
+      );
+    });
   };
   const getStatusColor = (status: Order["status"] | undefined | null) => {
     switch (status) {
@@ -157,6 +276,16 @@ export default function ProfilePage() {
       return 0;
     }
   };
+  if (!authChecked || (!isLoggedIn && hasStoredCustomerSession())) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-stone-50">
+        <div className="text-center">
+          <div className="animate-spin w-8 h-8 border-4 border-stone-800 border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p className="text-stone-600">Loading your profile...</p>
+        </div>
+      </div>
+    );
+  }
   if (!isLoggedIn) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-stone-50">
@@ -311,7 +440,7 @@ export default function ProfilePage() {
                             </span>
                           </div>
                           <div className="flex space-x-3 overflow-x-auto">
-                            {order.order_items.map((item) => (
+                            {getOrderItems(order).map((item) => (
                               <div
                                 key={item.id}
                                 className="flex items-center space-x-2 min-w-0 flex-shrink-0"
@@ -323,7 +452,7 @@ export default function ProfilePage() {
                                 </div>
                                 <div className="min-w-0">
                                   <p className="text-sm font-medium text-stone-800 truncate">
-                                    {item.product.title}
+                                    {getProductTitle(item)}
                                   </p>
                                   <p className="text-xs text-stone-500">
                                     Qty: {item.quantity} x{" "}
@@ -333,6 +462,30 @@ export default function ProfilePage() {
                               </div>
                             ))}
                           </div>
+                          {order.status === "delivered" && (
+                            <div className="mt-3 flex flex-wrap gap-2">
+                              {getOrderItems(order).map((item) => {
+                                const alreadyReviewed = hasReviewedOrderItem(
+                                  order.id,
+                                  item.productId
+                                );
+
+                                return (
+                                  <Button
+                                    key={`${order.id}-${item.productId}`}
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => openReviewModal(order, item)}
+                                    disabled={alreadyReviewed}
+                                    className="text-xs"
+                                  >
+                                    <Star className="w-3.5 h-3.5 mr-1.5" />
+                                    {alreadyReviewed ? "Reviewed" : "Review"}
+                                  </Button>
+                                );
+                              })}
+                            </div>
+                          )}
                         </div>
                       </div>
                       <div className="text-right ml-6">
@@ -372,6 +525,7 @@ export default function ProfilePage() {
                             <Button
                               variant="outline"
                               size="sm"
+                              onClick={() => handleViewOrder(order)}
                               className="w-full"
                             >
                               <Download className="w-4 h-4 mr-2" />
@@ -437,7 +591,8 @@ export default function ProfilePage() {
                     </div>
                     <div>
                       <span className="text-stone-500">Customer:</span>{" "}
-                      {selectedOrder.user.name} ({selectedOrder.user.email})
+                      {selectedOrder.user?.name || userData.name || "Customer"}{" "}
+                      ({selectedOrder.user?.email || userData.email || "-"})
                     </div>
                   </div>
                 </div>
@@ -445,7 +600,7 @@ export default function ProfilePage() {
               <div className="mb-6">
                 <h4 className="font-semibold text-stone-800 mb-4">Products</h4>
                 <div className="space-y-4">
-                  {selectedOrder.order_items.map((item) => (
+                  {getOrderItems(selectedOrder).map((item) => (
                     <div
                       key={item.id}
                       className="flex items-center space-x-4 p-4 bg-stone-50 rounded-xl"
@@ -455,13 +610,13 @@ export default function ProfilePage() {
                       </div>
                       <div className="flex-1">
                         <h5 className="font-medium text-stone-800">
-                          {item.product.title}
+                          {getProductTitle(item)}
                         </h5>
                         <p className="text-sm text-stone-500">
                           Quantity: {item.quantity}
                         </p>
                         <p className="text-sm text-stone-500">
-                          Brand: {item.product.brand}
+                          Brand: {getProductBrand(item)}
                         </p>
                       </div>
                       <div className="text-right">
@@ -479,6 +634,26 @@ export default function ProfilePage() {
                         <div className="text-sm text-stone-500">
                           {formatCurrency(Number(item.unitPrice) || 0)} each
                         </div>
+                        {selectedOrder.status === "delivered" && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openReviewModal(selectedOrder, item)}
+                            disabled={hasReviewedOrderItem(
+                              selectedOrder.id,
+                              item.productId
+                            )}
+                            className="mt-3"
+                          >
+                            <Star className="w-4 h-4 mr-2" />
+                            {hasReviewedOrderItem(
+                              selectedOrder.id,
+                              item.productId
+                            )
+                              ? "Reviewed"
+                              : "Review"}
+                          </Button>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -542,6 +717,105 @@ export default function ProfilePage() {
                   </Button>
                 </div>
               )}
+            </div>
+          </motion.div>
+        </div>
+      )}
+      {reviewTarget && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-[10000] flex items-center justify-center p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto border border-stone-100 shadow-xl"
+          >
+            <div className="p-6">
+              <div className="mb-6 flex items-start justify-between gap-4">
+                <div>
+                  <h3 className="text-xl font-bold text-stone-800">
+                    Review Product
+                  </h3>
+                  <p className="mt-1 text-sm text-stone-500">
+                    {reviewTarget.productTitle}
+                  </p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={closeReviewModal}
+                  className="text-stone-500 hover:text-stone-700"
+                >
+                  <X className="w-5 h-5" />
+                </Button>
+              </div>
+
+              <div className="mb-5">
+                <p className="mb-2 text-sm font-medium text-stone-700">
+                  Rating
+                </p>
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: 5 }).map((_, index) => {
+                    const starValue = index + 1;
+                    return (
+                      <button
+                        key={starValue}
+                        type="button"
+                        onClick={() => setReviewRating(starValue)}
+                        className="rounded p-1 focus:outline-none focus:ring-2 focus:ring-amber-300"
+                        aria-label={`${starValue} star rating`}
+                      >
+                        <Star
+                          className={`h-8 w-8 ${
+                            starValue <= reviewRating
+                              ? "fill-amber-400 text-amber-400"
+                              : "text-stone-300"
+                          }`}
+                        />
+                      </button>
+                    );
+                  })}
+                  <span className="ml-2 text-sm text-stone-500">
+                    {reviewRating}/5
+                  </span>
+                </div>
+              </div>
+
+              <div className="mb-6">
+                <label
+                  htmlFor="review-comment"
+                  className="mb-2 block text-sm font-medium text-stone-700"
+                >
+                  Comment
+                </label>
+                <textarea
+                  id="review-comment"
+                  value={reviewComment}
+                  onChange={(event) => setReviewComment(event.target.value)}
+                  maxLength={2000}
+                  rows={5}
+                  placeholder="Share your experience with this product..."
+                  className="w-full resize-none rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm text-stone-800 outline-none focus:border-stone-400 focus:ring-2 focus:ring-stone-100"
+                />
+                <div className="mt-1 text-right text-xs text-stone-400">
+                  {reviewComment.length}/2000
+                </div>
+              </div>
+
+              <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                <Button
+                  variant="outline"
+                  onClick={closeReviewModal}
+                  disabled={createLoading}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleSubmitReview}
+                  disabled={createLoading || reviewRating < 1}
+                  className="bg-stone-800 hover:bg-stone-900"
+                >
+                  {createLoading ? "Submitting..." : "Submit Review"}
+                </Button>
+              </div>
             </div>
           </motion.div>
         </div>
