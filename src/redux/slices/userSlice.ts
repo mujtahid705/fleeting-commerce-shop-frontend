@@ -62,7 +62,10 @@ const getTenantDomain = () => {
 
 export const loginUser = createAsyncThunk(
   "loginUser",
-  async (userData: { email: string; password: string }) => {
+  async (
+    userData: { email: string; password: string },
+    { rejectWithValue }
+  ) => {
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_BASE_URL}/storefront/auth/login`,
       {
@@ -74,18 +77,34 @@ export const loginUser = createAsyncThunk(
         body: JSON.stringify(userData),
       }
     );
-    return response.json();
+
+    const result = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      clearAuthStorage();
+      return rejectWithValue(result?.message || "Invalid email or password");
+    }
+
+    if (!result?.user || !result?.token) {
+      clearAuthStorage();
+      return rejectWithValue("Invalid login response from server");
+    }
+
+    return result;
   }
 );
 
 export const registerUser = createAsyncThunk(
   "registerUser",
-  async (userData: {
-    email: string;
-    password: string;
-    name: string;
-    phone: string;
-  }) => {
+  async (
+    userData: {
+      email: string;
+      password: string;
+      name: string;
+      phone: string;
+    },
+    { rejectWithValue }
+  ) => {
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_BASE_URL}/storefront/auth/register`,
       {
@@ -97,7 +116,14 @@ export const registerUser = createAsyncThunk(
         body: JSON.stringify(userData),
       }
     );
-    return response.json();
+
+    const result = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      return rejectWithValue(result?.message || "Registration failed");
+    }
+
+    return result;
   }
 );
 
@@ -230,6 +256,7 @@ const userSlice = createSlice({
     builder
       .addCase(loginUser.pending, (state) => {
         state.loading.login = true;
+        state.error.login = null;
       })
       .addCase(loginUser.fulfilled, (state, action) => {
         state.loading.login = false;
@@ -278,19 +305,44 @@ const userSlice = createSlice({
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading.login = false;
-        state.error.login = action.error.message || "Login failed";
+        state.isLoggedIn = false;
+        state.userData = {
+          id: "",
+          name: "",
+          email: "",
+          phone: "",
+          token: "",
+          role: "CUSTOMER",
+        };
+        state.error.login =
+          (action.payload as string) || action.error.message || "Login failed";
         console.error("Login failed:", action.payload);
       });
     builder
       .addCase(registerUser.pending, (state) => {
         state.loading.register = true;
+        state.error.register = null;
       })
-      .addCase(registerUser.fulfilled, (state, action) => {
+      .addCase(registerUser.fulfilled, (state) => {
         state.loading.register = false;
+        state.error.register = null;
+        state.isLoggedIn = false;
+        state.userData = {
+          id: "",
+          name: "",
+          email: "",
+          phone: "",
+          token: "",
+          role: "CUSTOMER",
+        };
+        clearAuthStorage();
       })
       .addCase(registerUser.rejected, (state, action) => {
         state.loading.register = false;
-        state.error.register = action.error.message || "Registration failed";
+        state.error.register =
+          (action.payload as string) ||
+          action.error.message ||
+          "Registration failed";
         console.error("Registration failed:", action.payload);
       });
   },

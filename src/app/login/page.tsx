@@ -11,12 +11,13 @@ import { ImageWithFallback } from "@/components/ui/image-with-fallback";
 import Image from "next/image";
 import Link from "next/link";
 import { loginUser } from "@/redux/slices/userSlice";
-import { useAppDispatch } from "@/hooks/hooks";
+import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 export default function LoginPage() {
   const router = useRouter();
   const dispatch = useAppDispatch();
+  const loginLoading = useAppSelector((state) => state.user.loading.login);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
@@ -38,7 +39,10 @@ export default function LoginPage() {
       })
       .catch((err) => {
         console.error("Login failed:", err);
-        toast.error("Login failed. Please try again.");
+        toast.error("Login failed", {
+          description:
+            typeof err === "string" ? err : "Invalid email or password.",
+        });
       });
   };
   const handleInputChange = (field: string, value: string | boolean) => {
@@ -119,10 +123,8 @@ export default function LoginPage() {
                     />
                     <motion.button
                       type="button"
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      className="absolute right-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-gray-400 hover:text-gray-600"
                       onClick={() => setShowPassword(!showPassword)}
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
                     >
                       {showPassword ? (
                         <EyeOff className="w-5 h-5" />
@@ -162,9 +164,10 @@ export default function LoginPage() {
                 >
                   <Button
                     type="submit"
+                    disabled={loginLoading}
                     className="w-full h-12 bg-stone-800 hover:bg-stone-900 text-white rounded-full font-medium transition-all duration-300"
                   >
-                    Sign In
+                    {loginLoading ? "Signing In..." : "Sign In"}
                   </Button>
                 </motion.div>
                 <motion.div

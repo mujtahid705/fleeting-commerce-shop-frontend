@@ -58,6 +58,8 @@ type ProductSource = {
   originalPrice?: number;
   rating?: number;
   reviews?: number;
+  averageRating?: number;
+  reviewCount?: number;
   image?: string;
   pricing?: ProductPricing;
   images?: Array<{ url?: string; imageUrl?: string }>;
@@ -147,8 +149,8 @@ export function ProductsSection() {
         name: p.title ?? p.name ?? "Untitled",
         price: getSalePrice(p),
         originalPrice: getOriginalPrice(p),
-        rating: Number(p.rating) || 0,
-        reviews: Number(p.reviews) || 0,
+        rating: Number(p.averageRating ?? p.rating) || 0,
+        reviews: Number(p.reviewCount ?? p.reviews) || 0,
         image:
           p.image ||
           p.images?.[0]?.imageUrl ||

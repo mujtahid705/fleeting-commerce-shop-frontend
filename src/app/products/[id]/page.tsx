@@ -10,6 +10,7 @@ import {
   Truck,
   Shield,
   RotateCcw,
+  Star,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -23,6 +24,7 @@ import {
   fetchProductById,
   type Product,
 } from "@/redux/slices/productsSlice";
+import { fetchProductReviews } from "@/redux/slices/reviewsSlice";
 import { addToCart } from "@/redux/slices/cartSlice";
 import {
   toggleFavorite,
@@ -39,6 +41,40 @@ import {
   getSalePrice,
   hasSaleDiscount,
 } from "@/lib/discount-pricing";
+
+function formatReviewDate(dateString: string) {
+  return new Date(dateString).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}
+
+function RatingStars({
+  rating,
+  className = "h-4 w-4",
+}: {
+  rating: number;
+  className?: string;
+}) {
+  const safeRating = Math.max(0, Math.min(5, Number(rating) || 0));
+
+  return (
+    <div className="flex items-center gap-0.5">
+      {Array.from({ length: 5 }).map((_, index) => (
+        <Star
+          key={index}
+          className={`${className} ${
+            index < Math.round(safeRating)
+              ? "fill-amber-400 text-amber-400"
+              : "text-stone-300"
+          }`}
+        />
+      ))}
+    </div>
+  );
+}
+
 export default function ProductDetailPage() {
   const params = useParams<{ id: string }>();
   const id = params?.id;
@@ -55,6 +91,15 @@ export default function ProductDetailPage() {
   } = useSelector((s: RootState) => s.products);
   const { items: relatedItems, loading: relatedLoading } = useSelector(
     (s: RootState) => s.products
+  );
+  const productReviews = useSelector((s: RootState) =>
+    id ? s.reviews.productReviews[String(id)] : undefined
+  );
+  const reviewsLoading = useSelector((s: RootState) =>
+    id ? Boolean(s.reviews.productReviewsLoading[String(id)]) : false
+  );
+  const reviewsError = useSelector((s: RootState) =>
+    id ? s.reviews.productReviewsError[String(id)] : null
   );
 
   // Check if product is in favorites
@@ -80,6 +125,11 @@ export default function ProductDetailPage() {
   useEffect(() => {
     refreshProduct();
   }, [refreshProduct]);
+
+  useEffect(() => {
+    if (!id) return;
+    dispatch(fetchProductReviews({ productId: String(id), page: 1, limit: 10 }));
+  }, [dispatch, id]);
 
   // After product loads, fetch related products from the same category.
   useEffect(() => {
@@ -174,7 +224,7 @@ export default function ProductDetailPage() {
           pricing: product.pricing,
         },
         originalPrice: getOriginalPrice(product),
-        rating: 4.5,
+        rating: Number(product.averageRating) || 0,
       })
     );
 
@@ -226,6 +276,24 @@ export default function ProductDetailPage() {
   const discountPercentage = getSaleDiscountPercentage(product);
   const isOnSale = hasSaleDiscount(product);
   const activeSaleTitle = product.pricing?.activeSaleDiscount?.title;
+  const averageRating = Number(product.averageRating) || 0;
+  const reviewCount = Number(product.reviewCount) || 0;
+  const reviewItems = productReviews?.items ?? product.recentReviews ?? [];
+  const displayedReviewTotal = productReviews?.total ?? reviewCount;
+  const canLoadMoreReviews = productReviews
+    ? productReviews.page < productReviews.totalPages
+    : false;
+
+  const handleLoadMoreReviews = () => {
+    if (!id || !productReviews || reviewsLoading) return;
+    dispatch(
+      fetchProductReviews({
+        productId: String(id),
+        page: productReviews.page + 1,
+        limit: productReviews.limit || 10,
+      })
+    );
+  };
 
   return (
     <div className="min-h-screen bg-stone-50">
@@ -290,6 +358,15 @@ export default function ProductDetailPage() {
               <h1 className="text-3xl font-bold text-stone-800 mb-2">
                 {product.title}
               </h1>
+              <div className="mb-3 flex flex-wrap items-center gap-2 text-sm text-stone-600">
+                <RatingStars rating={averageRating} />
+                <span className="font-semibold text-stone-800">
+                  {averageRating > 0 ? averageRating.toFixed(1) : "No ratings"}
+                </span>
+                <span>
+                  {reviewCount} {reviewCount === 1 ? "review" : "reviews"}
+                </span>
+              </div>
               <p className="text-sm text-stone-600 mb-4">
                 {product.category?.name} / {product.subCategory?.name}
               </p>
@@ -468,6 +545,88 @@ export default function ProductDetailPage() {
         </motion.section>
 
         <motion.section
+          className="mt-8"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true }}
+        >
+          <div className="bg-white rounded-xl p-6 border border-stone-100">
+            <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <h3 className="font-semibold text-stone-800">
+                  Customer Reviews
+                </h3>
+                <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-stone-600">
+                  <RatingStars rating={averageRating} />
+                  <span className="font-semibold text-stone-800">
+                    {averageRating > 0
+                      ? `${averageRating.toFixed(1)} out of 5`
+                      : "No ratings yet"}
+                  </span>
+                </div>
+              </div>
+              <span className="text-sm text-stone-500">
+                {displayedReviewTotal}{" "}
+                {displayedReviewTotal === 1 ? "review" : "reviews"}
+              </span>
+            </div>
+
+            {reviewsLoading && reviewItems.length === 0 ? (
+              <div className="rounded-lg bg-stone-50 p-6 text-center text-sm text-stone-500">
+                Loading reviews...
+              </div>
+            ) : reviewsError ? (
+              <div className="rounded-lg border border-red-100 bg-red-50 p-6 text-center text-sm text-red-600">
+                {reviewsError}
+              </div>
+            ) : displayedReviewTotal === 0 || reviewItems.length === 0 ? (
+              <div className="rounded-lg bg-stone-50 p-6 text-center text-sm text-stone-500">
+                No reviews yet.
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {reviewItems.map((review) => (
+                  <div
+                    key={review.id}
+                    className="rounded-lg border border-stone-100 bg-stone-50 p-4"
+                  >
+                    <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <p className="font-medium text-stone-800">
+                          {review.user?.name || "Customer"}
+                        </p>
+                        <RatingStars rating={review.rating} className="h-3.5 w-3.5" />
+                      </div>
+                      <span className="text-xs text-stone-500">
+                        {formatReviewDate(review.createdAt)}
+                      </span>
+                    </div>
+                    {review.comment && (
+                      <p className="text-sm leading-6 text-stone-700">
+                        {review.comment}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {canLoadMoreReviews && (
+              <div className="mt-6 text-center">
+                <Button
+                  variant="outline"
+                  onClick={handleLoadMoreReviews}
+                  disabled={reviewsLoading}
+                >
+                  {reviewsLoading ? "Loading..." : "Load more reviews"}
+                </Button>
+              </div>
+            )}
+          </div>
+        </motion.section>
+
+        <motion.section
           className="mt-16"
           initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -499,8 +658,8 @@ export default function ProductDetailPage() {
                       name: r.title,
                       price: getSalePrice(r),
                       originalPrice: getOriginalPrice(r),
-                      rating: 4.5,
-                      reviews: 0,
+                      rating: Number(r.averageRating) || 0,
+                      reviews: Number(r.reviewCount) || 0,
                       image:
                         r.images?.[0]?.imageUrl ||
                         r.images?.[0]?.url ||
