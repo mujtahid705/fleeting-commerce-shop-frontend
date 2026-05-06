@@ -209,33 +209,39 @@ export default function ContactPage() {
 
   const fallbackContactInfo: ContactInfoItems = footer
     ? [
-        footer.email
-          ? {
-              icon: "mail",
-              title: "Email Us",
-              description: "Send us an email anytime",
-              details: footer.email,
-              actionUrl: `mailto:${footer.email}`,
-            }
-          : null,
-        footer.phone
-          ? {
-              icon: "phone",
-              title: "Call Us",
-              description: "Reach our support team",
-              details: footer.phone,
-              actionUrl: `tel:${footer.phone.replace(/\s+/g, "")}`,
-            }
-          : null,
-        footer.address || tenant?.address
-          ? {
-              icon: "map-pin",
-              title: "Visit Us",
-              description: "Come say hello at our office",
-              details: footer.address || tenant?.address || "",
-            }
-          : null,
-      ].filter((item): item is ContactInfoItems[number] => Boolean(item))
+        ...(footer.email
+          ? [
+              {
+                icon: "mail",
+                title: "Email Us",
+                description: "Send us an email anytime",
+                details: footer.email,
+                actionUrl: `mailto:${footer.email}`,
+              },
+            ]
+          : []),
+        ...(footer.phone
+          ? [
+              {
+                icon: "phone",
+                title: "Call Us",
+                description: "Reach our support team",
+                details: footer.phone,
+                actionUrl: `tel:${footer.phone.replace(/\s+/g, "")}`,
+              },
+            ]
+          : []),
+        ...(footer.address || tenant?.address
+          ? [
+              {
+                icon: "map-pin",
+                title: "Visit Us",
+                description: "Come say hello at our office",
+                details: footer.address || tenant?.address || "",
+              },
+            ]
+          : []),
+      ]
     : DEFAULT_CONTACT_INFO;
 
   const contactInfo = (
