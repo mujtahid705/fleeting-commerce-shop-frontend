@@ -102,6 +102,7 @@ function ProductsContent() {
 
   const categoryParam = searchParams.get("category");
   const subCategoryParam = searchParams.get("subCategory");
+  const searchParam = searchParams.get("search");
 
   useEffect(() => {
     setIsClient(true);
@@ -114,6 +115,10 @@ function ProductsContent() {
     setSelectedCategoryId(categoryId);
     setSelectedSubCategoryId(subCategoryId);
   }, [categoryParam, subCategoryParam]);
+
+  useEffect(() => {
+    setSearchQuery(searchParam || "");
+  }, [searchParam]);
 
   const updateFilterUrl = (
     categoryId: number | "",
@@ -139,6 +144,27 @@ function ProductsContent() {
     });
   };
 
+  const updateSearchUrl = (query: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    const trimmedQuery = query.trim();
+
+    if (trimmedQuery) {
+      params.set("search", trimmedQuery);
+    } else {
+      params.delete("search");
+    }
+
+    const nextQuery = params.toString();
+    router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, {
+      scroll: false,
+    });
+  };
+
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    updateSearchUrl(value);
+  };
+
   const handleCategoryChange = (value: string) => {
     const categoryId = value ? Number(value) : "";
     setSelectedCategoryId(categoryId);
@@ -156,7 +182,15 @@ function ProductsContent() {
     setSelectedCategoryId("");
     setSelectedSubCategoryId("");
     setSearchQuery("");
-    updateFilterUrl("", "");
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("category");
+    params.delete("subCategory");
+    params.delete("search");
+
+    const nextQuery = params.toString();
+    router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, {
+      scroll: false,
+    });
   };
 
   const filteredSubcategories = useMemo(() => {
@@ -377,7 +411,7 @@ function ProductsContent() {
                   <Input
                     placeholder="Search products..."
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onChange={(e) => handleSearchChange(e.target.value)}
                     className="border-0 bg-transparent p-0 text-sm focus-visible:ring-0"
                   />
                 </div>

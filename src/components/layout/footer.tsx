@@ -40,15 +40,24 @@ export function Footer() {
     footerData?.copyrightText ||
     `© ${new Date().getFullYear()} ${storeName}. All rights reserved.`;
   const socialLinks = footerData?.socialLinks;
+  const showAbout = tenant?.brand?.aboutPage?.isEnabled !== false;
+  const showContact = tenant?.brand?.contactPage?.isEnabled !== false;
   const quickLinks =
-    footerData?.quickLinks && footerData.quickLinks.length > 0
+    (footerData?.quickLinks && footerData.quickLinks.length > 0
       ? footerData.quickLinks
       : [
           { label: "Home", url: "/" },
           { label: "Shop", url: "/products" },
-          { label: "About", url: "/about" },
-          { label: "Contact", url: "/contact" },
-        ];
+          showAbout ? { label: "About", url: "/about" } : null,
+          showContact ? { label: "Contact", url: "/contact" } : null,
+        ].filter((item): item is { label: string; url: string } =>
+          Boolean(item)
+        )
+    ).filter((item) => {
+      if (item.url === "/about") return showAbout;
+      if (item.url === "/contact") return showContact;
+      return true;
+    });
 
   // Build social media links array from API data
   const socialMediaItems = [

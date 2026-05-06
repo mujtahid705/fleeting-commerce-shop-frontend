@@ -96,6 +96,181 @@ export interface FooterCustomization {
   quickLinks?: QuickLink[];
 }
 
+export interface AboutPageHero {
+  eyebrow?: string;
+  title?: string;
+  highlightText?: string;
+  description?: string;
+  backgroundImage?: string | null;
+  backgroundImagePublicId?: string;
+}
+
+export interface AboutPageStatItem {
+  label?: string;
+  value?: string;
+  icon?: string;
+}
+
+export interface AboutPageStory {
+  isEnabled?: boolean;
+  eyebrow?: string;
+  title?: string;
+  paragraphs?: string[];
+  featuredCard?: {
+    title?: string;
+    description?: string;
+    icon?: string;
+  };
+  image?: string | null;
+  imagePublicId?: string;
+}
+
+export interface AboutPageValues {
+  isEnabled?: boolean;
+  eyebrow?: string;
+  title?: string;
+  description?: string;
+  items?: {
+    title?: string;
+    description?: string;
+    icon?: string;
+  }[];
+}
+
+export interface AboutPageMilestones {
+  isEnabled?: boolean;
+  eyebrow?: string;
+  title?: string;
+  description?: string;
+  items?: {
+    year?: string;
+    title?: string;
+    description?: string;
+  }[];
+}
+
+export interface AboutPageTeam {
+  isEnabled?: boolean;
+  eyebrow?: string;
+  title?: string;
+  description?: string;
+  members?: {
+    name?: string;
+    role?: string;
+    description?: string;
+    image?: string | null;
+    imagePublicId?: string;
+  }[];
+}
+
+export interface AboutPageCustomization {
+  isEnabled?: boolean;
+  hero?: AboutPageHero;
+  stats?: {
+    isEnabled?: boolean;
+    items?: AboutPageStatItem[];
+  };
+  story?: AboutPageStory;
+  values?: AboutPageValues;
+  milestones?: AboutPageMilestones;
+  team?: AboutPageTeam;
+  mission?: {
+    isEnabled?: boolean;
+    title?: string;
+    description?: string;
+    icon?: string;
+  };
+  seo?: {
+    title?: string;
+    description?: string;
+  };
+}
+
+export interface ContactPageCustomization {
+  isEnabled?: boolean;
+  hero?: {
+    eyebrow?: string;
+    title?: string;
+    description?: string;
+  };
+  contactInfo?: {
+    isEnabled?: boolean;
+    items?: {
+      type?: string;
+      title?: string;
+      description?: string;
+      details?: string;
+      actionUrl?: string | null;
+      icon?: string;
+    }[];
+  };
+  form?: {
+    isEnabled?: boolean;
+    title?: string;
+    description?: string;
+    submitButtonText?: string;
+    successMessage?: string;
+    recipientEmail?: string;
+    fields?: Partial<
+      Record<
+        "name" | "email" | "subject" | "message",
+        {
+          isEnabled?: boolean;
+          isRequired?: boolean;
+          label?: string;
+          placeholder?: string;
+        }
+      >
+    >;
+  };
+  supportOptions?: {
+    isEnabled?: boolean;
+    title?: string;
+    items?: {
+      title?: string;
+      description?: string;
+      isAvailable?: boolean;
+      actionUrl?: string | null;
+      icon?: string;
+    }[];
+  };
+  socialLinks?: {
+    isEnabled?: boolean;
+    title?: string;
+    items?: {
+      platform?: string;
+      label?: string;
+      url?: string;
+    }[];
+  };
+  faq?: {
+    isEnabled?: boolean;
+    eyebrow?: string;
+    title?: string;
+    description?: string;
+    items?: {
+      question?: string;
+      answer?: string;
+    }[];
+  };
+  location?: {
+    isEnabled?: boolean;
+    title?: string;
+    description?: string;
+    addressLabel?: string;
+    address?: string;
+    mapEmbedUrl?: string | null;
+    directionsUrl?: string | null;
+    buttonText?: string;
+    mapImage?: string | null;
+    mapImagePublicId?: string;
+  };
+  seo?: {
+    title?: string;
+    description?: string;
+  };
+}
+
 // Brand information - sections are directly under brand, not nested in customization
 export interface BrandInfo {
   logoUrl: string | null;
@@ -108,6 +283,8 @@ export interface BrandInfo {
   exclusiveSection?: ExclusiveSectionCustomization;
   featuredCategories?: FeaturedCategoriesSection;
   footer?: FooterCustomization;
+  aboutPage?: AboutPageCustomization;
+  contactPage?: ContactPageCustomization;
 }
 
 // Tenant information from backend
@@ -231,6 +408,34 @@ export const initializeTenant = createAsyncThunk<
     const result = await response.json();
     console.log("[Tenant] API Response:", result);
     const tenantData = result.data as TenantInfo;
+    try {
+      const brandResponse = await fetch(
+        withCacheBuster(
+          `${apiUrl}/tenant-brand/domain?domain=${encodeURIComponent(domain)}`
+        ),
+        {
+          method: "GET",
+          cache: "no-store",
+          headers: {
+            "Content-Type": "application/json",
+            "Cache-Control": "no-store",
+            Pragma: "no-cache",
+          },
+          credentials: "include",
+        }
+      );
+
+      if (brandResponse.ok) {
+        const brandResult = await brandResponse.json();
+        tenantData.brand = {
+          ...tenantData.brand,
+          ...(brandResult.data as Partial<BrandInfo>),
+        };
+      }
+    } catch (brandError) {
+      console.warn("Failed to fetch tenant brand settings:", brandError);
+    }
+
     const theme = getThemeByIndex(tenantData.brand.theme);
     console.log(
       "[Tenant] Tenant loaded:",
@@ -242,6 +447,52 @@ export const initializeTenant = createAsyncThunk<
     return { tenant: tenantData, theme };
   } catch (error) {
     console.error("Failed to fetch tenant:", error);
+    return rejectWithValue("FETCH_ERROR");
+  }
+});
+
+export const fetchTenantBrandSettings = createAsyncThunk<
+  Partial<BrandInfo>,
+  void,
+  { rejectValue: string }
+>("tenant/fetchBrandSettings", async (_, { rejectWithValue }) => {
+  const domain = extractDomain();
+
+  if (isThemePreviewDomain()) {
+    return {};
+  }
+
+  if (!hasSubdomain()) {
+    return rejectWithValue("NO_SUBDOMAIN");
+  }
+
+  try {
+    const apiUrl =
+      process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5000/api";
+    const response = await fetch(
+      withCacheBuster(
+        `${apiUrl}/tenant-brand/domain?domain=${encodeURIComponent(domain)}`
+      ),
+      {
+        method: "GET",
+        cache: "no-store",
+        headers: {
+          "Content-Type": "application/json",
+          "Cache-Control": "no-store",
+          Pragma: "no-cache",
+        },
+        credentials: "include",
+      }
+    );
+
+    if (!response.ok) {
+      return rejectWithValue("FETCH_ERROR");
+    }
+
+    const result = await response.json();
+    return (result.data as Partial<BrandInfo>) || {};
+  } catch (error) {
+    console.error("Failed to fetch tenant brand settings:", error);
     return rejectWithValue("FETCH_ERROR");
   }
 });
@@ -311,6 +562,20 @@ const tenantSlice = createSlice({
         }
         state.isThemePreview = false;
         state.error = action.payload || "Failed to initialize tenant";
+      })
+      .addCase(fetchTenantBrandSettings.fulfilled, (state, action) => {
+        if (!state.tenant) {
+          return;
+        }
+
+        state.tenant.brand = {
+          ...state.tenant.brand,
+          ...action.payload,
+        };
+
+        if (typeof action.payload.theme === "number") {
+          state.theme = getThemeByIndex(action.payload.theme);
+        }
       });
   },
 });

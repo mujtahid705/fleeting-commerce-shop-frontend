@@ -7,7 +7,7 @@ import { Toaster } from "sonner";
 import { TopLoader } from "@/components/top-loader";
 import { ThemeProvider } from "@/components/theme-provider";
 import { StoreLayout } from "@/components/store-layout";
-import type { TenantInfo } from "@/redux/slices/tenantSlice";
+import type { BrandInfo, TenantInfo } from "@/redux/slices/tenantSlice";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -62,7 +62,37 @@ async function getTenantForMetadata(): Promise<TenantInfo | null> {
     }
 
     const result = await response.json();
-    return (result.data as TenantInfo) || null;
+    const tenant = (result.data as TenantInfo) || null;
+
+    if (!tenant) {
+      return null;
+    }
+
+    try {
+      const brandResponse = await fetch(
+        `${apiUrl}/tenant-brand/domain?domain=${encodeURIComponent(domain)}`,
+        {
+          cache: "no-store",
+          headers: {
+            "Content-Type": "application/json",
+            "Cache-Control": "no-store",
+            Pragma: "no-cache",
+          },
+        }
+      );
+
+      if (brandResponse.ok) {
+        const brandResult = await brandResponse.json();
+        tenant.brand = {
+          ...tenant.brand,
+          ...(brandResult.data as Partial<BrandInfo>),
+        };
+      }
+    } catch {
+      return tenant;
+    }
+
+    return tenant;
   } catch {
     return null;
   }

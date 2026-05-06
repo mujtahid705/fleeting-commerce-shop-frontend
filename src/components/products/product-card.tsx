@@ -141,7 +141,7 @@ export function ProductCard({ product, index }: ProductCardProps) {
               <Button
                 size="sm"
                 variant="outline"
-                className="h-9 rounded-none border-border px-3 text-xs uppercase tracking-[0.16em]"
+                className="h-9 rounded-none border-border px-3 text-xs uppercase tracking-[0.16em] text-foreground hover:bg-primary hover:text-primary-foreground"
               >
                 View
               </Button>
